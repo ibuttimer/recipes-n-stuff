@@ -60,7 +60,14 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.humanize',
+
+    # https://pypi.org/project/dj3-cloudinary-storage/
+    # If using for static and/or media files, make sure that cloudinary_storage
+    # is before django.contrib.staticfiles
+    'cloudinary_storage',
     'django.contrib.staticfiles',
+    'cloudinary',
 ]
 
 MIDDLEWARE = [
@@ -121,18 +128,19 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+AUTH_PASSWORD_VALIDATORS = [{
+        'NAME': 'django.contrib.auth.password_validation.'
+                'UserAttributeSimilarityValidator',
+    }, {
+        'NAME': 'django.contrib.auth.password_validation.'
+                'MinimumLengthValidator',
+    }, {
+        'NAME': 'django.contrib.auth.password_validation.'
+                'CommonPasswordValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.'
+                'NumericPasswordValidator',
     },
 ]
 
@@ -152,7 +160,44 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
+# !!
+# https://github.com/klis87/django-cloudinary-storage
+# Please note that you must set DEBUG to False to fetch static files from
+# Cloudinary.
+# With DEBUG equal to True, Django staticfiles app will use your local files
+# for easier and faster development
+# (unless you use cloudinary_static template tag).
+# !!
+
+# URL to use when referring to static files located in STATIC_ROOT
 STATIC_URL = 'static/'
+# https://docs.djangoproject.com/en/4.1/ref/settings/#staticfiles-storage
+STATICFILES_STORAGE = \
+    'django.contrib.staticfiles.storage.StaticFilesStorage' \
+    if DEVELOPMENT else \
+    'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
+# https://docs.djangoproject.com/en/4.1/ref/settings/#std-setting-STATICFILES_DIRS
+# Additional locations the staticfiles app will traverse for collectstatic
+STATICFILES_DIRS = [
+    # directories that will be found by staticfiles’s finders are by default,
+    # are 'static/' app sub-directories and any directories included in
+    # STATICFILES_DIRS
+    os.path.join(BASE_DIR, 'static')
+]
+# absolute path to the directory where static files are collected for
+# deployment
+# https://docs.djangoproject.com/en/4.1/ref/settings/#std-setting-STATIC_ROOT
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+MEDIA_URL = 'media/'
+# https://docs.djangoproject.com/en/4.1/ref/settings/#std-setting-MEDIA_ROOT
+MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_URL)
+
+# https://docs.djangoproject.com/en/4.1/ref/settings/#default-file-storage
+DEFAULT_FILE_STORAGE = \
+    'django.core.files.storage.FileSystemStorage' \
+    if DEVELOPMENT else \
+    'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
