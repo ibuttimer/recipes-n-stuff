@@ -1,6 +1,6 @@
 #  MIT License
 #
-#  Copyright (c) 2023 Ian Buttimer
+#  Copyright (c) 2022 Ian Buttimer
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to
@@ -19,29 +19,42 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+#
+from typing import Union, Any
 
-from .constants import (
-    BASE_APP_NAME, USER_APP_NAME,
-    ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL, USERS_URL,
-    IMAGE_FILE_TYPES, DEV_IMAGE_FILE_TYPES, MIN_PASSWORD_LEN,
-    AVATAR_FOLDER,
-    HOME_ROUTE_NAME
-)
-from .settings import DEVELOPMENT, TEST
+from django import template
 
-__all__ = [
-    'BASE_APP_NAME',
-    'USER_APP_NAME',
-    'ADMIN_URL',
-    'ACCOUNTS_URL',
-    'SUMMERNOTE_URL',
-    'USERS_URL',
-    'IMAGE_FILE_TYPES',
-    'DEV_IMAGE_FILE_TYPES',
-    'MIN_PASSWORD_LEN',
-    'AVATAR_FOLDER',
-    'HOME_ROUTE_NAME',
+register = template.Library()
 
-    'DEVELOPMENT',
-    'TEST',
-]
+# https://docs.djangoproject.com/en/4.1/howto/custom-template-tags/#simple-tags
+
+
+@register.simple_tag
+def calc(
+    left: Union[int, str, list, tuple], op: str,
+    right: Union[int, str, list, tuple]
+) -> Union[int, float]:
+    """
+    Perform simple calculations. If an operation is a list or tuple, its
+    length is used in the calculation.
+    :param left: first operand
+    :param op: operation; '/', '*' etc.
+    :param right: second operand
+    :return: int/float result
+    """
+    left = _convert(left)
+    right = _convert(right)
+    result = eval(f'{left}{op}{right}')
+    return int(result) if result == int(result) else result
+
+
+def _convert(a: Union[int, str, list, tuple]) -> Any:
+    """ Convert operand """
+    if isinstance(a, (list, tuple)):
+        a = len(a)
+    elif isinstance(a, str):
+        if a.isdecimal():
+            a = int(a)
+        elif a.isnumeric():
+            a = float(a)
+    return a

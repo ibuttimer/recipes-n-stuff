@@ -91,6 +91,62 @@
                             <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
                             <button class="btn btn-outline-success" type="submit">Search</button>
                         </form>
+                        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                            {% if user.is_authenticated %}
+                            <li class="nav-item dropdown">
+                                <a {% if user_menu %}
+                                   class="nav-link dropdown-toggle active" aria-current="page"
+                                   {% else %}
+                                   class="nav-link dropdown-toggle"
+                                   {% endif %}
+                                   href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span {% if user_menu %}class="active_page"{% endif %}>
+                                        {% if is_super %}
+                                            <i class="fa-solid fa-user-ninja"></i>
+                                        {% else %}
+                                            <i class="fa-solid fa-user"></i>
+                                        {% endif %}
+                                        &nbsp;
+                                        {% if user.first_name %}
+                                            {{ user.first_name }}
+                                        {% else %}
+                                            {{ user.username }}
+                                        {% endif %}
+                                    </span>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'user:user_id' user.id %}" aria-label="view profile">Profile</a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'account_logout' %}">Sign Out</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            {% else %}
+                            <li class="nav-item">
+                                <a {% if register_menu %}
+                                   class="nav-link active" aria-current="page"
+                                   {% else %}
+                                   class="nav-link"
+                                   {% endif %}
+                                   href="{% url 'account_signup' %}">
+                                    <span {% if register_menu %}class="active_page"{% endif %}>Register</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a {% if sign_in_menu %}
+                                   class="nav-link active" aria-current="page"
+                                   {% else %}
+                                   class="nav-link"
+                                   {% endif %}
+                                   href="{% url 'account_login' %}">
+                                    <span {% if sign_in_menu %}class="active_page"{% endif %}>Sign In</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -98,6 +154,31 @@
     </header>
 
     <main class="container flex-shrink-0 flex-grow-1 overflow-auto main-content no-padding">
+        {% for message in messages %}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8 offset-md-2 text-center alert {{ message.tags }} alert-dismissible fade show" id="msg" role="alert">
+                    <div class="row">
+                        <div class="d-inline p-2 col-md-1">
+                            {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                            <i class="fa-solid fa-circle-info"></i>
+                            {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                            <i class="fa-solid fa-circle-check"></i>
+                            {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            {% endif %}
+                        </div>
+                        <div class="d-inline p-2 col-md-11">
+                            {{ message | safe }}
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
 
         <div class="container">
 
@@ -118,7 +199,7 @@
 
         <div class="col-md-4 d-flex align-items-center justify-content-center">
             <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Admin">
-                <a href="/admin" target="_blank" rel="noopener"
+                <a href="{% url 'admin:index' %}" target="_blank" rel="noopener"
                    aria-label="visit admin page in another tab"
                    class="socials">
                     <i class="fa-solid fa-screwdriver-wrench text-muted"></i>

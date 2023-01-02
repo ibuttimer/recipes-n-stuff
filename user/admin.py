@@ -20,28 +20,12 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 
-from .constants import (
-    BASE_APP_NAME, USER_APP_NAME,
-    ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL, USERS_URL,
-    IMAGE_FILE_TYPES, DEV_IMAGE_FILE_TYPES, MIN_PASSWORD_LEN,
-    AVATAR_FOLDER,
-    HOME_ROUTE_NAME
-)
-from .settings import DEVELOPMENT, TEST
+from django.contrib import admin
+from django_summernote.admin import SummernoteModelAdmin
+from .models import User
 
-__all__ = [
-    'BASE_APP_NAME',
-    'USER_APP_NAME',
-    'ADMIN_URL',
-    'ACCOUNTS_URL',
-    'SUMMERNOTE_URL',
-    'USERS_URL',
-    'IMAGE_FILE_TYPES',
-    'DEV_IMAGE_FILE_TYPES',
-    'MIN_PASSWORD_LEN',
-    'AVATAR_FOLDER',
-    'HOME_ROUTE_NAME',
-
-    'DEVELOPMENT',
-    'TEST',
-]
+@admin.register(User)
+class UserAdmin(SummernoteModelAdmin):
+    """ Class representing the User model in the admin interface """
+    # apply summernote only to specific TextField in model
+    summernote_fields = (User.BIO_FIELD,)

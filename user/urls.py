@@ -19,29 +19,25 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+#
+
+from django.urls import path
+
+from recipesnstuff import USER_APP_NAME
 
 from .constants import (
-    BASE_APP_NAME, USER_APP_NAME,
-    ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL, USERS_URL,
-    IMAGE_FILE_TYPES, DEV_IMAGE_FILE_TYPES, MIN_PASSWORD_LEN,
-    AVATAR_FOLDER,
-    HOME_ROUTE_NAME
+    USER_ID_URL, USER_ID_ROUTE_NAME, USER_USERNAME_URL,
+    USER_USERNAME_ROUTE_NAME
 )
-from .settings import DEVELOPMENT, TEST
+from . import views
 
-__all__ = [
-    'BASE_APP_NAME',
-    'USER_APP_NAME',
-    'ADMIN_URL',
-    'ACCOUNTS_URL',
-    'SUMMERNOTE_URL',
-    'USERS_URL',
-    'IMAGE_FILE_TYPES',
-    'DEV_IMAGE_FILE_TYPES',
-    'MIN_PASSWORD_LEN',
-    'AVATAR_FOLDER',
-    'HOME_ROUTE_NAME',
 
-    'DEVELOPMENT',
-    'TEST',
+# https://docs.djangoproject.com/en/4.1/topics/http/urls/#url-namespaces-and-included-urlconfs
+app_name = USER_APP_NAME
+
+urlpatterns = [
+    # standard app urls
+    path(USER_ID_URL, views.UserDetailById.as_view(), name=USER_ID_ROUTE_NAME),
+    path(USER_USERNAME_URL, views.UserDetailByUsername.as_view(),
+         name=USER_USERNAME_ROUTE_NAME),
 ]

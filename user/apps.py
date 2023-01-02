@@ -20,28 +20,18 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 
-from .constants import (
-    BASE_APP_NAME, USER_APP_NAME,
-    ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL, USERS_URL,
-    IMAGE_FILE_TYPES, DEV_IMAGE_FILE_TYPES, MIN_PASSWORD_LEN,
-    AVATAR_FOLDER,
-    HOME_ROUTE_NAME
-)
-from .settings import DEVELOPMENT, TEST
+from django.apps import AppConfig
+from django.utils.translation import gettext_lazy as _
 
-__all__ = [
-    'BASE_APP_NAME',
-    'USER_APP_NAME',
-    'ADMIN_URL',
-    'ACCOUNTS_URL',
-    'SUMMERNOTE_URL',
-    'USERS_URL',
-    'IMAGE_FILE_TYPES',
-    'DEV_IMAGE_FILE_TYPES',
-    'MIN_PASSWORD_LEN',
-    'AVATAR_FOLDER',
-    'HOME_ROUTE_NAME',
+from recipesnstuff import USER_APP_NAME
 
-    'DEVELOPMENT',
-    'TEST',
-]
+
+class UserConfig(AppConfig):
+    """ Config class for user application """
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = USER_APP_NAME
+    verbose_name = _("User Management")
+
+    def ready(self):
+        # Implicitly connect signal handlers decorated with @receiver.
+        from . import signals

@@ -17,10 +17,17 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
-from recipesnstuff import settings, BASE_APP_NAME
+from recipesnstuff import (
+    settings, BASE_APP_NAME, ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL,
+    USERS_URL, USER_APP_NAME,
+)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path(ADMIN_URL, admin.site.urls),
+    path(SUMMERNOTE_URL, include('django_summernote.urls')),
+    path(ACCOUNTS_URL, include('allauth.urls')),
+    path(USERS_URL, include(f'{USER_APP_NAME}.urls')),
+
     path('', include(f'{BASE_APP_NAME}.root_urls')),
 ]
 

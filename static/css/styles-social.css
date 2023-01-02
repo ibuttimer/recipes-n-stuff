@@ -1,0 +1,38 @@
+
+
+/* Google OAuth app styling */ 
+.google {
+    background-color: #3f80e8;
+    border-color: #3f80e8;
+    color: #0E0E0E;
+}
+.google:hover {
+    background-color: #ea4333;
+    border-color: #fbbe04;
+}
+.google:active {
+    background-color: #33a951;
+    border-color: #fbbe04;
+}
+
+/* Twitter OAuth app styling */ 
+.twitter {
+    background-color: #1d9bf0;
+    border-color: #1d9bf0;
+    color: #0E0E0E;
+}
+.twitter:hover {
+    background-color: #fff;
+    border-color: #1d9bf0;
+    color: #1d9bf0;
+}
+.twitter:active {
+    background-color: #1d9bf0;
+    border-color: #1d9bf0;
+}
+
+.div__highlight {
+    background-color: #f8f9fa;  /* bg-gray-100 */
+    border-radius: 10px;
+}
+

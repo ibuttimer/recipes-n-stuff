@@ -20,28 +20,24 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 
-from .constants import (
-    BASE_APP_NAME, USER_APP_NAME,
-    ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL, USERS_URL,
-    IMAGE_FILE_TYPES, DEV_IMAGE_FILE_TYPES, MIN_PASSWORD_LEN,
-    AVATAR_FOLDER,
-    HOME_ROUTE_NAME
-)
-from .settings import DEVELOPMENT, TEST
+from utils import append_slash
 
-__all__ = [
-    'BASE_APP_NAME',
-    'USER_APP_NAME',
-    'ADMIN_URL',
-    'ACCOUNTS_URL',
-    'SUMMERNOTE_URL',
-    'USERS_URL',
-    'IMAGE_FILE_TYPES',
-    'DEV_IMAGE_FILE_TYPES',
-    'MIN_PASSWORD_LEN',
-    'AVATAR_FOLDER',
-    'HOME_ROUTE_NAME',
+# common field names
+FIRST_NAME = "first_name"
+LAST_NAME = "last_name"
+EMAIL = "email"
+EMAIL_CONFIRM = "email2"
+USERNAME = "username"
+PASSWORD = "password1"
+PASSWORD_CONFIRM = "password2"
+BIO = "bio"
+AVATAR = "avatar"
+GROUPS = 'groups'
+PREVIOUS_LOGIN = 'previous_login'
 
-    'DEVELOPMENT',
-    'TEST',
-]
+# User routes related
+USER_ID_URL = append_slash("<int:pk>")
+USER_USERNAME_URL = append_slash("<str:name>")
+
+USER_ID_ROUTE_NAME = "user_id"
+USER_USERNAME_ROUTE_NAME = "user_username"

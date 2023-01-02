@@ -19,29 +19,35 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+#
+from typing import List
 
-from .constants import (
-    BASE_APP_NAME, USER_APP_NAME,
-    ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL, USERS_URL,
-    IMAGE_FILE_TYPES, DEV_IMAGE_FILE_TYPES, MIN_PASSWORD_LEN,
-    AVATAR_FOLDER,
-    HOME_ROUTE_NAME
-)
-from .settings import DEVELOPMENT, TEST
+from allauth.socialaccount.models import SocialApp
 
-__all__ = [
-    'BASE_APP_NAME',
-    'USER_APP_NAME',
-    'ADMIN_URL',
-    'ACCOUNTS_URL',
-    'SUMMERNOTE_URL',
-    'USERS_URL',
-    'IMAGE_FILE_TYPES',
-    'DEV_IMAGE_FILE_TYPES',
-    'MIN_PASSWORD_LEN',
-    'AVATAR_FOLDER',
-    'HOME_ROUTE_NAME',
+# from .constants import MODERATOR_GROUP, AUTHOR_GROUP
+from .models import User
 
-    'DEVELOPMENT',
-    'TEST',
-]
+
+# def is_moderator(user: User) -> bool:
+#     """
+#     Check if user is a moderator
+#     :param user: user to check
+#     :return: True if moderator
+#     """
+#     return user.groups.filter(name=MODERATOR_GROUP).exists() \
+#         if user else False
+#
+#
+# def is_author(user: User) -> bool:
+#     """
+#     Check if user is an author
+#     :param user: user to check
+#     :return: True if author
+#     """
+#     return user.groups.filter(name=AUTHOR_GROUP).exists() \
+#         if user else False
+
+
+def get_social_providers() -> List[str]:
+    """ Get a list of the social login providers """
+    return SocialApp.objects.values_list('provider', flat=True)
