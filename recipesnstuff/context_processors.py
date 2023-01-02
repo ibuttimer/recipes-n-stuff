@@ -1,6 +1,6 @@
 #  MIT License
 #
-#  Copyright (c) 2023 Ian Buttimer
+#  Copyright (c) 2022 Ian Buttimer
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to
@@ -19,15 +19,39 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+#
+
+from collections import namedtuple
+
+from django.http import HttpRequest
 
 from .constants import (
-    BASE_APP_NAME
+    COPYRIGHT_YEAR, COPYRIGHT, IS_DEVELOPMENT_CTX, IS_TEST_CTX
 )
-from .settings import DEVELOPMENT, TEST
+from .settings import DEVELOPMENT, TEST, GOOGLE_SITE_VERIFICATION
 
-__all__ = [
-    'BASE_APP_NAME',
+Social = namedtuple("Social", ["name", "icon", "url"])
 
-    'DEVELOPMENT',
-    'TEST',
-]
+
+def footer_context(request: HttpRequest) -> dict:
+    """
+    Context processor providing basic footer info
+    :param request: http request
+    :return: dictionary to add to template context
+    """
+    context = {
+        "copyright_year": COPYRIGHT_YEAR,
+        "copyright": COPYRIGHT,
+        "socials": [
+            Social("Facebook", "fa-brands fa-square-facebook",
+                   "https://facebook.com"),
+            Social("Twitter", "fa-brands fa-square-twitter",
+                   "https://twitter.com"),
+            Social("Instagram", "fa-brands fa-square-instagram",
+                   "https://instagram.com"),
+        ],
+        IS_DEVELOPMENT_CTX: DEVELOPMENT,
+        IS_TEST_CTX: TEST,
+        "google_site_verification": GOOGLE_SITE_VERIFICATION
+    }
+    return context

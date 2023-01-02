@@ -14,6 +14,10 @@ from pathlib import Path
 
 import environ
 
+from .constants import (
+    BASE_APP_NAME, MIN_PASSWORD_LEN
+)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -68,6 +72,8 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'django.contrib.staticfiles',
     'cloudinary',
+
+    BASE_APP_NAME,
 ]
 
 MIDDLEWARE = [
@@ -85,7 +91,7 @@ ROOT_URLCONF = 'recipesnstuff.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -93,6 +99,12 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
+                # `allauth` needs this from django
+                'django.template.context_processors.request',
+                # recipes-n-stuff context processors
+                'recipesnstuff.context_processors.footer_context',
+                # 'recipesnstuff.context_processors.test_context',
             ],
         },
     },
@@ -134,6 +146,9 @@ AUTH_PASSWORD_VALIDATORS = [{
     }, {
         'NAME': 'django.contrib.auth.password_validation.'
                 'MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': MIN_PASSWORD_LEN,
+        }
     }, {
         'NAME': 'django.contrib.auth.password_validation.'
                 'CommonPasswordValidator',
@@ -203,3 +218,7 @@ DEFAULT_FILE_STORAGE = \
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Google site verification
+# https://support.google.com/webmasters/answer/9008080#meta_tag_verification&zippy=%2Chtml-tag
+GOOGLE_SITE_VERIFICATION = env('GOOGLE_SITE_VERIFICATION', default='')

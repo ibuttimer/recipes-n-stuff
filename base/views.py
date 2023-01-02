@@ -1,6 +1,6 @@
 #  MIT License
 #
-#  Copyright (c) 2023 Ian Buttimer
+#  Copyright (c) 2022 Ian Buttimer
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to
@@ -19,15 +19,14 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import render, redirect
 
-from .constants import (
-    BASE_APP_NAME
-)
-from .settings import DEVELOPMENT, TEST
 
-__all__ = [
-    'BASE_APP_NAME',
-
-    'DEVELOPMENT',
-    'TEST',
-]
+def get_landing(request: HttpRequest) -> HttpResponse:
+    """
+    Render landing page
+    :param request: request
+    :return: response
+    """
+    return render(request, "base.html")

@@ -118,7 +118,7 @@ The font used for title text will be [Kanit](https://fonts.google.com/specimen/K
 The font used for paragraph text will be [Rokkitt](https://fonts.google.com/specimen/Rokkitt?preview.text=Recipes%20%27N%27%20Stuff&preview.text_type=custom&category=Serif,Sans+Serif) from Google fonts.
 
 ```css
-@import url('https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Rokkitt:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Rokkitt:wght@300;400;500;600&display=swap');
 
 font-family: 'Kanit', sans-serif;
 font-family: 'Rokkitt', serif;
