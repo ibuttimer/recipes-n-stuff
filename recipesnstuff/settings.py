@@ -40,7 +40,7 @@ from django.contrib.messages import constants as messages
 
 from .constants import (
     BASE_APP_NAME, MIN_PASSWORD_LEN, USER_APP_NAME,
-    LOGIN_URL as USER_LOGIN_URL
+    LOGIN_URL as USER_LOGIN_URL, LOGIN_ROUTE_NAME, HOME_ROUTE_NAME
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -300,6 +300,10 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE = True
 ACCOUNT_USERNAME_MIN_LENGTH = 4
+# needs route name (default value of settings.LOGIN_URL
+# i.e. a url doesn't work [except '/'?])
+ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = LOGIN_ROUTE_NAME
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = HOME_ROUTE_NAME
 
 # https://django-allauth.readthedocs.io/en/latest/forms.html
 ACCOUNT_FORMS = {
@@ -307,6 +311,7 @@ ACCOUNT_FORMS = {
     'login': f'{USER_APP_NAME}.forms.UserLoginForm',
     'reset_password': f'{USER_APP_NAME}.forms.UserResetPasswordForm',
     'change_password': f'{USER_APP_NAME}.forms.UserChangePasswordForm',
+    'add_email': f'{USER_APP_NAME}.forms.UserAddEmailForm',
 }
 # https://django-allauth.readthedocs.io/en/latest/forms.html#socialaccount-forms
 SOCIALACCOUNT_FORMS = {

@@ -28,7 +28,7 @@ from .models import (
     DESC_LOOKUP, DATE_OLDEST_LOOKUP, DATE_NEWEST_LOOKUP
 )
 from .url_path import (
-append_slash, namespaced_url, app_template_path, url_path, reverse_q
+    append_slash, namespaced_url, app_template_path, url_path, reverse_q
 )
 from .views import redirect_on_success_or_render, resolve_req
 

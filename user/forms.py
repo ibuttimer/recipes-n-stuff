@@ -199,7 +199,8 @@ class UserForm(UserFormMixin, forms.ModelForm):
                 "autocomplete": "email",
             }
         ),
-        required=False
+        required=False,
+        disabled=True
     )
 
     bio = SummernoteTextField(blank=False)
@@ -297,6 +298,23 @@ class UserChangePasswordForm(UserFormMixin, ChangePasswordForm):
 
         # add the bootstrap class to the widget
         self.add_bootstrap(UserChangePasswordForm.Meta.fields)
+
+
+class UserAddEmailForm(UserFormMixin, AddEmailForm):
+    """ Custom user add email form """
+
+    EMAIL_FF = EMAIL
+
+    @dataclass
+    class Meta:
+        """ Form metadata """
+        fields = [EMAIL]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # add the bootstrap class to the widget
+        self.add_bootstrap(UserAddEmailForm.Meta.fields)
 
 
 class UserSocialSignupForm(UserFormMixin, SocialSignupForm):
