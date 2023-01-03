@@ -306,6 +306,7 @@ ACCOUNT_FORMS = {
     'signup': f'{USER_APP_NAME}.forms.UserSignupForm',
     'login': f'{USER_APP_NAME}.forms.UserLoginForm',
     'reset_password': f'{USER_APP_NAME}.forms.UserResetPasswordForm',
+    'change_password': f'{USER_APP_NAME}.forms.UserChangePasswordForm',
 }
 # https://django-allauth.readthedocs.io/en/latest/forms.html#socialaccount-forms
 SOCIALACCOUNT_FORMS = {

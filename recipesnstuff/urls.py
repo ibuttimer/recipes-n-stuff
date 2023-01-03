@@ -25,6 +25,9 @@ from recipesnstuff import (
 urlpatterns = [
     path(ADMIN_URL, admin.site.urls),
     path(SUMMERNOTE_URL, include('django_summernote.urls')),
+
+    # urls_auth precedes allauth so that its urls override allauth's
+    path(ACCOUNTS_URL, include(f'{USER_APP_NAME}.urls_auth')),
     path(ACCOUNTS_URL, include('allauth.urls')),
     path(USERS_URL, include(f'{USER_APP_NAME}.urls')),
 

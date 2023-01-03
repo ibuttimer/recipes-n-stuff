@@ -86,25 +86,6 @@
                     </div>
                 {% endif %}
 
-                {% form_field form 'categories' as categories_field %}
-                <div class="row mb-3">
-                    <div class="col-sm-2 text-start">
-                        <label id="followed-categories" for="{{ categories_field.auto_id }}" class="form-label">{{ categories_field.label }}</label>
-                    </div>
-                    <div class="col-sm-10">
-                        <p>Categories selected here will populate the <a href="{% url 'base:category_feed' %}" aria-label="display category opinion feed">Category Feed</a>.</p>
-                        {% if read_only %}
-                            <ul class="list-group list-group-horizontal-sm">
-                                {% for category in categories_field.initial %}
-                                    <li class="list-group-item li__category">{{ category }}</li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            {{ categories_field }}
-                        {% endif %}
-                    </div>
-                </div>
-
                 {% if is_super %}
                     {% form_field form 'groups' as groups_field %}
                     <div class="row mb-3">

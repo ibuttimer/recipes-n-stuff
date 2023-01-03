@@ -28,7 +28,8 @@ from django import forms
 from django.http import HttpRequest
 from django.utils.translation import gettext_lazy as _
 from allauth.account.forms import (
-    SignupForm, LoginForm, PasswordField, AddEmailForm, ResetPasswordForm
+    SignupForm, LoginForm, PasswordField, AddEmailForm, ResetPasswordForm,
+    ChangePasswordForm
 )
 from allauth.socialaccount.forms import SignupForm as SocialSignupForm
 from django_summernote.fields import SummernoteTextField
@@ -43,7 +44,7 @@ from utils import update_field_widgets, error_messages, ErrorMsgs
 from .models import User
 from .constants import (
     FIRST_NAME, LAST_NAME, EMAIL, EMAIL_CONFIRM, USERNAME,
-    PASSWORD, PASSWORD_CONFIRM, BIO, AVATAR, GROUPS
+    PASSWORD, PASSWORD_CONFIRM, BIO, AVATAR, GROUPS, OLD_PASSWORD
 )
 
 
@@ -277,6 +278,25 @@ class UserResetPasswordForm(UserFormMixin, ResetPasswordForm):
 
         # add the bootstrap class to the widget
         self.add_bootstrap(UserResetPasswordForm.Meta.fields)
+
+
+class UserChangePasswordForm(UserFormMixin, ChangePasswordForm):
+    """ Custom user password change form """
+
+    OLD_PASSWORD_FF = OLD_PASSWORD
+    PASSWORD_FF = PASSWORD
+    PASSWORD_CONFIRM_FF = PASSWORD_CONFIRM
+
+    @dataclass
+    class Meta:
+        """ Form metadata """
+        fields = [OLD_PASSWORD, PASSWORD, PASSWORD_CONFIRM]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # add the bootstrap class to the widget
+        self.add_bootstrap(UserChangePasswordForm.Meta.fields)
 
 
 class UserSocialSignupForm(UserFormMixin, SocialSignupForm):

@@ -52,9 +52,12 @@ ACCOUNTS_URL = append_slash("accounts")
 # allauth/account/urls.py
 LOGIN_URL = url_path(ACCOUNTS_URL, "login")
 REGISTER_URL = url_path(ACCOUNTS_URL, "signup")
+# excluding mount prefix as used to override allauth
+CHANGE_PASSWORD_URL = url_path("password", "change")
 # copying route names from allauth/account/urls.py
 LOGIN_ROUTE_NAME = "account_login"
 REGISTER_ROUTE_NAME = "account_signup"
+CHANGE_PASSWORD_ROUTE_NAME = "account_change_password"
 
 # Summernote routes related
 SUMMERNOTE_URL = append_slash("summernote")

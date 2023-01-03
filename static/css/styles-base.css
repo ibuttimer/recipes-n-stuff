@@ -40,14 +40,39 @@ html {
     width: var(--std-btn-width);
 }
 
-.btn__dbl-text {
+.btn__dbl-text,
+.btn__dbl-text-lg {
     width: calc(var(--std-btn-width) * 2);
+}
+
+/* bootstrap xxl breakpoint, 1400px wide or less */
+@media screen and (max-width: 1400px) {
+}
+
+/* bootstrap xl breakpoint, 1200px wide or less */
+@media screen and (max-width: 1200px) {
+}
+
+/* bootstrap lg breakpoint, 992px wide or less */
+@media screen and (max-width: 992px) {
+    .btn__dbl-text-lg {
+        width: var(--std-btn-width);
+    }
+}
+
+/* bootstrap md breakpoint, 768px wide or less */
+@media screen and (max-width: 768px) {
+}
+
+/* bootstrap sm breakpoint, 576px wide or less */
+@media screen and (max-width: 576px) {
 }
 
 /* tiny screens, 315px wide or less */
 @media screen and (max-width: 315px) {
     .btn__text,
-    .btn__dbl-text {
+    .btn__dbl-text,
+    .btn__dbl-text-lg {
         width: min-content;
     }
 }

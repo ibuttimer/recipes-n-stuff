@@ -92,11 +92,11 @@
           <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
         {% endif %}
         <div class="row mb-3">
-            <div class="col-lg-5 offset-lg-3 col-sm-5 offset-sm-1 mt-2">
-                <a class="btn btn-secondary btn__dbl-text" href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
+            <div class="col-lg-5 offset-lg-2 col-sm-6 mt-2">
+                <a class="btn btn-secondary btn__dbl-text-lg" href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
             </div>
             <div class="col-lg-3 col-sm-6 mt-2">
-                <button id="id--sign-in" class="btn btn-primary primaryAction btn__text" type="submit">{% trans "Sign In" %}</button>
+                <button id="id--sign-in" class="btn btn-primary primaryAction btn__dbl-text-lg" type="submit">{% trans "Sign In" %}</button>
             </div>
         </div>
       </form>

@@ -19,26 +19,19 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+#
 
-from utils import append_slash
+from django.urls import path
 
-# common field names
-FIRST_NAME = "first_name"
-LAST_NAME = "last_name"
-EMAIL = "email"
-EMAIL_CONFIRM = "email2"
-USERNAME = "username"
-PASSWORD = "password1"
-PASSWORD_CONFIRM = "password2"
-OLD_PASSWORD = "oldpassword"
-BIO = "bio"
-AVATAR = "avatar"
-GROUPS = 'groups'
-PREVIOUS_LOGIN = 'previous_login'
+from recipesnstuff.constants import (
+    CHANGE_PASSWORD_URL, CHANGE_PASSWORD_ROUTE_NAME
+)
 
-# User routes related
-USER_ID_URL = append_slash("<int:pk>")
-USER_USERNAME_URL = append_slash("<str:name>")
+from .views import UserPasswordChangeView
 
-USER_ID_ROUTE_NAME = "user_id"
-USER_USERNAME_ROUTE_NAME = "user_username"
+
+urlpatterns = [
+    # standard app urls
+    path(CHANGE_PASSWORD_URL, UserPasswordChangeView.as_view(),
+         name=CHANGE_PASSWORD_ROUTE_NAME),
+]
