@@ -19,13 +19,16 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from dataclasses import dataclass
+from typing import List, Union, Tuple, Optional
+
 from allauth.account import app_settings
 from cloudinary.forms import CloudinaryFileField
 from django import forms
 from django.http import HttpRequest
 from django.utils.translation import gettext_lazy as _
 from allauth.account.forms import (
-    SignupForm, LoginForm, PasswordField, AddEmailForm
+    SignupForm, LoginForm, PasswordField, AddEmailForm, ResetPasswordForm
 )
 from allauth.socialaccount.forms import SignupForm as SocialSignupForm
 from django_summernote.fields import SummernoteTextField
@@ -44,7 +47,28 @@ from .constants import (
 )
 
 
-class UserSignupForm(SignupForm):
+class UserFormMixin:
+    """ Mixin to provide custom form utility functions """
+
+    def add_bootstrap(
+            self, fields: Union[List[str], Tuple[str], str],
+            exclude: Optional[List[str]] = None):
+        """
+        Add bootstrap classes
+        :param fields:  list of names of fields to update, or use
+                '__all__' to update all fields
+        :param exclude: list of names of fields to exclude
+        """
+        if exclude is None:
+            exclude = []
+        update_field_widgets(
+            self,
+            # exclude non-bootstrap fields
+            [field for field in fields if field not in exclude],
+            {'class': 'form-control'})
+
+
+class UserSignupForm(UserFormMixin, SignupForm):
     """ Custom user sign up form """
 
     FIRST_NAME_FF = FIRST_NAME
@@ -54,6 +78,15 @@ class UserSignupForm(SignupForm):
     USERNAME_FF = USERNAME
     PASSWORD_FF = PASSWORD
     PASSWORD_CONFIRM_FF = PASSWORD_CONFIRM
+
+    @dataclass
+    class Meta:
+        """ Form metadata """
+        model = User
+        fields = [
+            FIRST_NAME, LAST_NAME, EMAIL, EMAIL_CONFIRM, USERNAME,
+            PASSWORD, PASSWORD_CONFIRM
+        ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -89,18 +122,7 @@ class UserSignupForm(SignupForm):
         self.fields.move_to_end(UserSignupForm.FIRST_NAME_FF, last=False)
 
         # add the bootstrap class to the widget
-        update_field_widgets(
-            self,
-            # exclude non-bootstrap fields
-            [field for field in UserSignupForm.Meta.fields],
-            {'class': 'form-control'})
-
-    class Meta:
-        model = User
-        fields = [
-            FIRST_NAME, LAST_NAME, EMAIL, EMAIL_CONFIRM, USERNAME,
-            PASSWORD, PASSWORD_CONFIRM
-        ]
+        self.add_bootstrap(UserSignupForm.Meta.fields)
 
     def signup(self, request: HttpRequest, user: User) -> None:
         """
@@ -111,8 +133,16 @@ class UserSignupForm(SignupForm):
         pass
 
 
-class UserLoginForm(LoginForm):
+class UserLoginForm(UserFormMixin, LoginForm):
     """ Custom user login form """
+
+    LOGIN_FF = "login"
+    PASSWORD_FF = "password"
+
+    @dataclass
+    class Meta:
+        """ Form metadata """
+        fields = ["login", "password"]
 
     password = PasswordField(
         label=_("Password"), autocomplete="current-password",
@@ -122,11 +152,7 @@ class UserLoginForm(LoginForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # add the bootstrap class to the widget
-        update_field_widgets(
-            self,
-            # exclude non-bootstrap fields
-            [field for field in ["login", "password"]],
-            {'class': 'form-control'})
+        self.add_bootstrap(UserLoginForm.Meta.fields)
 
 
 class NoCurrentClearableFileInput(forms.ClearableFileInput):
@@ -143,7 +169,7 @@ class NoCurrentClearableFileInput(forms.ClearableFileInput):
         return context
 
 
-class UserForm(forms.ModelForm):
+class UserForm(UserFormMixin, forms.ModelForm):
     """
     Form to update a user.
     """
@@ -201,7 +227,9 @@ class UserForm(forms.ModelForm):
         queryset=Group.objects.all(), required=False
     )
 
+    @dataclass
     class Meta:
+        """ Form metadata """
         model = User
         fields = [
             FIRST_NAME, LAST_NAME, EMAIL, BIO, AVATAR, GROUPS
@@ -230,33 +258,43 @@ class UserForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # add the bootstrap class to the widget
-        update_field_widgets(
-            self,
-            # exclude non-bootstrap fields
-            [field for field in UserForm.Meta.fields
-             if field not in UserForm.Meta.non_bootstrap_fields],
-            {'class': 'form-control'})
+        self.add_bootstrap(
+            UserForm.Meta.fields, exclude=UserForm.Meta.non_bootstrap_fields)
 
 
-class UserSocialSignupForm(SocialSignupForm):
+class UserResetPasswordForm(UserFormMixin, ResetPasswordForm):
+    """ Custom user password reset form """
+
+    EMAIL_FF = EMAIL
+
+    @dataclass
+    class Meta:
+        """ Form metadata """
+        fields = [EMAIL]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # add the bootstrap class to the widget
+        self.add_bootstrap(UserResetPasswordForm.Meta.fields)
+
+
+class UserSocialSignupForm(UserFormMixin, SocialSignupForm):
     """ Custom user social sign up form """
 
     EMAIL_FF = EMAIL
     EMAIL_CONFIRM_FF = EMAIL_CONFIRM
     USERNAME_FF = USERNAME
 
+    @dataclass
+    class Meta:
+        """ Form metadata """
+        fields = [
+            EMAIL, EMAIL_CONFIRM, USERNAME
+        ]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # add the bootstrap class to the widget
-        update_field_widgets(
-            self,
-            # exclude non-bootstrap fields
-            [field for field in UserSocialSignupForm.Meta.fields],
-            {'class': 'form-control'})
-
-    class Meta:
-        model = User
-        fields = [
-            EMAIL, EMAIL_CONFIRM, USERNAME
-        ]
+        self.add_bootstrap(self, UserSocialSignupForm.Meta.fields)

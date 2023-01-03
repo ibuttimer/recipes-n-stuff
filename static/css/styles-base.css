@@ -18,6 +18,9 @@
 
     /* bootstrap colours */
     --text-muted: #6c757d;
+
+
+    --std-btn-width: 7em
 }
 
 html {
@@ -34,12 +37,17 @@ html {
 }
 
 .btn__text {
-    width: 7em;
+    width: var(--std-btn-width);
+}
+
+.btn__dbl-text {
+    width: calc(var(--std-btn-width) * 2);
 }
 
 /* tiny screens, 315px wide or less */
 @media screen and (max-width: 315px) {
-    .btn__text {
+    .btn__text,
+    .btn__dbl-text {
         width: min-content;
     }
 }
