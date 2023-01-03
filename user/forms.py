@@ -335,4 +335,4 @@ class UserSocialSignupForm(UserFormMixin, SocialSignupForm):
         super().__init__(*args, **kwargs)
 
         # add the bootstrap class to the widget
-        self.add_bootstrap(self, UserSocialSignupForm.Meta.fields)
+        self.add_bootstrap(UserSocialSignupForm.Meta.fields)

@@ -41,8 +41,8 @@ def add_navbar_attr(context: dict, key: str, is_active: bool = False,
     :return: context
     """
     context[key] = NavbarAttr(
-        f'class="nav-link {a_xtra or ""} active" aria-current="page"',
-        f'class="active_page {span_xtra or ""}"'
+        f'class="nav-link {a_xtra or ""} active active_page" aria-current="page"',
+        f'class="{span_xtra or ""}"'
     ) if is_active else NavbarAttr(
         f'class="nav-link {a_xtra or ""}"',
         f'class="{span_xtra or ""}"'

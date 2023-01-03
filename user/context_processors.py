@@ -27,8 +27,9 @@ from django.http import HttpRequest
 from recipesnstuff.constants import (
     LOGIN_ROUTE_NAME, USER_MENU_CTX, SIGN_IN_MENU_CTX, REGISTER_MENU_CTX,
     REGISTER_ROUTE_NAME, IS_SUPER_CTX, ACCOUNTS_URL, LOGOUT_ROUTE_NAME,
-    CHANGE_PASSWORD_ROUTE_NAME
+    CHANGE_PASSWORD_ROUTE_NAME, AVATAR_URL_CTX
 )
+from recipesnstuff.settings import AVATAR_BLANK_URL
 from utils import resolve_req, add_navbar_attr
 from . import USER_ID_ROUTE_NAME
 from .constants import USER_USERNAME_ROUTE_NAME
@@ -78,6 +79,10 @@ def user_context(request: HttpRequest) -> dict:
 
     context.update({
         IS_SUPER_CTX: request.user.is_superuser,
+        AVATAR_URL_CTX: AVATAR_BLANK_URL \
+            if request.user.AVATAR_BLANK in request.user.avatar.url \
+            else request.user.avatar.url
+
         # IS_MODERATOR_CTX: is_moderator(request.user),
         # IS_AUTHOR_CTX: is_author(request.user),
     })

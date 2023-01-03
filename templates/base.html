@@ -101,11 +101,7 @@
                                 <a {{ user_menu.a_attr | safe }}
                                    href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <span {{ user_menu.span_attr | safe }}>
-                                        {% if is_super %}
-                                            <i class="fa-solid fa-user-ninja"></i>
-                                        {% else %}
-                                            <i class="fa-solid fa-user"></i>
-                                        {% endif %}
+                                        <img src="{{ avatar_url }}" alt="user avatar" width="32" height="32" class="rounded-2">
                                         &nbsp;
                                         {% if user.first_name %}
                                             {{ user.first_name }}
