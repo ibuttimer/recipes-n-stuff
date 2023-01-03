@@ -24,7 +24,10 @@ from cloudinary.forms import CloudinaryFileField
 from django import forms
 from django.http import HttpRequest
 from django.utils.translation import gettext_lazy as _
-from allauth.account.forms import SignupForm, LoginForm, PasswordField
+from allauth.account.forms import (
+    SignupForm, LoginForm, PasswordField, AddEmailForm
+)
+from allauth.socialaccount.forms import SignupForm as SocialSignupForm
 from django_summernote.fields import SummernoteTextField
 from django_summernote.widgets import SummernoteWidget
 from django.contrib.auth.models import Group
@@ -53,9 +56,6 @@ class UserSignupForm(SignupForm):
     PASSWORD_CONFIRM_FF = PASSWORD_CONFIRM
 
     def __init__(self, *args, **kwargs):
-        # form_args = kwargs.copy()
-        # form_args["email_required"] = True
-        # super().__init__(*args, **form_args)
         super().__init__(*args, **kwargs)
 
         self.fields[UserSignupForm.PASSWORD_FF] = PasswordField(
@@ -236,3 +236,27 @@ class UserForm(forms.ModelForm):
             [field for field in UserForm.Meta.fields
              if field not in UserForm.Meta.non_bootstrap_fields],
             {'class': 'form-control'})
+
+
+class UserSocialSignupForm(SocialSignupForm):
+    """ Custom user social sign up form """
+
+    EMAIL_FF = EMAIL
+    EMAIL_CONFIRM_FF = EMAIL_CONFIRM
+    USERNAME_FF = USERNAME
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # add the bootstrap class to the widget
+        update_field_widgets(
+            self,
+            # exclude non-bootstrap fields
+            [field for field in UserSocialSignupForm.Meta.fields],
+            {'class': 'form-control'})
+
+    class Meta:
+        model = User
+        fields = [
+            EMAIL, EMAIL_CONFIRM, USERNAME
+        ]

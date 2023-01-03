@@ -210,15 +210,7 @@ TEMPLATES = [
 # email
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE = True
-ACCOUNT_USERNAME_MIN_LENGTH = 4
-LOGIN_URL = USER_LOGIN_URL
-
 WSGI_APPLICATION = f'{MAIN_APP}.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
@@ -295,15 +287,28 @@ AUTH_PASSWORD_VALIDATORS = [{
     },
 ]
 
+#https://docs.djangoproject.com/en/4.1/ref/settings/#login-url
+LOGIN_URL = USER_LOGIN_URL
 # https://docs.djangoproject.com/en/4.1/ref/settings/#login-redirect-url
 LOGIN_REDIRECT_URL = '/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#logout-redirect-url
 LOGOUT_REDIRECT_URL = '/'
 
+# https://django-allauth.readthedocs.io/en/latest/configuration.html
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE = True
+ACCOUNT_USERNAME_MIN_LENGTH = 4
+
 # https://django-allauth.readthedocs.io/en/latest/forms.html
 ACCOUNT_FORMS = {
-    'signup': 'user.forms.UserSignupForm',
-    'login': 'user.forms.UserLoginForm'
+    'signup': f'{USER_APP_NAME}.forms.UserSignupForm',
+    'login': f'{USER_APP_NAME}.forms.UserLoginForm',
+}
+# https://django-allauth.readthedocs.io/en/latest/forms.html#socialaccount-forms
+SOCIALACCOUNT_FORMS = {
+    'signup': f'{USER_APP_NAME}.forms.UserSocialSignupForm',
 }
 
 # https://docs.djangoproject.com/en/4.1/ref/settings/#std-setting-MESSAGE_TAGS
