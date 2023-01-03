@@ -38,12 +38,12 @@ Including another URLconf
 from django.urls import path
 
 from recipesnstuff.constants import (
-    LANDING_ROUTE_NAME, HOME_ROUTE_NAME, HELP_ROUTE_NAME
+    LANDING_ROUTE_NAME, HOME_ROUTE_NAME, HELP_ROUTE_NAME, HELP_URL
 )
 from .views import get_landing
 
 urlpatterns = [
-    path('', get_landing, name=HELP_ROUTE_NAME),
+    path(HELP_URL, get_landing, name=HELP_ROUTE_NAME),
     path('', get_landing, name=HOME_ROUTE_NAME),
     path('', get_landing, name=LANDING_ROUTE_NAME),
 ]

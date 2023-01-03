@@ -19,41 +19,32 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-
-from .file import find_parent_of_folder
-from .forms import update_field_widgets, error_messages, ErrorMsgs
-from .html import add_navbar_attr
-from .models import (
-    ModelMixin, ModelFacadeMixin,
-    DESC_LOOKUP, DATE_OLDEST_LOOKUP, DATE_NEWEST_LOOKUP
-)
-from .url_path import (
-append_slash, namespaced_url, app_template_path, url_path, reverse_q
-)
-from .views import redirect_on_success_or_render, resolve_req
+from dataclasses import dataclass
 
 
-__all__ = [
-    'find_parent_of_folder',
+@dataclass
+class NavbarAttr:
+    """ Navbar link attributes """
+    a_attr: str
+    span_attr: str
 
-    'update_field_widgets',
-    'error_messages',
-    'ErrorMsgs',
 
-    'add_navbar_attr',
-
-    'ModelMixin',
-    'ModelFacadeMixin',
-    'DESC_LOOKUP',
-    'DATE_OLDEST_LOOKUP',
-    'DATE_NEWEST_LOOKUP',
-
-    'append_slash',
-    'namespaced_url',
-    'app_template_path',
-    'url_path',
-    'reverse_q',
-
-    'redirect_on_success_or_render',
-    'resolve_req',
-]
+def add_navbar_attr(context: dict, key: str, is_active: bool = False,
+                    a_xtra: str = None, span_xtra: str = None) -> dict:
+    """
+    Add navbar attributes from the specified key
+    :param context: context for template
+    :param key: context key
+    :param is_active: is active flag; default False
+    :param a_xtra: extra classes for 'a' tag; default None
+    :param span_xtra: extra classes for 'span' tag; default None
+    :return: context
+    """
+    context[key] = NavbarAttr(
+        f'class="nav-link {a_xtra or ""} active" aria-current="page"',
+        f'class="active_page {span_xtra or ""}"'
+    ) if is_active else NavbarAttr(
+        f'class="nav-link {a_xtra or ""}"',
+        f'class="{span_xtra or ""}"'
+    )
+    return context

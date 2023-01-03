@@ -68,8 +68,11 @@
                     <div class="offcanvas-body">
                         <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
                             <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a>
+                                <a {{ home_menu.a_attr | safe }} href="{% url 'home' %}">
+                                    <span {{ home_menu.span_attr | safe }}>Home</span>
+                                </a>
                             </li>
+                            {% if user.is_authenticated %}
                             <li class="nav-item">
                                 <a class="nav-link" href="#">Link</a>
                             </li>
@@ -86,6 +89,7 @@
                                     <li><a class="dropdown-item" href="#">Something else here</a></li>
                                 </ul>
                             </li>
+                            {% endif %}
                         </ul>
                         <form class="d-flex" role="search">
                             <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
@@ -94,13 +98,9 @@
                         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                             {% if user.is_authenticated %}
                             <li class="nav-item dropdown">
-                                <a {% if user_menu %}
-                                   class="nav-link dropdown-toggle active" aria-current="page"
-                                   {% else %}
-                                   class="nav-link dropdown-toggle"
-                                   {% endif %}
+                                <a {{ user_menu.a_attr | safe }}
                                    href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span {% if user_menu %}class="active_page"{% endif %}>
+                                    <span {{ user_menu.span_attr | safe }}>
                                         {% if is_super %}
                                             <i class="fa-solid fa-user-ninja"></i>
                                         {% else %}
@@ -129,23 +129,13 @@
                             </li>
                             {% else %}
                             <li class="nav-item">
-                                <a {% if register_menu %}
-                                   class="nav-link active" aria-current="page"
-                                   {% else %}
-                                   class="nav-link"
-                                   {% endif %}
-                                   href="{% url 'account_signup' %}">
-                                    <span {% if register_menu %}class="active_page"{% endif %}>Register</span>
+                                <a {{ register_menu.a_attr | safe }} href="{% url 'account_signup' %}">
+                                    <span {{ register_menu.span_attr | safe }}>Register</span>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a {% if sign_in_menu %}
-                                   class="nav-link active" aria-current="page"
-                                   {% else %}
-                                   class="nav-link"
-                                   {% endif %}
-                                   href="{% url 'account_login' %}">
-                                    <span {% if sign_in_menu %}class="active_page"{% endif %}>Sign In</span>
+                                <a {{ sign_in_menu.a_attr | safe }} href="{% url 'account_login' %}">
+                                    <span {{ sign_in_menu.span_attr | safe }}>Sign In</span>
                                 </a>
                             </li>
                             {% endif %}

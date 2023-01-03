@@ -26,8 +26,7 @@ from django.http import HttpRequest
 from recipesnstuff.constants import (
     HOME_MENU_CTX, HELP_MENU_CTX, HELP_ROUTE_NAME, HOME_ROUTE_NAME
 )
-from utils import resolve_req
-
+from utils import resolve_req, add_navbar_attr
 
 
 def base_context(request: HttpRequest) -> dict:
@@ -45,5 +44,6 @@ def base_context(request: HttpRequest) -> dict:
             ]),
             (HELP_MENU_CTX, [HELP_ROUTE_NAME]),
         ]:
-            context[ctx] = called_by.url_name in routes
+            add_navbar_attr(
+                context, ctx, is_active=called_by.url_name in routes)
     return context

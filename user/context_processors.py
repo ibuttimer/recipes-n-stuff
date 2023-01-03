@@ -20,17 +20,24 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 #
+import re
 
 from django.http import HttpRequest
 
 from recipesnstuff.constants import (
-    LOGIN_ROUTE_NAME, USER_MENU_CTX, SIGN_IN_MENU_CTX, REGISTER_MENU_CTX, REGISTER_ROUTE_NAME, IS_SUPER_CTX
+    LOGIN_ROUTE_NAME, USER_MENU_CTX, SIGN_IN_MENU_CTX, REGISTER_MENU_CTX,
+    REGISTER_ROUTE_NAME, IS_SUPER_CTX, ACCOUNTS_URL, LOGOUT_ROUTE_NAME,
+    CHANGE_PASSWORD_ROUTE_NAME
 )
-from utils import resolve_req
+from utils import resolve_req, add_navbar_attr
 from . import USER_ID_ROUTE_NAME
 from .constants import USER_USERNAME_ROUTE_NAME
 from .queries import get_social_providers
-from .views import SOCIAL_REGEX
+
+
+# regex to match socials; e.g. '/accounts/twitter/login/'
+SOCIAL_REGEX = re.compile(
+    rf'^/{ACCOUNTS_URL}(.*)/login/', re.IGNORECASE)
 
 
 def _sign_in_route_check(request: HttpRequest, route: str):
@@ -54,15 +61,20 @@ def user_context(request: HttpRequest) -> dict:
     context = {}
     called_by = resolve_req(request)
     if called_by:
-        for ctx, check_func in [
+        for ctx, check_func, a_xtra in [
             (USER_MENU_CTX, lambda name: name in [
-                USER_ID_ROUTE_NAME, USER_USERNAME_ROUTE_NAME
-            ]),
+                USER_ID_ROUTE_NAME, USER_USERNAME_ROUTE_NAME,
+                CHANGE_PASSWORD_ROUTE_NAME, LOGOUT_ROUTE_NAME
+        ], 'dropdown-toggle'),
             (SIGN_IN_MENU_CTX,
-             lambda name: _sign_in_route_check(request, name)),
-            (REGISTER_MENU_CTX, lambda name: name == REGISTER_ROUTE_NAME),
+             lambda name: _sign_in_route_check(request, name), None),
+            (REGISTER_MENU_CTX,
+             lambda name: name == REGISTER_ROUTE_NAME, None),
         ]:
-            context[ctx] = check_func(called_by.url_name)
+            add_navbar_attr(
+                context, ctx, is_active=check_func(called_by.url_name),
+                a_xtra=a_xtra
+            )
 
     context.update({
         IS_SUPER_CTX: request.user.is_superuser,

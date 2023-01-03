@@ -37,6 +37,7 @@ DELETE = 'DELETE'
 
 # Base routes related
 HOME_URL = "/"
+HELP_URL = append_slash("help")
 
 HOME_ROUTE_NAME = "home"
 HELP_ROUTE_NAME = "help"
@@ -51,11 +52,13 @@ ACCOUNTS_URL = append_slash("accounts")
 # mounting allauth on 'accounts' and copying paths from
 # allauth/account/urls.py
 LOGIN_URL = url_path(ACCOUNTS_URL, "login")
+LOGOUT_URL = url_path(ACCOUNTS_URL, "logout")
 REGISTER_URL = url_path(ACCOUNTS_URL, "signup")
 # excluding mount prefix as used to override allauth
 CHANGE_PASSWORD_URL = url_path("password", "change")
 # copying route names from allauth/account/urls.py
 LOGIN_ROUTE_NAME = "account_login"
+LOGOUT_ROUTE_NAME = "account_logout"
 REGISTER_ROUTE_NAME = "account_signup"
 CHANGE_PASSWORD_ROUTE_NAME = "account_change_password"
 
