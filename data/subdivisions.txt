@@ -1,0 +1,255 @@
+# Data courtesy of https://en.wikipedia.org/wiki/ISO_3166-2
+# tab-separated list of codes and subdivisions
+# column 1: ISO 3166-1 alpha-2 code
+# column 2: Country name: English short name officially used by the ISO 3166 Maintenance Agency (ISO 3166/MA)
+# column 3: Subdivision name(s): category of subdivisions assigned codes in ISO 3166-2
+
+AD	Andorra	parish
+AE	United Arab Emirates	emirate
+AF	Afghanistan	province
+AG	Antigua and Barbuda	parish
+AI	Anguilla	-
+AL	Albania	county
+AM	Armenia	city/region
+AO	Angola	rovince
+AQ	Antarctica	-
+AR	Argentina	city/province
+AS	American Samoa	-
+AT	Austria	state
+AU	Australia	state/territory
+AW	Aruba	-
+AX	Åland Islands	-
+AZ	Azerbaijan	municipality/rayons
+BA	Bosnia and Herzegovina	entity
+BB	Barbados	parish
+BD	Bangladesh	division/district
+BE	Belgium	region/province
+BF	Burkina Faso	region/province
+BG	Bulgaria	region
+BH	Bahrain	governorate
+BI	Burundi	province
+BJ	Benin	department
+BL	Saint Barthélemy	-
+BM	Bermuda	-
+BN	Brunei Darussalam	district
+BO	Bolivia (Plurinational State of)	department
+BQ	Bonaire, Sint Eustatius and Saba	municipality
+BR	Brazil	district/state
+BS	Bahamas	district
+BT	Bhutan	district
+BV	Bouvet Island	-
+BW	Botswana	district
+BY	Belarus	oblast
+BZ	Belize	district
+CA	Canada	province/territory
+CC	Cocos (Keeling) Islands	-
+CD	Congo, Democratic Republic of the	province
+CF	Central African Republic	prefecture
+CG	Congo	department
+CH	Switzerland	canton
+CI	Côte d'Ivoire	district
+CK	Cook Islands	-
+CL	Chile	region
+CM	Cameroon	region
+CN	China	municipality/province/region
+CO	Colombia	department
+CR	Costa Rica	province
+CU	Cuba	province
+CV	Cabo Verde	region/municipality
+CW	Curaçao	-
+CX	Christmas Island	-
+CY	Cyprus	district
+CZ	Czechia	region/district
+DE	Germany	state
+DJ	Djibouti	region
+DK	Denmark	region
+DM	Dominica	parish
+DO	Dominican Republic	region/province
+DZ	Algeria	province
+EC	Ecuador	province
+EE	Estonia	county/municipality
+EG	Egypt	governorate
+EH	Western Sahara	-
+ER	Eritrea	region
+ES	Spain	province
+ET	Ethiopia	state
+FI	Finland	region
+FJ	Fiji	province
+FK	Falkland Islands (Malvinas)	-
+FM	Micronesia (Federated States of)	state
+FO	Faroe Islands	-
+FR	France	region/department
+GA	Gabon	province
+GB	United Kingdom of Great Britain and Northern Ireland	county
+GD	Grenada	parish
+GE	Georgia	region
+GF	French Guiana	-
+GG	Guernsey	-
+GH	Ghana	region
+GI	Gibraltar	-
+GL	Greenland	municipality
+GM	Gambia	city/division
+GN	Guinea	prefecture
+GP	Guadeloupe	-
+GQ	Equatorial Guinea	region/province
+GR	Greece	region
+GS	South Georgia and the South Sandwich Islands	-
+GT	Guatemala	department
+GU	Guam	-
+GW	Guinea-Bissau	province/region
+GY	Guyana	region
+HK	Hong Kong	-
+HM	Heard Island and McDonald Islands	-
+HN	Honduras	department
+HR	Croatia	county
+HT	Haiti	department
+HU	Hungary	county
+ID	Indonesia	province
+IE	Ireland	county
+IL	Israel	district
+IM	Isle of Man	-
+IN	India	state
+IO	British Indian Ocean Territory	-
+IQ	Iraq	governorate
+IR	Iran (Islamic Republic of)	province
+IS	Iceland	region
+IT	Italy	region/province
+JE	Jersey	-
+JM	Jamaica	parish
+JO	Jordan	governorate
+JP	Japan	prefecture
+KE	Kenya	county
+KG	Kyrgyzstan	region
+KH	Cambodia	province
+KI	Kiribati	islands
+KM	Comoros	islands
+KN	Saint Kitts and Nevis	state/parish
+KP	Korea (Democratic People's Republic of)	province
+KR	Korea, Republic of	province
+KW	Kuwait	governorate
+KY	Cayman Islands	-
+KZ	Kazakhstan	region
+LA	Lao People's Democratic Republic	province
+LB	Lebanon	governorate
+LC	Saint Lucia	district
+LI	Liechtenstein	commune
+LK	Sri Lanka	province
+LR	Liberia	county
+LS	Lesotho	district
+LT	Lithuania	county
+LU	Luxembourg	canton
+LV	Latvia	municipality
+LY	Libya	popularate
+MA	Morocco	region/province/prefecture
+MC	Monaco	quarters
+MD	Moldova, Republic of	district
+ME	Montenegro	municipality
+MF	Saint Martin (French part)	-
+MG	Madagascar	province
+MH	Marshall Islands	islands
+MK	North Macedonia	municipality
+ML	Mali	region
+MM	Myanmar	state
+MN	Mongolia	province
+MO	Macao	-
+MP	Northern Mariana Islands	-
+MQ	Martinique	-
+MR	Mauritania	region
+MS	Montserrat	-
+MT	Malta	council
+MU	Mauritius	district
+MV	Maldives	atoll
+MW	Malawi	region/district
+MX	Mexico	state
+MY	Malaysia	state
+MZ	Mozambique	province
+NA	Namibia	region
+NC	New Caledonia	-
+NE	Niger	department
+NF	Norfolk Island	-
+NG	Nigeria	state
+NI	Nicaragua	department
+NL	Netherlands	province
+NO	Norway	county
+NP	Nepal	province
+NR	Nauru	district
+NU	Niue	-
+NZ	New Zealand	region
+OM	Oman	governorate
+PA	Panama	province
+PE	Peru	region
+PF	French Polynesia	-
+PG	Papua New Guinea	province
+PH	Philippines	region/province
+PK	Pakistan	province/territory
+PL	Poland	voivodship
+PM	Saint Pierre and Miquelon	-
+PN	Pitcairn	-
+PR	Puerto Rico	-
+PS	Palestine, State of	governorate
+PT	Portugal	district/region
+PW	Palau	state
+PY	Paraguay	department
+QA	Qatar	municipality
+RE	Réunion	-
+RO	Romania	department
+RS	Serbia	province/district
+RU	Russian Federation	republic
+RW	Rwanda	province
+SA	Saudi Arabia	region
+SB	Solomon Islands	province
+SC	Seychelles	district
+SD	Sudan	state
+SE	Sweden	county
+SG	Singapore	district
+SH	Saint Helena, Ascension and Tristan da Cunha	entity
+SI	Slovenia	municipality
+SJ	Svalbard and Jan Mayen	-
+SK	Slovakia	region
+SL	Sierra Leone	province
+SM	San Marino	municipality
+SN	Senegal	region
+SO	Somalia	region
+SR	Suriname	district
+SS	South Sudan	state
+ST	Sao Tome and Principe	region/district
+SV	El Salvador	department
+SX	Sint Maarten (Dutch part)	-
+SY	Syrian Arab Republic	province
+SZ	Eswatini	region
+TC	Turks and Caicos Islands	-
+TD	Chad	province
+TF	French Southern Territories	-
+TG	Togo	region
+TH	Thailand	province
+TJ	Tajikistan	region
+TK	Tokelau	-
+TL	Timor-Leste	municipality
+TM	Turkmenistan	region
+TN	Tunisia	governorate
+TO	Tonga	division
+TR	Türkiye	province
+TT	Trinidad and Tobago	region
+TV	Tuvalu	council
+TW	Taiwan, Province of China	county
+TZ	Tanzania, United Republic of	region
+UA	Ukraine	region
+UG	Uganda	region
+UM	United States Minor Outlying Islands	island
+US	United States of America	state
+UY	Uruguay	department
+UZ	Uzbekistan	region
+VA	Holy See	-
+VC	Saint Vincent and the Grenadines	parish
+VE	Venezuela (Bolivarian Republic of)	state
+VG	Virgin Islands (British)	-
+VI	Virgin Islands (U.S.)	-
+VN	Viet Nam	province
+VU	Vanuatu	province
+WF	Wallis and Futuna	precincts
+WS	Samoa	district
+YE	Yemen	governorate
+YT	Mayotte	-
+ZA	South Africa	province
+ZM	Zambia	province
+ZW	Zimbabwe	province

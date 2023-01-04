@@ -28,6 +28,7 @@ COPYRIGHT = "Ian Buttimer"
 # Namespace related
 BASE_APP_NAME = "base"
 USER_APP_NAME = "user"
+PROFILES_APP_NAME = "profiles"
 
 # Request methods
 GET = 'GET'

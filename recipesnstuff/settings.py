@@ -39,7 +39,7 @@ import environ
 from django.contrib.messages import constants as messages
 
 from .constants import (
-    BASE_APP_NAME, MIN_PASSWORD_LEN, USER_APP_NAME,
+    BASE_APP_NAME, MIN_PASSWORD_LEN, USER_APP_NAME, PROFILES_APP_NAME,
     LOGIN_URL as USER_LOGIN_URL, LOGIN_ROUTE_NAME, HOME_ROUTE_NAME
 )
 
@@ -154,8 +154,11 @@ INSTALLED_APPS = [
     'cloudinary',
     'django_summernote',
 
+    'django_countries',
+
     BASE_APP_NAME,
     USER_APP_NAME,
+    PROFILES_APP_NAME,
 
     # needs to be after app with django template overrides
     'django.forms',
