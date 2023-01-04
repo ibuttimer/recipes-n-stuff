@@ -11,7 +11,7 @@ AG	Antigua and Barbuda	parish
 AI	Anguilla	-
 AL	Albania	county
 AM	Armenia	city/region
-AO	Angola	rovince
+AO	Angola	province
 AQ	Antarctica	-
 AR	Argentina	city/province
 AS	American Samoa	-
