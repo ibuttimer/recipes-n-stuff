@@ -51,6 +51,7 @@ NO_CONTENT_MSG_CTX = 'no_content_msg'           # no content message
 NO_CONTENT_HELP_CTX = 'no_content_help'         # help text when no content
 READ_ONLY_CTX = 'read_only'                     # read-only mode
 SUBMIT_URL_CTX = 'submit_url'
+SUBMIT_BTN_TEXT_CTX = 'submit_btn_text'
 
 SORT_ORDER_CTX = 'sort_order'
 SELECTED_SORT_CTX = 'selected_sort'

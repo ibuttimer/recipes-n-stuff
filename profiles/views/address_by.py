@@ -19,102 +19,95 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from typing import Tuple
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views import View
 
 from recipesnstuff.constants import PROFILES_APP_NAME
 from utils import (
     Crud, READ_ONLY_CTX, SUBMIT_URL_CTX, app_template_path, reverse_q,
-    namespaced_url, TITLE_CTX, redirect_on_success_or_render
+    namespaced_url, TITLE_CTX, redirect_on_success_or_render,
+    GET, PATCH, POST, DELETE
 )
 
 from profiles.constants import (
-    ADDRESS_FORM_CTX, ADDRESS_NEW_ROUTE_NAME, ADDRESSES_ROUTE_NAME
+    ADDRESS_FORM_CTX, ADDRESS_ID_ROUTE_NAME, ADDRESSES_ROUTE_NAME
 )
 from profiles.forms import AddressForm
 from profiles.models import Address
-
+from .address_create import render_address_form, manage_default
 from .address_queries import addresses_query
 from .utils import address_permission_check
 
 
-TITLE_NEW = 'New Address'
+TITLE_UPDATE = 'Update Address'
 
 
-class AddressCreate(LoginRequiredMixin, View):
+class AddressDetail(LoginRequiredMixin, View):
     """
-    Class-based view for address creation
+    Class-based view for address get/update/delete
     """
 
-    def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+    def get(self, request: HttpRequest, pk: int,
+            *args, **kwargs) -> HttpResponse:
         """
         GET method for Address
         :param request: http request
+        :param pk: id of address
         :param args: additional arbitrary arguments
         :param kwargs: additional keyword arguments
         :return: http response
         """
-        address_permission_check(request, Crud.CREATE)
+        address_permission_check(request, Crud.UPDATE)
+
+        address, _ = self._get_object(pk)
+
+        own_address_check(request, address)
 
         template_path, context = render_address_form(
-            TITLE_NEW, **{
-                SUBMIT_URL_CTX: self.url(),
-                ADDRESS_FORM_CTX: AddressForm()
-            })
+            TITLE_UPDATE, Crud.UPDATE, **{
+            SUBMIT_URL_CTX: self.url(pk),
+            ADDRESS_FORM_CTX: AddressForm(instance=address)
+        })
         return render(request, template_path, context=context)
 
-    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+    def post(self, request: HttpRequest, pk: int,
+             *args, **kwargs) -> HttpResponse:
         """
-        POST method to update Opinion
+        POST method to update Address
         :param request: http request
+        :param pk: id of address
         :param args: additional arbitrary arguments
         :param kwargs: additional keyword arguments
         :return: http response
         """
-        address_permission_check(request, Crud.CREATE)
+        address_permission_check(request, Crud.UPDATE)
 
-        form = AddressForm(data=request.POST)
+        address, query_param = self._get_object(pk)
+
+        own_address_check(request, address)
+
+        form = AddressForm(data=request.POST, instance=address)
 
         if form.is_valid():
-            # save new object
-            form.instance.user = request.user
-
-            addr_ids = None     # ids of existing addresses
-
-            addr_query = addresses_query(request.user)
-            if not addr_query.exists():
-                # first address so set as default
-                form.instance.is_default = True
-            else:
-                if form.instance.is_default:
-                    # setting new address as default, so clear default
-                    # on existing
-                    addr_ids = addr_query.values_list(
-                            Address.id_field(), flat=True)
-
-            form.save()
+            # update object
+            manage_default(
+                request, form.instance, save_func=lambda: form.save())
             # django autocommits changes
             # https://docs.djangoproject.com/en/4.1/topics/db/transactions/#autocommit
             success = True
 
-            if addr_ids:
-                # clear default on existing addresses
-                Address.objects.filter(**{
-                    f'{Address.id_field()}__in': addr_ids
-                }).update(**{
-                    f'{Address.IS_DEFAULT_FIELD}': False
-                })
-
             template_path, context = None, None
         else:
             template_path, context = render_address_form(
-                TITLE_NEW, **{
-                    SUBMIT_URL_CTX: self.url(),
-                    ADDRESS_FORM_CTX: form
-                })
+                TITLE_UPDATE, Crud.UPDATE, **{
+                SUBMIT_URL_CTX: self.url(),
+                ADDRESS_FORM_CTX: form
+            })
             success = False
 
         return redirect_on_success_or_render(
@@ -122,32 +115,52 @@ class AddressCreate(LoginRequiredMixin, View):
             namespaced_url(PROFILES_APP_NAME, ADDRESSES_ROUTE_NAME),
             template_path=template_path, context=context)
 
-    def url(self) -> str:
+
+    def _get_object(self, pk: int) -> Tuple[Address, dict]:
         """
-        Get url for address creation
+        Get entity by id
+        :param pk: id of entity
+        :return: tuple of object and query param
+        """
+        query_param = {
+            f'{Address.id_field()}': pk
+        }
+        entity = get_object_or_404(Address, **query_param)
+        return entity, query_param
+
+    def url(self, pk: int) -> str:
+        """
+        Get url for address update/delete
+        :param pk: id of entity
         :return: url
         """
         return reverse_q(
-            namespaced_url(PROFILES_APP_NAME, ADDRESS_NEW_ROUTE_NAME)
+            namespaced_url(PROFILES_APP_NAME, ADDRESS_ID_ROUTE_NAME),
+            args=[pk]
         )
 
 
-def render_address_form(title: str, **kwargs) -> tuple[
-        str, dict[str, Address | list[str] | AddressForm | bool]]:
-    """
-    Render the address template
-    :param title: title
-    :param kwargs: context keyword values, see get_opinion_context()
-    :return: tuple of template path and context
-    """
-    context = {
-        TITLE_CTX: title,
-        READ_ONLY_CTX: kwargs.get(READ_ONLY_CTX, False),
-    }
+ACTIONS = {
+    GET: 'viewed',
+    PATCH: 'updated',
+    POST: 'updated',
+    DELETE: 'deleted'
+}
 
-    context_form = kwargs.get(ADDRESS_FORM_CTX, None)
-    if context_form:
-        context[ADDRESS_FORM_CTX] = context_form
-        context[SUBMIT_URL_CTX] = kwargs.get(SUBMIT_URL_CTX, None)
+def own_address_check(
+        request: HttpRequest, address: Address,
+        raise_ex: bool = True) -> bool:
+    """
+    Check request user is address owner
+    :param request: http request
+    :param address: address
+    :param raise_ex: raise exception if not own; default True
+    """
+    is_own = request.user.id == address.user.id
+    if not is_own and raise_ex:
+        action = ACTIONS[request.method.upper()]
+        raise PermissionDenied(
+            f"{address.model_name_caps()}es "
+            f"may only be {action} by their owners")
 
-    return app_template_path(PROFILES_APP_NAME, "address_form.html"), context
+    return is_own

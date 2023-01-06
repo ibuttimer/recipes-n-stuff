@@ -19,14 +19,17 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from .create import AddressCreate
+from .address_create import AddressCreate
 from .address_list import AddressList
+from .address_by import AddressDetail
 from .subdivision import subdivision_name
 
 __all__ = [
     'AddressCreate',
 
     'AddressList',
+
+    'AddressDetail',
 
     'subdivision_name',
 ]

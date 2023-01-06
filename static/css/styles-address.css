@@ -8,4 +8,5 @@
 
 .card--new-address {
     border-style: dashed;
+    cursor: pointer;
 }

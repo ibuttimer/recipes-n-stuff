@@ -7,8 +7,6 @@
 
 {% load i18n %}
 {% load static %}
-{% load tz %}
-{% load form_field %}
 
 {% block head_title %}{{ title }}{% endblock %}
 
@@ -21,7 +19,7 @@
 {% endblock extra_js_head %}
 
 {% block content %}
-<div class="row mt-2">
+<div class="row mt-2 mb-2">
     {% if page_heading %}
     <div class="col-12 text-center">
         <h3>{{ page_heading | safe }}</h3>
@@ -30,36 +28,38 @@
 </div>
 
 <article id="article-content" class="row d-flex justify-content-center">
-    <form {% if not read_only %} method="post" action="{{ submit_url }}" enctype="multipart/form-data" {% endif %}>
-        {% if not read_only %}
-            {% csrf_token %}
-        {% endif %}
+    <row class="col-lg-10 col-md-11 col-sm-12">
+        <form {% if not read_only %} method="post" action="{{ submit_url }}" enctype="multipart/form-data" {% endif %}>
+            {% if not read_only %}
+                {% csrf_token %}
+            {% endif %}
 
-        <div id="id--address-form-errors-container">
-            {% with form=address_form %}
-            {% include "snippet/form_errors.html" %}
-            {% endwith %}
-        </div>
+            <div id="id--address-form-errors-container">
+                {% with form=address_form %}
+                    {% include "snippet/form_errors.html" %}
+                {% endwith %}
+            </div>
 
-        <fieldset {% if read_only %} disabled {% endif %}>
-            {% for field in address_form %}
+            <fieldset {% if read_only %} disabled {% endif %}>
+                {% for field in address_form %}
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-start">
+                        <label for="id_{{ field.name }}" class="col-form-label">{{ field.label }}</label>
+                    </div>
+                    <div {% if field.name == "country" %} class="col-sm-8 d-flex align-items-center" {% else %} class="col-sm-8" {% endif %}>
+                        {{ field }}
+                    </div>
+                </div>
+                {% endfor %}
+            </fieldset>
+
             <div class="row mb-3">
-                <div class="col-sm-4 text-start">
-                    <label for="id_{{ field.name }}" class="col-form-label">{{ field.label }}</label>
-                </div>
-                <div {% if field.name == "country" %} class="col-sm-8 d-flex align-items-center" {% else %} class="col-sm-8" {% endif %}>
-                    {{ field }}
+                <div class="col-12 text-center">
+                    <button type="submit" class="btn btn-primary btn__text">{{ submit_btn_text }}</button>
                 </div>
             </div>
-            {% endfor %}
-        </fieldset>
-
-        <div class="row mb-3">
-            <div class="col-sm-2 offset-sm-1">
-                <button type="submit" class="btn btn-primary btn__text">{% trans "Save" %}</button>
-            </div>
-        </div>
-    </form>
+        </form>
+    </row>
 </article>
 
 {% endblock content %}

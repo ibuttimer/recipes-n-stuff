@@ -96,5 +96,5 @@ class AddressDto(BaseDto):
     def display_order(self):
         """ Field values in display order """
         fields = self.display_order_ex_country
-        fields.append(Address.COUNTRY_FIELD)
+        fields.append(getattr(self, Address.COUNTRY_FIELD))
         return fields

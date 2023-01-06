@@ -23,7 +23,7 @@
 from .content_list_mixin import (
     TITLE_CTX, PAGE_HEADING_CTX, LIST_HEADING_CTX, LIST_SUB_HEADING_CTX,
     REPEAT_SEARCH_TERM_CTX, NO_CONTENT_MSG_CTX, NO_CONTENT_HELP_CTX,
-    READ_ONLY_CTX, SUBMIT_URL_CTX,
+    READ_ONLY_CTX, SUBMIT_URL_CTX, SUBMIT_BTN_TEXT_CTX,
     ContentListMixin
 )
 from .enums import ChoiceArg, QueryArg, SortOrder, PerPage, QueryOption
@@ -67,6 +67,7 @@ __all__ = [
     'NO_CONTENT_HELP_CTX',
     'READ_ONLY_CTX',
     'SUBMIT_URL_CTX',
+    'SUBMIT_BTN_TEXT_CTX',
     'ContentListMixin',
 
     'ChoiceArg',
