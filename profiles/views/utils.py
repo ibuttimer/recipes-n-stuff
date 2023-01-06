@@ -19,30 +19,24 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from typing import Union, List
 
-from .constants import (
-    BASE_APP_NAME, USER_APP_NAME, PROFILES_APP_NAME,
-    ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL, USERS_URL,
-    IMAGE_FILE_TYPES, DEV_IMAGE_FILE_TYPES, MIN_PASSWORD_LEN,
-    AVATAR_FOLDER,
-    HOME_ROUTE_NAME
-)
-from .settings import DEVELOPMENT, TEST
+from django.http import HttpRequest
 
-__all__ = [
-    'BASE_APP_NAME',
-    'USER_APP_NAME',
-    'PROFILES_APP_NAME',
-    'ADMIN_URL',
-    'ACCOUNTS_URL',
-    'SUMMERNOTE_URL',
-    'USERS_URL',
-    'IMAGE_FILE_TYPES',
-    'DEV_IMAGE_FILE_TYPES',
-    'MIN_PASSWORD_LEN',
-    'AVATAR_FOLDER',
-    'HOME_ROUTE_NAME',
+from profiles.models import Address
+from recipesnstuff import PROFILES_APP_NAME
+from utils import Crud, permission_check
 
-    'DEVELOPMENT',
-    'TEST',
-]
+
+def address_permission_check(
+        request: HttpRequest,
+        perm_op: Union[Union[Crud, str], List[Union[Crud, str]]],
+        raise_ex: bool = True) -> bool:
+    """
+    Check request user has specified permission
+    :param request: http request
+    :param perm_op: Crud operation or permission name to check
+    :param raise_ex: raise exception; default True
+    """
+    return permission_check(request, Address, perm_op,
+                            app_label=PROFILES_APP_NAME, raise_ex=raise_ex)

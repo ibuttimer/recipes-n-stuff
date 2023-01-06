@@ -19,30 +19,31 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+#
+
+from django.urls import path
+
+from recipesnstuff import PROFILES_APP_NAME
 
 from .constants import (
-    BASE_APP_NAME, USER_APP_NAME, PROFILES_APP_NAME,
-    ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL, USERS_URL,
-    IMAGE_FILE_TYPES, DEV_IMAGE_FILE_TYPES, MIN_PASSWORD_LEN,
-    AVATAR_FOLDER,
-    HOME_ROUTE_NAME
+    ADDRESSES_URL, ADDRESSES_ROUTE_NAME,
+    ADDRESS_NEW_URL, ADDRESS_NEW_ROUTE_NAME,
+    COUNTRYINFO_CODE_URL, COUNTRYINFO_CODE_ROUTE_NAME
 )
-from .settings import DEVELOPMENT, TEST
+from .views import AddressCreate, AddressList, subdivision_name
 
-__all__ = [
-    'BASE_APP_NAME',
-    'USER_APP_NAME',
-    'PROFILES_APP_NAME',
-    'ADMIN_URL',
-    'ACCOUNTS_URL',
-    'SUMMERNOTE_URL',
-    'USERS_URL',
-    'IMAGE_FILE_TYPES',
-    'DEV_IMAGE_FILE_TYPES',
-    'MIN_PASSWORD_LEN',
-    'AVATAR_FOLDER',
-    'HOME_ROUTE_NAME',
+# https://docs.djangoproject.com/en/4.1/topics/http/urls/#url-namespaces-and-included-urlconfs
+app_name = PROFILES_APP_NAME
 
-    'DEVELOPMENT',
-    'TEST',
+urlpatterns = [
+    path(ADDRESSES_URL, AddressList.as_view(), name=ADDRESSES_ROUTE_NAME),
+    path(ADDRESS_NEW_URL, AddressCreate.as_view(),
+         name=ADDRESS_NEW_ROUTE_NAME),
+    # path(ADDRESS_ID_URL, views.UserDetailById.as_view(),
+    #      name=ADDRESS_ID_ROUTE_NAME),
+    # path(ADDRESSES_BY_USER_ID_URL, views.UserDetailByUsername.as_view(),
+    #      name=ADDRESSES_BY_USER_ID_ROUTE_NAME),
+
+    path(COUNTRYINFO_CODE_URL, subdivision_name,
+         name=COUNTRYINFO_CODE_ROUTE_NAME),
 ]

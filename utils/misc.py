@@ -100,9 +100,9 @@ def permission_check(
         app label for models defined outside of an application in
         INSTALLED_APPS, default none
     :param raise_ex: raise exception; default False
-    :return: True if has permission
-    :raises PermissionDenied if does not have permission and `raise_ex` is
-            True
+    :return: True if user has permission
+    :raises PermissionDenied if user does not have permission and `raise_ex`
+        is True
     """
     has_perm = False
     for chk_perm in ensure_list(perm_op):

@@ -27,6 +27,13 @@ from django.shortcuts import render, redirect
 from django.urls import ResolverMatch, resolve, Resolver404
 
 
+REDIRECT_CTX = "redirect"                   # redirect url
+REWRITES_PROP_CTX = 'rewrites'              # multiple html rewrites
+ELEMENT_SELECTOR_CTX = 'element_selector'   # element jquery selector
+HTML_CTX = 'html'                           # html for rewrite
+INNER_HTML_CTX = 'inner_html'               # inner html for rewrite
+
+
 def redirect_on_success_or_render(request: HttpRequest, success: bool,
                                   redirect_to: str = '/',
                                   *args,
@@ -76,3 +83,78 @@ def resolve_req(
             pass    # unable to resolve
 
     return match
+
+
+def redirect_payload(url: str, extra: Optional[dict] = None) -> dict:
+    """
+    Generate payload for a redirect response.
+    :param url: url to redirect to
+    :param extra: extra payload content; default None
+    :return: response
+    """
+    payload = {
+        REDIRECT_CTX: url
+    }
+    if isinstance(extra, dict):
+        payload.update(extra)
+
+    return payload
+
+
+def _html_payload(element: str, html: str, key: str,
+                  extra: Optional[dict] = None) -> dict:
+    """
+    Generate payload for a replace html response.
+    :param element: element jquery selector
+    :param html: replacement html
+    :param extra: extra payload content; default None
+    :return: response
+    """
+    payload = {
+        ELEMENT_SELECTOR_CTX: element,
+        key: html
+    }
+    if isinstance(extra, dict):
+        payload.update(extra)
+
+    return payload
+
+
+def replace_html_payload(element: str, html: str,
+                         extra: Optional[dict] = None) -> dict:
+    """
+    Generate payload for a replace html response.
+    :param element: element jquery selector
+    :param html: replacement html
+    :param extra: extra payload content; default None
+    :return: response
+    """
+    return _html_payload(element, html, HTML_CTX, extra=extra)
+
+
+def replace_inner_html_payload(element: str, html: str,
+                               extra: Optional[dict] = None) -> dict:
+    """
+    Generate payload for a replace inner html response.
+    :param element: element jquery selector
+    :param html: replacement html
+    :param extra: extra payload content; default None
+    :return: response
+    """
+    return _html_payload(element, html, INNER_HTML_CTX, extra=extra)
+
+
+def rewrite_payload(*args, extra: Optional[dict] = None) -> dict:
+    """
+    Generate payload for a rewrite html response.
+    :param args: replace html payloads
+    :param extra: extra payload content; default None
+    :return: response
+    """
+    payload = {
+        REWRITES_PROP_CTX: [*args]
+    }
+    if isinstance(extra, dict):
+        payload.update(extra)
+
+    return payload

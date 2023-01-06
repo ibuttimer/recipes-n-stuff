@@ -19,30 +19,34 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from http import HTTPStatus
 
-from .constants import (
-    BASE_APP_NAME, USER_APP_NAME, PROFILES_APP_NAME,
-    ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL, USERS_URL,
-    IMAGE_FILE_TYPES, DEV_IMAGE_FILE_TYPES, MIN_PASSWORD_LEN,
-    AVATAR_FOLDER,
-    HOME_ROUTE_NAME
-)
-from .settings import DEVELOPMENT, TEST
+from django.contrib.auth.decorators import login_required
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_http_methods
 
-__all__ = [
-    'BASE_APP_NAME',
-    'USER_APP_NAME',
-    'PROFILES_APP_NAME',
-    'ADMIN_URL',
-    'ACCOUNTS_URL',
-    'SUMMERNOTE_URL',
-    'USERS_URL',
-    'IMAGE_FILE_TYPES',
-    'DEV_IMAGE_FILE_TYPES',
-    'MIN_PASSWORD_LEN',
-    'AVATAR_FOLDER',
-    'HOME_ROUTE_NAME',
+from profiles.models import CountryInfo, Address
+from profiles.views.utils import address_permission_check
+from utils import GET, Crud, form_auto_id, replace_inner_html_payload
 
-    'DEVELOPMENT',
-    'TEST',
-]
+
+@login_required
+@require_http_methods([GET])
+def subdivision_name(request: HttpRequest, country: str) -> HttpResponse:
+    """
+    View function retrieve subdivision name.
+    :param request: http request
+    :param country: ISO 3166-1 alpha-2 country code
+    :return: response
+    """
+    address_permission_check(request, Crud.UPDATE)
+
+    country_info = get_object_or_404(CountryInfo, **{
+        f'{CountryInfo.COUNTRY_FIELD}': country
+    })
+
+    return JsonResponse(replace_inner_html_payload(
+        f"label[for='{form_auto_id(Address.STATE_FIELD)}']",
+        country_info.subdivision
+    ), status=HTTPStatus.OK)

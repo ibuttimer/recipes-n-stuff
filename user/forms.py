@@ -40,7 +40,7 @@ from recipesnstuff import (
     IMAGE_FILE_TYPES, DEVELOPMENT, DEV_IMAGE_FILE_TYPES, MIN_PASSWORD_LEN
 )
 from recipesnstuff.settings import SUMMERNOTE_CONFIG
-from utils import update_field_widgets, error_messages, ErrorMsgs
+from utils import error_messages, ErrorMsgs, FormMixin
 from .models import User
 from .constants import (
     FIRST_NAME, LAST_NAME, EMAIL, EMAIL_CONFIRM, USERNAME,
@@ -48,28 +48,7 @@ from .constants import (
 )
 
 
-class UserFormMixin:
-    """ Mixin to provide custom form utility functions """
-
-    def add_bootstrap(
-            self, fields: Union[List[str], Tuple[str], str],
-            exclude: Optional[List[str]] = None):
-        """
-        Add bootstrap classes
-        :param fields:  list of names of fields to update, or use
-                '__all__' to update all fields
-        :param exclude: list of names of fields to exclude
-        """
-        if exclude is None:
-            exclude = []
-        update_field_widgets(
-            self,
-            # exclude non-bootstrap fields
-            [field for field in fields if field not in exclude],
-            {'class': 'form-control'})
-
-
-class UserSignupForm(UserFormMixin, SignupForm):
+class UserSignupForm(FormMixin, SignupForm):
     """ Custom user sign up form """
 
     FIRST_NAME_FF = FIRST_NAME
@@ -123,7 +102,7 @@ class UserSignupForm(UserFormMixin, SignupForm):
         self.fields.move_to_end(UserSignupForm.FIRST_NAME_FF, last=False)
 
         # add the bootstrap class to the widget
-        self.add_bootstrap(UserSignupForm.Meta.fields)
+        self.add_form_control(UserSignupForm.Meta.fields)
 
     def signup(self, request: HttpRequest, user: User) -> None:
         """
@@ -134,7 +113,7 @@ class UserSignupForm(UserFormMixin, SignupForm):
         pass
 
 
-class UserLoginForm(UserFormMixin, LoginForm):
+class UserLoginForm(FormMixin, LoginForm):
     """ Custom user login form """
 
     LOGIN_FF = "login"
@@ -153,7 +132,7 @@ class UserLoginForm(UserFormMixin, LoginForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # add the bootstrap class to the widget
-        self.add_bootstrap(UserLoginForm.Meta.fields)
+        self.add_form_control(UserLoginForm.Meta.fields)
 
 
 class NoCurrentClearableFileInput(forms.ClearableFileInput):
@@ -170,7 +149,7 @@ class NoCurrentClearableFileInput(forms.ClearableFileInput):
         return context
 
 
-class UserForm(UserFormMixin, forms.ModelForm):
+class UserForm(FormMixin, forms.ModelForm):
     """
     Form to update a user.
     """
@@ -260,11 +239,11 @@ class UserForm(UserFormMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # add the bootstrap class to the widget
-        self.add_bootstrap(
+        self.add_form_control(
             UserForm.Meta.fields, exclude=UserForm.Meta.non_bootstrap_fields)
 
 
-class UserResetPasswordForm(UserFormMixin, ResetPasswordForm):
+class UserResetPasswordForm(FormMixin, ResetPasswordForm):
     """ Custom user password reset form """
 
     EMAIL_FF = EMAIL
@@ -278,10 +257,10 @@ class UserResetPasswordForm(UserFormMixin, ResetPasswordForm):
         super().__init__(*args, **kwargs)
 
         # add the bootstrap class to the widget
-        self.add_bootstrap(UserResetPasswordForm.Meta.fields)
+        self.add_form_control(UserResetPasswordForm.Meta.fields)
 
 
-class UserChangePasswordForm(UserFormMixin, ChangePasswordForm):
+class UserChangePasswordForm(FormMixin, ChangePasswordForm):
     """ Custom user password change form """
 
     OLD_PASSWORD_FF = OLD_PASSWORD
@@ -297,10 +276,10 @@ class UserChangePasswordForm(UserFormMixin, ChangePasswordForm):
         super().__init__(*args, **kwargs)
 
         # add the bootstrap class to the widget
-        self.add_bootstrap(UserChangePasswordForm.Meta.fields)
+        self.add_form_control(UserChangePasswordForm.Meta.fields)
 
 
-class UserAddEmailForm(UserFormMixin, AddEmailForm):
+class UserAddEmailForm(FormMixin, AddEmailForm):
     """ Custom user add email form """
 
     EMAIL_FF = EMAIL
@@ -314,10 +293,10 @@ class UserAddEmailForm(UserFormMixin, AddEmailForm):
         super().__init__(*args, **kwargs)
 
         # add the bootstrap class to the widget
-        self.add_bootstrap(UserAddEmailForm.Meta.fields)
+        self.add_form_control(UserAddEmailForm.Meta.fields)
 
 
-class UserSocialSignupForm(UserFormMixin, SocialSignupForm):
+class UserSocialSignupForm(FormMixin, SocialSignupForm):
     """ Custom user social sign up form """
 
     EMAIL_FF = EMAIL
@@ -335,4 +314,4 @@ class UserSocialSignupForm(UserFormMixin, SocialSignupForm):
         super().__init__(*args, **kwargs)
 
         # add the bootstrap class to the widget
-        self.add_bootstrap(UserSocialSignupForm.Meta.fields)
+        self.add_form_control(UserSocialSignupForm.Meta.fields)

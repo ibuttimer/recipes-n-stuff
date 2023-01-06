@@ -33,6 +33,7 @@ from recipesnstuff.settings import AVATAR_BLANK_URL
 from utils import resolve_req, add_navbar_attr
 from . import USER_ID_ROUTE_NAME
 from .constants import USER_USERNAME_ROUTE_NAME
+from .models import User
 from .queries import get_social_providers
 
 
@@ -66,7 +67,7 @@ def user_context(request: HttpRequest) -> dict:
             (USER_MENU_CTX, lambda name: name in [
                 USER_ID_ROUTE_NAME, USER_USERNAME_ROUTE_NAME,
                 CHANGE_PASSWORD_ROUTE_NAME, LOGOUT_ROUTE_NAME
-        ], 'dropdown-toggle'),
+            ], 'dropdown-toggle'),
             (SIGN_IN_MENU_CTX,
              lambda name: _sign_in_route_check(request, name), None),
             (REGISTER_MENU_CTX,
@@ -79,9 +80,10 @@ def user_context(request: HttpRequest) -> dict:
 
     context.update({
         IS_SUPER_CTX: request.user.is_superuser,
-        AVATAR_URL_CTX: AVATAR_BLANK_URL \
-            if request.user.AVATAR_BLANK in request.user.avatar.url \
-            else request.user.avatar.url
+        AVATAR_URL_CTX:
+            request.user.avatar.url if request.user.is_authenticated and
+            User.AVATAR_BLANK not in request.user.avatar.url else
+            AVATAR_BLANK_URL
 
         # IS_MODERATOR_CTX: is_moderator(request.user),
         # IS_AUTHOR_CTX: is_author(request.user),

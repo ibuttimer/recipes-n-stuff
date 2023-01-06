@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+<!-- address_list.html start -->
+{% load i18n %}
+{% load static %}
+{% load humanize %}
+{% load tz %}
+{% load form_field %}
+{% load dict_value %}
+
+{% block extra_js_head %}
+    {% include "snippet/jquery.html" %}
+{% endblock extra_js_head %}
+
+{% block head_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/styles-address.css' %}" rel="stylesheet" type="text/css">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="row mt-2">
+{% if page_heading %}
+    <div class="col-12 text-center">
+        <h3>{{ page_heading | safe }}</h3>
+    </div>
+{% endif %}
+</div>
+
+<div class="row flex-grow-1 overflow-auto d-flex justify-content-center">
+    {# sort order select #}
+    {% include "snippet/sort_order_select.html" %}
+
+    <article id="article-content" class="row d-flex justify-content-center">
+        {% include "profiles/address_list_content.html" %}
+    </article>
+</div>
+
+{% endblock content %}
+
+{% block extra_js_body %}
+    <script src="{% static 'js/page_content.js' %}"></script>
+{% endblock extra_js_body %}
+<!-- address_list.html end -->

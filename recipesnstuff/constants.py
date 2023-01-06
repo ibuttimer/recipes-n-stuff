@@ -30,12 +30,6 @@ BASE_APP_NAME = "base"
 USER_APP_NAME = "user"
 PROFILES_APP_NAME = "profiles"
 
-# Request methods
-GET = 'GET'
-PATCH = 'PATCH'
-POST = 'POST'
-DELETE = 'DELETE'
-
 # Base routes related
 HOME_URL = "/"
 HELP_URL = append_slash("help")
@@ -70,6 +64,9 @@ SUMMERNOTE_URL = append_slash("summernote")
 
 # User routes related
 USERS_URL = append_slash("users")
+
+# Profiles routes related
+PROFILES_URL = append_slash("profiles")
 
 # context related
 HOME_MENU_CTX = "home_menu"

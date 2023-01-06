@@ -24,6 +24,7 @@ from django.contrib import admin
 from django_summernote.admin import SummernoteModelAdmin
 from .models import User
 
+
 @admin.register(User)
 class UserAdmin(SummernoteModelAdmin):
     """ Class representing the User model in the admin interface """

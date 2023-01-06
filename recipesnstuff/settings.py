@@ -246,10 +246,11 @@ AUTH_USER_MODEL = f'{USER_APP_NAME}.User'
 SITE_ID = int(env('SITE_ID'))
 # 'allauth' provider specific settings
 SOCIALACCOUNT_PROVIDERS = {
+    # For each OAuth based provider, either add a ``SocialApp``
+    # (``socialaccount`` app) containing the required client
+    # credentials, or list them here:
     "google": {
-        # For each OAuth based provider, either add a ``SocialApp``
-        # (``socialaccount`` app) containing the required client
-        # credentials, or list them here:
+        # https://django-allauth.readthedocs.io/en/latest/providers.html#google
         "APP": {
         },
         # These are provider-specific settings that can only be
@@ -262,6 +263,7 @@ SOCIALACCOUNT_PROVIDERS = {
             "access_type": "online",
         }
     },
+    # https://django-allauth.readthedocs.io/en/latest/providers.html#twitter
     "twitter": {
         "APP": {
         },
@@ -290,7 +292,7 @@ AUTH_PASSWORD_VALIDATORS = [{
     },
 ]
 
-#https://docs.djangoproject.com/en/4.1/ref/settings/#login-url
+# https://docs.djangoproject.com/en/4.1/ref/settings/#login-url
 LOGIN_URL = USER_LOGIN_URL
 # https://docs.djangoproject.com/en/4.1/ref/settings/#login-redirect-url
 LOGIN_REDIRECT_URL = '/'

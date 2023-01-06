@@ -20,6 +20,7 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 #
+from allauth.socialaccount.models import SocialLogin
 from django.dispatch import receiver
 from allauth.account.signals import (
     user_logged_in, user_logged_out, user_signed_up
@@ -33,22 +34,32 @@ from allauth.socialaccount.signals import (
 #     process_login_opinions, process_register_new_user
 # )
 from .models import User
-# from .permissions import add_to_authors
+from .permissions import add_to_registered
+
+
+# Logging in with Google means logged in straight away as allauth can get
+# email from the requested scopes.
+# https://django-allauth.readthedocs.io/en/latest/providers.html#google
+# As Twitter doesn't include the scopes, the user must manually add an email.
+# https://django-allauth.readthedocs.io/en/latest/providers.html#twitter
 
 
 @receiver(user_logged_in)
 def user_logged_in_callback(sender, **kwargs):
+    """ Process signal sent when a user logs in """
     # by the time this signal is received the 'last_login' field in
     # AbstractBaseUser has already been updated to the current login
-
     user: User = kwargs.get('user', None)
     if user:
-        pass
+        # have to do add to group here as can't do socials in
+        # pre_social_login_callback
+        add_to_registered(user)
         # process_login_opinions(kwargs.get('request', None), user)
 
 
 @receiver(user_logged_out)
 def user_logged_out_callback(sender, **kwargs):
+    """ Process signal sent when a user logs out """
     user: User = kwargs.get('user', None)
     if user:
         # update previous login
@@ -58,28 +69,33 @@ def user_logged_out_callback(sender, **kwargs):
 
 @receiver(user_signed_up)
 def user_signed_up_callback(sender, **kwargs):
+    """ Process signal sent when a user registers """
     user: User = kwargs.get('user', None)
     if user:
-        pass
-        # add_to_authors(user)
+        add_to_registered(user)
         # process_register_new_user(kwargs.get('request', None), user)
 
 
 @receiver(pre_social_login)
 def pre_social_login_callback(sender, **kwargs):
-    pass
+    """ Process signal sent when a user begins a social login """
+    social: SocialLogin = kwargs.get('sociallogin', None)
+    if social:
+        # user in sociallogin has not yet been committed to database so can't
+        # add to groups here
+        pass
 
 
 @receiver(social_account_added)
 def social_account_added_callback(sender, **kwargs):
-    pass
+    """ Process signal sent when a user begins a social account is added """
 
 
 @receiver(social_account_updated)
 def social_account_updated_callback(sender, **kwargs):
-    pass
+    """ Process signal sent when a user begins a social account is updated """
 
 
 @receiver(social_account_removed)
 def social_account_removed_callback(sender, **kwargs):
-    pass
+    """ Process signal sent when a user begins a social account is removed """

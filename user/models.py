@@ -82,6 +82,3 @@ class User(ModelMixin, AbstractUser):
 
     def __str__(self):
         return self.username
-
-    def __repr__(self):
-        return f'{self.model_name()}[{self.id}]: {str(self)}'

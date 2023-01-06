@@ -46,7 +46,7 @@ if not settings.configured:
     settings.configure(app_settings, DEBUG=True)
 
 COUNTRYINFO_TABLE = 'profiles_countryinfo'
-COUNTRYINFO_COUNTRY = 'country' # country column
+COUNTRYINFO_COUNTRY = 'country'     # country column
 
 # subdivisions csv
 COUNTRYINFO_TSV = 'subdivisions.txt'
@@ -184,8 +184,9 @@ def insert_content(curs, fields: str, values: tuple, table: str,
 
     return content
 
+
 def get_content_id(curs, table: str, seek_field: str, seek_value: str,
-                      ignore_case: bool = True, exception: bool = False):
+                   ignore_case: bool = True, exception: bool = False):
     if ignore_case:
         seek_field = f"LOWER({seek_field})"
         seek_value = f"LOWER('{seek_value}')"
@@ -195,6 +196,7 @@ def get_content_id(curs, table: str, seek_field: str, seek_value: str,
     if not content and exception:
         raise ValueError(f"Content {seek_field}={seek_value} not found")
     return content[0] if content else None
+
 
 if __name__ == "__main__":
     process()

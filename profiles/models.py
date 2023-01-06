@@ -26,7 +26,14 @@ from django.utils.translation import gettext_lazy as _
 
 from django_countries.fields import CountryField
 
+from user.models import User
 from utils import ModelMixin
+
+from .constants import (
+    COUNTRY_FIELD, SUBDIVISION_FIELD, USER_FIELD, STREET_FIELD,
+    STREET2_FIELD, CITY_FIELD, STATE_FIELD, POSTCODE_FIELD,
+    IS_DEFAULT_FIELD
+)
 
 
 class CountryInfo(ModelMixin, models.Model):
@@ -34,8 +41,8 @@ class CountryInfo(ModelMixin, models.Model):
     Country information model
     """
     # field names
-    COUNTRY_FIELD = "country"
-    SUBDIVISION_FIELD = "subdivision"
+    COUNTRY_FIELD = COUNTRY_FIELD
+    SUBDIVISION_FIELD = SUBDIVISION_FIELD
 
     COUNTRYINFO_ATTRIB_SUBDIV_MAX_LEN: int = 50
 
@@ -43,7 +50,7 @@ class CountryInfo(ModelMixin, models.Model):
 
     subdivision = models.CharField(
         _('subdivision'), max_length=COUNTRYINFO_ATTRIB_SUBDIV_MAX_LEN,
-        blank=True, )
+        blank=True)
 
     @dataclass
     class Meta:
@@ -52,5 +59,60 @@ class CountryInfo(ModelMixin, models.Model):
     def __str__(self):
         return f'{self.country.name} {self.subdivision}'
 
-    def __repr__(self):
-        return f'{self.model_name()}[{self.id}]: {str(self)}'
+
+class Address(ModelMixin, models.Model):
+    """
+    Address model
+    """
+    # field names
+    USER_FIELD = USER_FIELD
+    COUNTRY_FIELD = COUNTRY_FIELD
+    USER_FIELD = USER_FIELD
+    STREET_FIELD = STREET_FIELD
+    STREET2_FIELD = STREET2_FIELD
+    CITY_FIELD = CITY_FIELD
+    STATE_FIELD = STATE_FIELD
+    POSTCODE_FIELD = POSTCODE_FIELD
+    IS_DEFAULT_FIELD = IS_DEFAULT_FIELD
+
+    ADDRESS_ATTRIB_STREET_MAX_LEN: int = 150
+    ADDRESS_ATTRIB_STREET2_MAX_LEN: int = 150
+    ADDRESS_ATTRIB_CITY_MAX_LEN: int = 50
+    ADDRESS_ATTRIB_STATE_MAX_LEN: int = 50
+    ADDRESS_ATTRIB_POSTCODE_MAX_LEN: int = 50
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    # country = models.ForeignKey(CountryInfo, on_delete=models.CASCADE)
+    country = models.ForeignKey(CountryInfo, on_delete=models.CASCADE)
+
+    country = CountryField(blank_label='(Select country)')
+
+    street = models.CharField(
+        _('street address'), max_length=ADDRESS_ATTRIB_STREET_MAX_LEN,
+        blank=False)
+    street2 = models.CharField(
+        _('street address line 2'), max_length=ADDRESS_ATTRIB_STREET2_MAX_LEN,
+        blank=True)
+    city = models.CharField(
+        _('city'), max_length=ADDRESS_ATTRIB_CITY_MAX_LEN,
+        blank=True)
+    state = models.CharField(
+        _('state'), max_length=ADDRESS_ATTRIB_STATE_MAX_LEN,
+        blank=True)
+    postcode = models.CharField(
+        _('postcode'), max_length=ADDRESS_ATTRIB_POSTCODE_MAX_LEN,
+        blank=True)
+    is_default = models.BooleanField(
+        _('default'), default=False, blank=False, help_text=_(
+            "Designates that this record represents the user's "
+            "default address."
+        ))
+
+    @dataclass
+    class Meta:
+        """ Model metadata """
+        ordering = [f'-{IS_DEFAULT_FIELD}']
+
+    def __str__(self):
+        return f'{self.street} {self.country} {str(self.user)}'

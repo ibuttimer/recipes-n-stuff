@@ -36,6 +36,9 @@ AVATAR = "avatar"
 GROUPS = 'groups'
 PREVIOUS_LOGIN = 'previous_login'
 
+# group related
+REGISTERED_GROUP = 'Registered'
+
 # User routes related
 USER_ID_URL = append_slash("<int:pk>")
 USER_USERNAME_URL = append_slash("<str:name>")

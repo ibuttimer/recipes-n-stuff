@@ -20,17 +20,15 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 #
-import random
-import string
-from typing import Union, List, Any, Callable
 
-import environ
-from enum import Enum
-
-from django.core.exceptions import PermissionDenied
-from django.db import models
-from django.http import HttpRequest
 from django.urls import reverse as django_reverse
+
+
+# Request methods
+GET = 'GET'
+PATCH = 'PATCH'
+POST = 'POST'
+DELETE = 'DELETE'
 
 
 def append_slash(url: str) -> str:
@@ -39,7 +37,7 @@ def append_slash(url: str) -> str:
     (See
     https://docs.djangoproject.com/en/4.1/misc/design-philosophies/#definitive-urls)
     :param url: url string
-    :return: url string
+    :return: updated url string
     """
     result: str = url
     if result[-1] != '/':
@@ -52,7 +50,7 @@ def namespaced_url(*args: str) -> str:
     Concatenate supplied arguments into a namespaced URL.
     See https://docs.djangoproject.com/en/4.1/topics/http/urls/#url-namespaces
     :param args: elements of url
-    :return: url string
+    :return: concatenated url string
     """
     return ":".join(args)
 
@@ -62,7 +60,7 @@ def app_template_path(app: str, *args: str) -> str:
     Concatenate supplied arguments into a relative path to a template file
     :param app: name of app
     :param args: elements of path
-    :return: path string
+    :return: concatenated path string
     """
     path = [app]
     path.extend(args)
@@ -73,7 +71,7 @@ def url_path(*args: str) -> str:
     """
     Concatenate arguments into a url path
     :param args: elements of path
-    :return: path string
+    :return: concatenated path string
     """
     return "".join([append_slash(segment) for segment in args if segment])
 

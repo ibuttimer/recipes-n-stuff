@@ -19,30 +19,15 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+#
 
-from .constants import (
-    BASE_APP_NAME, USER_APP_NAME, PROFILES_APP_NAME,
-    ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL, USERS_URL,
-    IMAGE_FILE_TYPES, DEV_IMAGE_FILE_TYPES, MIN_PASSWORD_LEN,
-    AVATAR_FOLDER,
-    HOME_ROUTE_NAME
-)
-from .settings import DEVELOPMENT, TEST
+from django import template
 
-__all__ = [
-    'BASE_APP_NAME',
-    'USER_APP_NAME',
-    'PROFILES_APP_NAME',
-    'ADMIN_URL',
-    'ACCOUNTS_URL',
-    'SUMMERNOTE_URL',
-    'USERS_URL',
-    'IMAGE_FILE_TYPES',
-    'DEV_IMAGE_FILE_TYPES',
-    'MIN_PASSWORD_LEN',
-    'AVATAR_FOLDER',
-    'HOME_ROUTE_NAME',
+register = template.Library()
 
-    'DEVELOPMENT',
-    'TEST',
-]
+# https://docs.djangoproject.com/en/4.1/howto/custom-template-tags/#simple-tags
+
+
+@register.simple_tag
+def attr_append(base: str, append: str, check: bool = True):
+    return f'{base[:-1]} {append}{base[-1]}' if check else base

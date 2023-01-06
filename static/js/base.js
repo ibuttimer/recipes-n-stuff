@@ -29,5 +29,40 @@ function enableTooltips() {
     const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 }
 
+const REDIRECT_PROP = 'redirect';
+const REWRITES_PROP = 'rewrites';
+const ELEMENT_SELECTOR_PROP = 'element_selector';
+const HTML_PROP = 'html';
+const INNER_HTML_PROP = 'inner_html';
+
+const replaceHtml = (data) => $(data[ELEMENT_SELECTOR_PROP]).replaceWith(data[HTML_PROP]);
+const replaceInnerHtml = (data) => $(data[ELEMENT_SELECTOR_PROP]).html(data[INNER_HTML_PROP]);
+
+/**
+ * Handle a redirect/rewrite response
+ * :param data: json data
+ */
+function redirect_rewrite_response_handler(data) {
+    if (data !== undefined) {
+        if (data.hasOwnProperty(REDIRECT_PROP)) {
+            // redirect to new url
+            document.location.href = data[REDIRECT_PROP];
+        } else if (data.hasOwnProperty(ELEMENT_SELECTOR_PROP)) {
+            if (data.hasOwnProperty(HTML_PROP)) {
+                // replace single element's html
+                replaceHtml(data);
+            } else if (data.hasOwnProperty(INNER_HTML_PROP)) {
+                // replace single element's inner html
+                replaceInnerHtml(data);
+            }
+        } else if (data.hasOwnProperty(REWRITES_PROP)) {
+            // replace multiple element's html
+            for (let element of data[REWRITES_PROP]) {
+                replaceHtml(element);
+            }
+        }
+    }
+}
+
 enableTooltips();
 

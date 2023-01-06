@@ -17,9 +17,10 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
-from recipesnstuff import (
-    settings, BASE_APP_NAME, ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL,
-    USERS_URL, USER_APP_NAME,
+from recipesnstuff import settings
+from .constants import (
+    BASE_APP_NAME, ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL,
+    USERS_URL, USER_APP_NAME, PROFILES_APP_NAME, PROFILES_URL
 )
 
 urlpatterns = [
@@ -30,6 +31,8 @@ urlpatterns = [
     path(ACCOUNTS_URL, include(f'{USER_APP_NAME}.urls_auth')),
     path(ACCOUNTS_URL, include('allauth.urls')),
     path(USERS_URL, include(f'{USER_APP_NAME}.urls')),
+
+    path(PROFILES_URL, include(f'{PROFILES_APP_NAME}.urls')),
 
     path('', include(f'{BASE_APP_NAME}.root_urls')),
 ]

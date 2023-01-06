@@ -220,6 +220,7 @@ class UserDetailByUsername(UserDetail):
         """
         return super().post(request, name, *args, **kwargs)
 
+
 class UserPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
     """ Custom password change view """
 
