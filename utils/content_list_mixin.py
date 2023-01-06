@@ -63,6 +63,7 @@ DISABLED_CTX = 'disabled'
 HREF_CTX = 'href'
 LABEL_CTX = 'label'
 HIDDEN_CTX = 'hidden'
+STATUS_CTX = 'status'
 
 # from django.views.generic.list.MultipleObjectMixin
 PAGINATOR_CTX = 'paginator'

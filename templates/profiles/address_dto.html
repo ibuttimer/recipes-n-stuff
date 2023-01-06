@@ -40,7 +40,7 @@
                 </div>
                 <div class="row mb-0">
                     <div class="col-sm-9">
-                        <a class="" href="{% url 'profiles:address_id' address_dto.id %}">{% trans "Edit" %}</a>&ensp;&ensp;&VerticalLine;&ensp;&ensp;<a class="" href="{% url 'home' %}">{% trans "Delete" %}</a>{% if not address_dto.is_default %}&ensp;&ensp;&VerticalLine;&ensp;&ensp;<a class="" href="{% url 'home' %}">{% trans "Make Default" %}</a>{% endif %}
+                        <a class="a--addr-edit" href="{% url 'profiles:address_id' address_dto.id %}">{% trans "Edit" %}</a>&ensp;&ensp;&VerticalLine;&ensp;&ensp;<a class="a--addr-del" href="{% url 'profiles:address_id' address_dto.id %}">{% trans "Delete" %}</a>{% if not address_dto.is_default %}&ensp;&ensp;&VerticalLine;&ensp;&ensp;<a class="a--addr-dflt" href="{% url 'home' %}">{% trans "Make Default" %}</a>{% endif %}
                     </div>
                     {% if address_dto.is_default %}
                         <div class="col-sm-3 text-end">

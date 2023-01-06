@@ -19,30 +19,30 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from http import HTTPStatus
 from typing import Tuple
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404
+from django.template.loader import render_to_string
 from django.views import View
-
-from recipesnstuff.constants import PROFILES_APP_NAME
-from utils import (
-    Crud, READ_ONLY_CTX, SUBMIT_URL_CTX, app_template_path, reverse_q,
-    namespaced_url, TITLE_CTX, redirect_on_success_or_render,
-    GET, PATCH, POST, DELETE
-)
 
 from profiles.constants import (
     ADDRESS_FORM_CTX, ADDRESS_ID_ROUTE_NAME, ADDRESSES_ROUTE_NAME
 )
 from profiles.forms import AddressForm
 from profiles.models import Address
+from recipesnstuff.constants import PROFILES_APP_NAME
+from utils import (
+    Crud, SUBMIT_URL_CTX, app_template_path, reverse_q,
+    namespaced_url, redirect_on_success_or_render,
+    GET, PATCH, POST, DELETE, STATUS_CTX
+)
+from utils.views import replace_inner_html_payload
 from .address_create import render_address_form, manage_default
-from .address_queries import addresses_query
 from .utils import address_permission_check
-
 
 TITLE_UPDATE = 'Update Address'
 
@@ -115,6 +115,36 @@ class AddressDetail(LoginRequiredMixin, View):
             namespaced_url(PROFILES_APP_NAME, ADDRESSES_ROUTE_NAME),
             template_path=template_path, context=context)
 
+    def delete(self, request: HttpRequest, pk: int,
+               *args, **kwargs) -> HttpResponse:
+        """
+        DELETE method to delete Address
+        :param request: http request
+        :param pk: id of address
+        :param args: additional arbitrary arguments
+        :param kwargs: additional keyword arguments
+        :return: http response
+        """
+        address_permission_check(request, Crud.UPDATE)
+
+        address, query_param = self._get_object(pk)
+
+        own_address_check(request, address)
+
+        count, _ = address.delete()
+
+        # TODO prevent delete of default?
+
+        return JsonResponse(
+            replace_inner_html_payload(
+                "#id--address-deleted-modal-body",
+                render_to_string(
+                    app_template_path(
+                        PROFILES_APP_NAME, "snippet", "address_delete.html"),
+                    context={STATUS_CTX: count > 0},
+                    request=request)
+            ),
+            status=HTTPStatus.OK if count > 0 else HTTPStatus.BAD_REQUEST)
 
     def _get_object(self, pk: int) -> Tuple[Address, dict]:
         """

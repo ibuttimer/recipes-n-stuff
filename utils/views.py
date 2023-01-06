@@ -101,17 +101,17 @@ def redirect_payload(url: str, extra: Optional[dict] = None) -> dict:
     return payload
 
 
-def _html_payload(element: str, html: str, key: str,
+def _html_payload(selector: str, html: str, key: str,
                   extra: Optional[dict] = None) -> dict:
     """
     Generate payload for a replace html response.
-    :param element: element jquery selector
+    :param selector: element jquery selector
     :param html: replacement html
     :param extra: extra payload content; default None
     :return: response
     """
     payload = {
-        ELEMENT_SELECTOR_CTX: element,
+        ELEMENT_SELECTOR_CTX: selector,
         key: html
     }
     if isinstance(extra, dict):
@@ -120,28 +120,28 @@ def _html_payload(element: str, html: str, key: str,
     return payload
 
 
-def replace_html_payload(element: str, html: str,
+def replace_html_payload(selector: str, html: str,
                          extra: Optional[dict] = None) -> dict:
     """
     Generate payload for a replace html response.
-    :param element: element jquery selector
+    :param selector: element jquery selector
     :param html: replacement html
     :param extra: extra payload content; default None
     :return: response
     """
-    return _html_payload(element, html, HTML_CTX, extra=extra)
+    return _html_payload(selector, html, HTML_CTX, extra=extra)
 
 
-def replace_inner_html_payload(element: str, html: str,
+def replace_inner_html_payload(selector: str, html: str,
                                extra: Optional[dict] = None) -> dict:
     """
     Generate payload for a replace inner html response.
-    :param element: element jquery selector
+    :param selector: element jquery selector
     :param html: replacement html
     :param extra: extra payload content; default None
     :return: response
     """
-    return _html_payload(element, html, INNER_HTML_CTX, extra=extra)
+    return _html_payload(selector, html, INNER_HTML_CTX, extra=extra)
 
 
 def rewrite_payload(*args, extra: Optional[dict] = None) -> dict:

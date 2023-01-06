@@ -44,10 +44,7 @@ const replaceInnerHtml = (data) => $(data[ELEMENT_SELECTOR_PROP]).html(data[INNE
  */
 function redirect_rewrite_response_handler(data) {
     if (data !== undefined) {
-        if (data.hasOwnProperty(REDIRECT_PROP)) {
-            // redirect to new url
-            document.location.href = data[REDIRECT_PROP];
-        } else if (data.hasOwnProperty(ELEMENT_SELECTOR_PROP)) {
+        if (data.hasOwnProperty(ELEMENT_SELECTOR_PROP)) {
             if (data.hasOwnProperty(HTML_PROP)) {
                 // replace single element's html
                 replaceHtml(data);
@@ -55,11 +52,16 @@ function redirect_rewrite_response_handler(data) {
                 // replace single element's inner html
                 replaceInnerHtml(data);
             }
-        } else if (data.hasOwnProperty(REWRITES_PROP)) {
+        }
+        if (data.hasOwnProperty(REWRITES_PROP)) {
             // replace multiple element's html
             for (let element of data[REWRITES_PROP]) {
                 replaceHtml(element);
             }
+        }
+        if (data.hasOwnProperty(REDIRECT_PROP)) {
+            // redirect to new url
+            document.location.href = data[REDIRECT_PROP];
         }
     }
 }
