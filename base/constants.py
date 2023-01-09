@@ -19,18 +19,46 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from .address_create import AddressCreate
-from .address_list import AddressList
-from .address_by import AddressDetail, address_default
-from .subdivision import subdivision_name
+from enum import Enum
+from collections import namedtuple
+from pathlib import Path
 
-__all__ = [
-    'AddressCreate',
+# name of this app
+THIS_APP = Path(__file__).resolve().parent.name
 
-    'AddressList',
 
-    'AddressDetail',
-    'address_default',
+# templates/base/snippet/info_title.html
+TITLE_CTX = 'title'
+TITLE_CLASS_CTX = 'title_class'
+MODAL_LEVEL_CTX = 'modal_level'
 
-    'subdivision_name',
+InfoModalCfg = namedtuple(
+    'InfoModalCfg',
+    ['name', 'title_class', 'title_text'],
+    defaults=['', '', '']
+)
+"""
+Info modal configuration
+name: info modal name
+title_class: class to apply to title
+title_text: title text
+"""
+
+
+class InfoModalLevel(Enum):
+    """ Enum representing info modal levels """
+    NONE = (0, InfoModalCfg(name='none'))
+    DANGER = (1, InfoModalCfg(
+        name='danger', title_class='text-danger', title_text='Danger'))
+    WARN = (2, InfoModalCfg(
+        name='warn', title_class='text-warning', title_text='Warning'))
+    INFO = (3, InfoModalCfg(name='info', title_class='text-info'))
+    QUESTION = (4, InfoModalCfg(name='question'))
+
+
+exports = [
+    'TITLE_CTX',
+    'TITLE_CLASS_CTX',
+    'MODAL_LEVEL_CTX',
+    'InfoModalLevel',
 ]

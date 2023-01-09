@@ -61,11 +61,8 @@ class AddressCreate(LoginRequiredMixin, View):
         """
         address_permission_check(request, Crud.CREATE)
 
-        template_path, context = render_address_form(
-            TITLE_NEW, Crud.CREATE, **{
-            SUBMIT_URL_CTX: self.url(),
-            ADDRESS_FORM_CTX: AddressForm()
-        })
+        template_path, context = self.render_info(AddressForm())
+
         return render(request, template_path, context=context)
 
     def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
@@ -92,17 +89,26 @@ class AddressCreate(LoginRequiredMixin, View):
 
             template_path, context = None, None
         else:
-            template_path, context = render_address_form(
-                TITLE_NEW, Crud.CREATE, **{
-                SUBMIT_URL_CTX: self.url(),
-                ADDRESS_FORM_CTX: form
-            })
+            template_path, context = self.render_info(form)
             success = False
 
         return redirect_on_success_or_render(
             request, success,
-            namespaced_url(PROFILES_APP_NAME, ADDRESSES_ROUTE_NAME),
+            redirect_to=namespaced_url(
+                PROFILES_APP_NAME, ADDRESSES_ROUTE_NAME),
             template_path=template_path, context=context)
+
+    def render_info(self, form: AddressForm):
+        """
+        Get info to render an address form
+        :param form: form to use
+        :return: tuple of template path and context
+        """
+        return for_address_form_render(
+            TITLE_NEW, Crud.CREATE, **{
+                SUBMIT_URL_CTX: self.url(),
+                ADDRESS_FORM_CTX: form
+            })
 
     def url(self) -> str:
         """
@@ -122,10 +128,11 @@ SUBMIT_BTN_TEXT = {
 }
 
 
-def render_address_form(title: str, action: Crud, **kwargs) -> tuple[
-        str, dict[str, Address | list[str] | AddressForm | bool]]:
+def for_address_form_render(
+        title: str, action: Crud, **kwargs: object
+) -> tuple[str, dict[str, Address | list[str] | AddressForm | bool]]:
     """
-    Render the address template
+    Get the template and context to Render the address template
     :param title: title
     :param action: form action
     :param kwargs: context keyword values, see get_opinion_context()

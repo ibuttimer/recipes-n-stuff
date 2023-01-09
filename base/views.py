@@ -19,8 +19,29 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from dataclasses import dataclass
+from string import capwords
+from typing import TypeVar, Optional, Union
+
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render
+from django.template.loader import render_to_string
+
+from utils import app_template_path
+from utils.views import REDIRECT_CTX
+
+from .constants import (
+    MODAL_LEVEL_CTX, TITLE_CLASS_CTX, InfoModalLevel, THIS_APP
+)
+
+TITLE_CTX = 'title'
+MESSAGE_CTX = 'message'
+IDENTIFIER_CTX = 'identifier'
+SHOW_INFO_CTX = 'show_info'
+
+# workaround for self type hints from https://peps.python.org/pep-0673/
+TypeInfoModalTemplate = \
+    TypeVar("TypeInfoModalTemplate", bound="InfoModalTemplate")
 
 
 def get_landing(request: HttpRequest) -> HttpResponse:
@@ -30,3 +51,126 @@ def get_landing(request: HttpRequest) -> HttpResponse:
     :return: response
     """
     return render(request, "base.html")
+
+
+@dataclass
+class InfoModalTemplate:
+    """ Info modal template data """
+    template: str
+    context: Optional[dict] = None
+    request: Optional[HttpRequest] = None
+
+    @staticmethod
+    def render(info: Union[str, TypeInfoModalTemplate]):
+        """
+        Render template
+        :param info: template info or string
+        :return: rendered template or string
+        """
+        return render_to_string(
+            info.template, context=info.context, request=info.request
+        ) if isinstance(info, InfoModalTemplate) else info
+
+
+def info_modal_payload(title: Union[str, InfoModalTemplate],
+                       message: Union[str, InfoModalTemplate],
+                       identifier: str, redirect_url: str = None) -> dict:
+    """
+    Generate payload for an info modal response.
+    :param title: modal title
+    :param message: modal message
+    :param identifier: unique identifier
+    :param redirect_url: url to redirect to when modal closes; default None
+    :return: response
+    """
+    if not identifier:
+        identifier = ''
+    return {
+        SHOW_INFO_CTX: {
+            TITLE_CTX: InfoModalTemplate.render(title),
+            MESSAGE_CTX: InfoModalTemplate.render(message),
+            REDIRECT_CTX: redirect_url or '',
+            IDENTIFIER_CTX: identifier
+        }
+    }
+
+
+def render_info_modal_title(level: InfoModalLevel) -> dict:
+    """
+    Generate an info modal title html.
+    :param level: modal title level
+    :return: html
+    """
+    if isinstance(level, InfoModalLevel):
+        if level == InfoModalLevel.NONE:
+            title = ''
+        else:
+            modal_cfg = level.value[1]
+            title = InfoModalTemplate(
+                app_template_path(
+                    THIS_APP, "snippet", "info_title.html"),
+                context={
+                    TITLE_CTX: capwords(modal_cfg.title_text),
+                    MODAL_LEVEL_CTX: modal_cfg.name,
+                    TITLE_CLASS_CTX: modal_cfg.title_class,
+                }
+            )
+    return InfoModalTemplate.render(title)
+
+
+def level_info_modal_context(level: InfoModalLevel,
+                             message: Union[str, InfoModalTemplate],
+                             identifier: str,
+                             redirect_url: str = None) -> dict:
+    """
+    Generate data for an info modal response.
+    :param level: modal title level
+    :param message: modal message
+    :param identifier: unique identifier
+    :param redirect_url: url to redirect to when modal closes; default None
+    :return: response dict
+    """
+    return {
+        TITLE_CTX: render_info_modal_title(level),
+        MESSAGE_CTX: InfoModalTemplate.render(message),
+        REDIRECT_CTX: redirect_url or '',
+        IDENTIFIER_CTX: identifier
+    }
+
+
+def level_info_modal_payload(level: InfoModalLevel,
+                             message: Union[str, InfoModalTemplate],
+                             identifier: str,
+                             redirect_url: str = None) -> dict:
+    """
+    Generate an info modal payload.
+    :param level: modal title level
+    :param message: modal message
+    :param identifier: unique identifier
+    :param redirect_url: url to redirect to when modal closes; default None
+    :return: response dict
+    """
+    return {
+        SHOW_INFO_CTX: level_info_modal_context(
+            level, message, identifier, redirect_url=redirect_url)
+    }
+
+
+def render_level_info_modal(level: InfoModalLevel,
+                            message: Union[str, InfoModalTemplate],
+                            identifier: str,
+                            redirect_url: str = None) -> dict:
+    """
+    Generate an info modal html.
+    :param level: modal title level
+    :param message: modal message
+    :param identifier: unique identifier
+    :param redirect_url: url to redirect to when modal closes; default None
+    :return: response
+    """
+    return render_to_string(
+        app_template_path(
+            THIS_APP, "snippet", "info_modal.html"),
+        context=level_info_modal_context(
+            level, message, identifier, redirect_url=redirect_url)
+    )

@@ -25,19 +25,32 @@
 
 // Add address card is named 'id--address-new'
 const ADD_ADDRESS_SELECTOR = "#id--address-new";
-
-/* Click handler for new address */
-function newAddressClickHandler(event) {
-    document.location.href = ADD_ADDRESS_URL;
-}
-
-/* Add handlers to request more comments */
-function addNewAddressHandler() {
-    /* Click handler to request more comments */
-    $(ADD_ADDRESS_SELECTOR).on('click', newAddressClickHandler);
-}
+const addressDefaultLinkSelector = "a[class*='a--addr-dflt']";
 
 $(document).ready(function () {
     /* Handler for new address */
-    addNewAddressHandler();
+    $(ADD_ADDRESS_SELECTOR).on('click', function (event) {
+        document.location.href = ADD_ADDRESS_URL;
+        event.preventDefault();
+        event.stopPropagation();
+    });
+
+    $(addressDefaultLinkSelector).on('click', function (event) {
+        /* Add delete link to delete confirm modal and display it */
+
+        // request make default
+        $.ajax({
+            method: 'patch',
+            // address_dto.html: href of make default 'a' tag
+            url: event.currentTarget.attributes['href'].textContent,
+            headers: {
+                'X-CSRFTOKEN': csrfToken()
+            },
+        }).done(function (data) {
+            redirectRewriteInfoResponseHandler(data)
+        });
+
+        event.preventDefault();
+        event.stopPropagation();
+    });
 });

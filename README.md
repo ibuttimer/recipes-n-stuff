@@ -372,6 +372,7 @@ The application structure is as follows:
 ├─ base                 - base Django application
 ├─ django_tests         - Django Test Tools test scripts
 ├─ jest_tests           - Jest javascript tests
+├─ profiles             - shopping profiles Django application
 ├─ user                 - user Django application
 ├─ static               - static files
 │  ├─ css               - custom CSS

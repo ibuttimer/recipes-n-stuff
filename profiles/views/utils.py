@@ -22,10 +22,15 @@
 from typing import Union, List
 
 from django.http import HttpRequest
+from django.template.loader import render_to_string
 
+from base import (
+    render_level_info_modal, InfoModalLevel, InfoModalTemplate, IDENTIFIER_CTX
+)
+from profiles.constants import COUNT_CTX
 from profiles.models import Address
-from recipesnstuff import PROFILES_APP_NAME
-from utils import Crud, permission_check
+from recipesnstuff import PROFILES_APP_NAME, BASE_APP_NAME
+from utils import Crud, permission_check, app_template_path
 
 
 def address_permission_check(
@@ -40,3 +45,34 @@ def address_permission_check(
     """
     return permission_check(request, Address, perm_op,
                             app_label=PROFILES_APP_NAME, raise_ex=raise_ex)
+
+
+def address_dflt_unmod_snippets(count: int) -> List[str]:
+    """
+    Generate html snippets to display address default unmodifiable info modal
+    :param count: number of addresses
+    :return: list of html snippets
+    """
+    identifier = 'dflt-addr-unmod'
+    return [
+        render_level_info_modal(
+            InfoModalLevel.WARN,
+            InfoModalTemplate(
+                app_template_path(
+                    PROFILES_APP_NAME, "snippet",
+                    "address_default_unmodifiable.html"),
+                context={
+                    COUNT_CTX: count,
+                }
+            ),
+            identifier
+        ),
+        render_to_string(
+            app_template_path(
+                BASE_APP_NAME, "snippet",
+                "show_info_modal_on_ready.html"),
+            context={
+                IDENTIFIER_CTX: identifier
+            }
+        )
+    ]

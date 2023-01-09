@@ -1,0 +1,18 @@
+<!-- default_address_unmodifiable.html start -->
+{# --- template variable defines for includes --- #}
+{# default address unmodifiable template expects: 'count' as address count #}
+{% load i18n %}
+
+<div class="row mt-1 mb-1">
+    <div class="text-center">
+        <p>
+            Default address status may not be modified.
+            {% if count > 1 %}
+                Please select another default address.
+            {% else %}
+                Please add another default address.
+            {% endif %}
+        </p>
+    </div>
+</div>
+<!-- default_address_unmodifiable.html end -->

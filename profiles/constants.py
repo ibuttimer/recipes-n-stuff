@@ -37,14 +37,14 @@ PK_PARAM_NAME = "pk"
 ADDRESSES_URL = "addresses"
 ADDRESS_NEW_URL = url_path(ADDRESSES_URL, "new")
 ADDRESS_ID_URL = url_path(ADDRESSES_URL, f"<int:{PK_PARAM_NAME}>")
-ADDRESSES_BY_USER_ID_URL = \
-    url_path(ADDRESSES_URL, "user", f"<int:{PK_PARAM_NAME}>")
+ADDRESSES_ID_DEFAULT_URL = \
+    url_path(ADDRESSES_URL, f"<int:{PK_PARAM_NAME}>", "default")
 
 # convention is addresses route names begin with 'address'
 ADDRESSES_ROUTE_NAME = "addresses"
 ADDRESS_NEW_ROUTE_NAME = "address_new"
 ADDRESS_ID_ROUTE_NAME = "address_id"
-ADDRESSES_BY_USER_ID_ROUTE_NAME = "address_user_id"
+ADDRESSES_ID_DEFAULT_ROUTE_NAME = "address_id_default"
 
 # CountryInfo routes related
 COUNTRYINFO_URL = "countryinfo"
@@ -58,3 +58,4 @@ COUNTRYINFO_CODE_ROUTE_NAME = "countryinfo_country"
 ADDRESS_FORM_CTX = 'address_form'
 ADDRESS_LIST_CTX = 'address_list'
 NEW_ENTRY_CTX = 'new_entry'
+COUNT_CTX = 'count'

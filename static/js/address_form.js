@@ -23,28 +23,23 @@
  *
  */
 
-// Add address card is named 'id--address-new'
+// Add country selector is named 'id_country'
 const COUNTRY_SELECT_SELECTOR = "#id_country";
 
-/* Click handler for new address */
+/* Click handler for new country selected */
 function countrySelectedClickHandler(event) {
     if (event.target.value.length > 0) {
+        // request updated flag
         $.ajax({
             method: 'get',
             url: SUBDIVISION_URL.replace(COUNTRY_CODE, event.target.value),
         }).done(function (data) {
-            redirect_rewrite_response_handler(data)
+            redirectRewriteInfoResponseHandler(data)
         });
     }
 }
 
-/* Add handlers to request more comments */
-function addCountrySelectedHandler() {
-    /* Click handler to request more comments */
-    $(COUNTRY_SELECT_SELECTOR).on('change', countrySelectedClickHandler);
-}
-
 $(document).ready(function () {
-    /* Handler for new address */
-    addCountrySelectedHandler();
+    /* Handler for country change */
+    $(COUNTRY_SELECT_SELECTOR).on('change', countrySelectedClickHandler);
 });

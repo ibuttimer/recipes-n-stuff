@@ -37,6 +37,9 @@ from utils import (
     DATE_QUERY_DAY_GROUP, ChoiceArg, USER_QUERY
 )
 
+# context-related
+DEFAULT_ADDRESS_QUERY: str = 'dflt-addr'    # display default address modal
+
 # query terms which only appear in a search
 SEARCH_ONLY_QUERIES = [SEARCH_QUERY]
 SEARCH_ONLY_QUERIES.extend(DATE_QUERIES)
@@ -75,8 +78,9 @@ ALWAYS_FILTERS = [
 FILTERS_ORDER.extend(
     [q for q in FIELD_LOOKUPS if q not in FILTERS_ORDER]
 )
-# complex queries which require more than a simple lookup
+# complex queries which require more than a simple lookup or context-related
 NON_LOOKUP_ARGS = [
+    DEFAULT_ADDRESS_QUERY,
     # FILTER_QUERY, REVIEW_QUERY
 ]
 

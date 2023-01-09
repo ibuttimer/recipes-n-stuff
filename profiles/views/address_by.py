@@ -22,15 +22,20 @@
 from http import HTTPStatus
 from typing import Tuple
 
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.template.loader import render_to_string
 from django.views import View
+from django.views.decorators.http import require_http_methods
 
+from base import (
+    InfoModalLevel, InfoModalTemplate, level_info_modal_payload,
+)
 from profiles.constants import (
-    ADDRESS_FORM_CTX, ADDRESS_ID_ROUTE_NAME, ADDRESSES_ROUTE_NAME
+    ADDRESS_FORM_CTX, ADDRESS_ID_ROUTE_NAME, ADDRESSES_ROUTE_NAME, COUNT_CTX
 )
 from profiles.forms import AddressForm
 from profiles.models import Address
@@ -38,10 +43,11 @@ from recipesnstuff.constants import PROFILES_APP_NAME
 from utils import (
     Crud, SUBMIT_URL_CTX, app_template_path, reverse_q,
     namespaced_url, redirect_on_success_or_render,
-    GET, PATCH, POST, DELETE, STATUS_CTX
+    replace_inner_html_payload, redirect_payload,
+    GET, PATCH, POST, DELETE, STATUS_CTX, USER_QUERY
 )
-from utils.views import replace_inner_html_payload
-from .address_create import render_address_form, manage_default
+from .address_create import for_address_form_render, manage_default
+from .address_queries import addresses_query, DEFAULT_ADDRESS_QUERY
 from .utils import address_permission_check
 
 TITLE_UPDATE = 'Update Address'
@@ -64,15 +70,13 @@ class AddressDetail(LoginRequiredMixin, View):
         """
         address_permission_check(request, Crud.UPDATE)
 
-        address, _ = self._get_object(pk)
+        address, _ = get_address(pk)
 
         own_address_check(request, address)
 
-        template_path, context = render_address_form(
-            TITLE_UPDATE, Crud.UPDATE, **{
-            SUBMIT_URL_CTX: self.url(pk),
-            ADDRESS_FORM_CTX: AddressForm(instance=address)
-        })
+        template_path, context = \
+            self.render_info(AddressForm(instance=address))
+
         return render(request, template_path, context=context)
 
     def post(self, request: HttpRequest, pk: int,
@@ -87,33 +91,63 @@ class AddressDetail(LoginRequiredMixin, View):
         """
         address_permission_check(request, Crud.UPDATE)
 
-        address, query_param = self._get_object(pk)
+        address, query_param = get_address(pk)
+        is_default = address.is_default
 
         own_address_check(request, address)
 
         form = AddressForm(data=request.POST, instance=address)
 
         if form.is_valid():
+
+            query_kwargs = {}
+            if is_default and not form.instance.is_default:
+                # prevent default address change; display info modal
+                form.instance.is_default = is_default
+                query_kwargs = {
+                    USER_QUERY: request.user.username,
+                    DEFAULT_ADDRESS_QUERY:
+                        addresses_query(request.user).count(),
+                }
+
+                # TODO alternative to passing default addr query param
+                # passing default addr query param means that a reload
+                # displays the modal again but can't pass a context to
+                # redirect so ?
+
             # update object
             manage_default(
                 request, form.instance, save_func=lambda: form.save())
             # django autocommits changes
             # https://docs.djangoproject.com/en/4.1/topics/db/transactions/#autocommit
-            success = True
 
+            redirect_to = reverse_q(
+                namespaced_url(
+                    PROFILES_APP_NAME, ADDRESSES_ROUTE_NAME),
+                query_kwargs=query_kwargs
+            )
             template_path, context = None, None
         else:
-            template_path, context = render_address_form(
-                TITLE_UPDATE, Crud.UPDATE, **{
-                SUBMIT_URL_CTX: self.url(),
-                ADDRESS_FORM_CTX: form
-            })
-            success = False
+            redirect_to = None
+            template_path, context = self.render_info(form)
+            # response = render(request, template_path, context=context)
 
         return redirect_on_success_or_render(
-            request, success,
-            namespaced_url(PROFILES_APP_NAME, ADDRESSES_ROUTE_NAME),
+            request, redirect_to is not None, redirect_to=redirect_to,
             template_path=template_path, context=context)
+
+    def render_info(self, form: AddressForm) -> tuple[
+            str, dict[str, Address | list[str] | AddressForm | bool]]:
+        """
+        Get info to render an address entry
+        :param form: form to use
+        :return: tuple of template path and context
+        """
+        return for_address_form_render(
+            TITLE_UPDATE, Crud.UPDATE, **{
+                SUBMIT_URL_CTX: self.url(form.instance.pk),
+                ADDRESS_FORM_CTX: form
+            })
 
     def delete(self, request: HttpRequest, pk: int,
                *args, **kwargs) -> HttpResponse:
@@ -127,36 +161,42 @@ class AddressDetail(LoginRequiredMixin, View):
         """
         address_permission_check(request, Crud.UPDATE)
 
-        address, query_param = self._get_object(pk)
+        address, _ = get_address(pk)
 
         own_address_check(request, address)
 
-        count, _ = address.delete()
-
-        # TODO prevent delete of default?
-
-        return JsonResponse(
-            replace_inner_html_payload(
+        status = HTTPStatus.OK
+        if address.is_default:
+            # prevent default address delete; display info modal
+            payload = level_info_modal_payload(
+                InfoModalLevel.WARN,
+                InfoModalTemplate(
+                    app_template_path(
+                        PROFILES_APP_NAME, "snippet",
+                        "default_address_undeletable.html"),
+                    context={
+                        COUNT_CTX: addresses_query(request.user).count(),
+                    }
+                ),
+                'dflt-addr-del'
+            )
+        else:
+            # delete address
+            count, _ = address.delete()
+            payload = replace_inner_html_payload(
                 "#id--address-deleted-modal-body",
                 render_to_string(
                     app_template_path(
                         PROFILES_APP_NAME, "snippet", "address_delete.html"),
-                    context={STATUS_CTX: count > 0},
+                    context={
+                        STATUS_CTX: count > 0
+                    },
                     request=request)
-            ),
-            status=HTTPStatus.OK if count > 0 else HTTPStatus.BAD_REQUEST)
+            )
+            if count == 0:
+                status = HTTPStatus.BAD_REQUEST
 
-    def _get_object(self, pk: int) -> Tuple[Address, dict]:
-        """
-        Get entity by id
-        :param pk: id of entity
-        :return: tuple of object and query param
-        """
-        query_param = {
-            f'{Address.id_field()}': pk
-        }
-        entity = get_object_or_404(Address, **query_param)
-        return entity, query_param
+        return JsonResponse(payload, status=status)
 
     def url(self, pk: int) -> str:
         """
@@ -170,12 +210,57 @@ class AddressDetail(LoginRequiredMixin, View):
         )
 
 
+def get_address(pk: int) -> Tuple[Address, dict]:
+    """
+    Get address by specified `id`
+    :param pk: id of address
+    :return: tuple of object and query param
+    """
+    query_param = {
+        f'{Address.id_field()}': pk
+    }
+    entity = get_object_or_404(Address, **query_param)
+    return entity, query_param
+
+
+@login_required
+@require_http_methods([PATCH])
+def address_default(request: HttpRequest, pk: int) -> HttpResponse:
+    """
+    View function to update opinion status.
+    :param request: http request
+    :param pk:      id of opinion
+    :return: response
+    """
+    address_permission_check(request, Crud.UPDATE)
+
+    address, _ = get_address(pk)
+
+    own_address_check(request, address)
+
+    address.is_default = True
+
+    # update object
+    manage_default(
+        request, address, save_func=lambda: address.save())
+
+    return JsonResponse(
+        redirect_payload(
+            reverse_q(
+                namespaced_url(PROFILES_APP_NAME, ADDRESSES_ROUTE_NAME)
+            )
+        ),
+        status=HTTPStatus.OK
+    )
+
+
 ACTIONS = {
     GET: 'viewed',
     PATCH: 'updated',
     POST: 'updated',
     DELETE: 'deleted'
 }
+
 
 def own_address_check(
         request: HttpRequest, address: Address,

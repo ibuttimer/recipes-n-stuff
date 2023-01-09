@@ -31,7 +31,7 @@ from django.template.loader import render_to_string
 
 from profiles.constants import ADDRESS_LIST_CTX, NEW_ENTRY_CTX
 from profiles.enums import AddressQueryType, AddressSortOrder
-from profiles.views.address_queries import get_lookup
+from profiles.views.address_queries import get_lookup, DEFAULT_ADDRESS_QUERY
 # from opinions.constants import (
 #     STATUS_QUERY, AUTHOR_QUERY, SEARCH_QUERY, PINNED_QUERY,
 #     TEMPLATE_OPINION_REACTIONS, TEMPLATE_REACTION_CTRLS, CONTENT_STATUS_CTX,
@@ -47,7 +47,7 @@ from utils import (
     TITLE_CTX, LIST_HEADING_CTX, PAGE_HEADING_CTX, NO_CONTENT_MSG_CTX,
     NO_CONTENT_HELP_CTX,
     Crud, app_template_path, ORDER_QUERY, PAGE_QUERY, PER_PAGE_QUERY, PerPage,
-    REORDER_QUERY, REORDER_REQ_QUERY_ARGS, USER_QUERY
+    REORDER_QUERY, REORDER_REQ_QUERY_ARGS, USER_QUERY, SNIPPETS_CTX
 )
 # from opinions.views.opinion_queries import (
 #     FILTERS_ORDER, ALWAYS_FILTERS, get_lookup
@@ -62,9 +62,10 @@ from utils import (
 
 from recipesnstuff import PROFILES_APP_NAME
 from profiles.models import Address, CountryInfo
-from .utils import address_permission_check
+from .utils import address_permission_check, address_dflt_unmod_snippets
 from ..dto import AddressDto
 from ..forms import AddressForm
+
 
 # args for an address reorder/next page/etc. request
 ADDRESS_REORDER_QUERY_ARGS = [
@@ -82,6 +83,7 @@ ADDRESS_LIST_QUERY_ARGS = ADDRESS_REORDER_QUERY_ARGS.copy()
 ADDRESS_LIST_QUERY_ARGS.extend([
     # non-reorder query args
     QueryOption.of_no_cls(USER_QUERY, None),
+    QueryOption.of_no_cls(DEFAULT_ADDRESS_QUERY, -1),
 ])
 # ADDRESS_LIST_QUERY_ARGS.extend(OPINION_APPLIED_DEFAULTS_QUERY_ARGS)
 
@@ -151,6 +153,12 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
             # REPEAT_SEARCH_TERM_CTX: query_search_term(
             #     query_params, exclude_queries=REORDER_REQ_QUERY_ARGS)
         }
+
+        addr_count = query_params.get(DEFAULT_ADDRESS_QUERY).value
+        if addr_count >= 0:
+            self.extra_context[SNIPPETS_CTX] = \
+                address_dflt_unmod_snippets(addr_count)
+
         self.extra_context.update(
             self.get_title_heading(query_params))
 

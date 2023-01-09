@@ -1,0 +1,34 @@
+<!-- info_modal.html start -->
+{# --- template variable defines for includes --- #}
+{# info modal template expects: 'title' as modal title html #}
+{#                              'message' as modal body html #}
+{#                              'redirect' as on close redirect url #}
+{#                              'identifier' as unique identifier #}
+
+{% load i18n %}
+{% load form_field %}
+
+<div id="id--info-modal-{{identifier}}" class="modal fade" tabindex="-1" aria-labelledby="id--info-modal-label-{{identifier}}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <var id="id--info-modal-url-{{identifier}}" hidden>
+                {# content replaced if app needs to redirect on modal close #}
+            </var>
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="id--info-modal-label-{{identifier}}">{{ title }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="id--info-modal-body-{{identifier}}">
+                {{ message }}
+            </div>
+            <div class="modal-footer">
+                <button id="id--info-modal-ok-btn-{{identifier}}" class="btn btn-outline-primary btn__text" type="button" data-bs-dismiss="modal">
+                    {% trans "OK" %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- info_modal.html end -->

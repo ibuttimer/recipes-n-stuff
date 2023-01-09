@@ -1,6 +1,6 @@
 #  MIT License
 #
-#  Copyright (c) 2022 Ian Buttimer
+#  Copyright (c) 2022-2023 Ian Buttimer
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to
@@ -25,7 +25,6 @@ from typing import Optional
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import ResolverMatch, resolve, Resolver404
-
 
 REDIRECT_CTX = "redirect"                   # redirect url
 REWRITES_PROP_CTX = 'rewrites'              # multiple html rewrites

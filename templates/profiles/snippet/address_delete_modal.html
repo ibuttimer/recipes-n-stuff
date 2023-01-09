@@ -48,6 +48,10 @@
     </div>
 </div>
 
+{% with identifier='dflt-addr-del' %}
+    {% include 'base/snippet/info_modal.html' %}
+{% endwith %}
+
 <script>
     const addressDeleteConfirmModalSelector = "#{{confirm_id}}";
     const addressDeletedModalSelector = "#{{deleted_id}}";
@@ -55,10 +59,12 @@
     const addressDeleteUrlSelector = "#id--address-delete-url";
     const addressDeleteBtnSelector = "#{{btn_id}}";
     const addressDeleteLinkSelector = "a[class*='a--addr-del']";
+    const addressEditLinkSelector = "a[class*='a--addr-edit']";
 
     $(document).ready(function () {
 
         $(addressDeleteLinkSelector).on('click', function (event) {
+            /* Add delete link to delete confirm modal and display it */
             // address_dto.html: href of delete 'a' tag
             $(addressDeleteUrlSelector).text(event.currentTarget.attributes['href'].textContent);
 
@@ -70,7 +76,7 @@
         });
 
         $(addressDeleteBtnSelector).on('click', function (event) {
-
+            /* Delete address and display deleted result modal */
             const url = $(addressDeleteUrlSelector).text();
 
             $.ajax({
@@ -78,14 +84,13 @@
                 url: `${url}?ref=${window.location.pathname}`,
                 headers: {
                     'X-CSRFTOKEN': csrfToken()
-            },
+                },
             }).done(function(data) {
-
-                redirect_rewrite_response_handler(data);
-
-                // show modal
-                $(addressDeletedModalSelector).modal('show');
-
+                const modalDisplayed = redirectRewriteInfoResponseHandler(data);
+                if (!modalDisplayed) {
+                    // show modal
+                    $(addressDeletedModalSelector).modal('show');
+                }
             }).fail(function(data) {
                 // display reason
                 $(addressDeleteModalBodySelector).html(data.responseJSON.html);

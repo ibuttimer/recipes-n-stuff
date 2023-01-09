@@ -157,7 +157,7 @@ class UserDetail(LoginRequiredMixin, View):
             success = False
 
         return redirect_on_success_or_render(
-            request, success, HOME_ROUTE_NAME,
+            request, success, redirect_to=HOME_ROUTE_NAME,
             template_path=template_path, context=context)
 
 

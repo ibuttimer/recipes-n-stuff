@@ -29,6 +29,7 @@ function enableTooltips() {
     const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 }
 
+const SHOW_INFO_PROP = 'show_info';
 const REDIRECT_PROP = 'redirect';
 const REWRITES_PROP = 'rewrites';
 const ELEMENT_SELECTOR_PROP = 'element_selector';
@@ -41,8 +42,10 @@ const replaceInnerHtml = (data) => $(data[ELEMENT_SELECTOR_PROP]).html(data[INNE
 /**
  * Handle a redirect/rewrite response
  * :param data: json data
+ * :return: true if modal was displayed
  */
-function redirect_rewrite_response_handler(data) {
+function redirectRewriteInfoResponseHandler(data) {
+    let modalDisplayed = false;
     if (data !== undefined) {
         if (data.hasOwnProperty(ELEMENT_SELECTOR_PROP)) {
             if (data.hasOwnProperty(HTML_PROP)) {
@@ -63,6 +66,11 @@ function redirect_rewrite_response_handler(data) {
             // redirect to new url
             document.location.href = data[REDIRECT_PROP];
         }
+        if (data.hasOwnProperty(SHOW_INFO_PROP)) {
+            // show info modal
+            modalDisplayed = displayInfoModal(data[SHOW_INFO_PROP]);
+        }
+        return modalDisplayed;
     }
 }
 
