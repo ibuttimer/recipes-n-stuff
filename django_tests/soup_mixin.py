@@ -69,20 +69,24 @@ class SoupMixin:
 
     @staticmethod
     def find_tag(test_case: TestCase, tags: ResultSet,
-                 check_func: Callable, count: int = 1,
+                 check_func: Callable = None, count: int = 1,
                  match: MatchTest = MatchTest.EQ,
                  msg: str = None) -> [Tag, list[Tag]]:
         """
         Check that a tag matches a condition
         :param test_case: TestCase instance
         :param tags: tags to check
-        :param check_func: function to check condition
-        :param count: required number of tags to find
+        :param check_func: function to check condition; default None
+        :param count: required number of tags to find; default 1
         :param match: match check for count; default MatchTest.EQ
         :param msg: msg to display if assert fails; default None
         :return: tag or list of tags
         """
         found_tags = []
+        if not check_func:
+            def pass_thru(tag_to_pass):
+                return True
+            check_func = pass_thru
         for tag in tags:
             found = check_func(tag)
             if found:

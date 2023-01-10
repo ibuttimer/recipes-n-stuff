@@ -24,6 +24,7 @@ from typing import Optional
 
 from django.test import TestCase
 from user.models import User
+from user.permissions import add_to_registered
 
 
 class BaseUserTest(TestCase):
@@ -50,10 +51,14 @@ class BaseUserTest(TestCase):
             ("Julius", "Caesar", "julius.caesar",
              "more-than-VII", "ask.caesar@rome.com",
              "majestic-pic.jpg", "Man could burn water"),
+            ("Georges Auguste", "Escoffier", "georges.auguste",
+             "8+-tyne-fork", "ask.georges@cooking.com",
+             "serious-pic.jpg", "king of chefs and chef of kings"),
         ]
     }
 
     users: dict[str, User]
+    registered: dict[str, User]
 
     @staticmethod
     def create_users() -> dict:
@@ -70,6 +75,12 @@ class BaseUserTest(TestCase):
     def setUpTestData(cls):
         """ Set up data for the whole TestCase """
         cls.users = BaseUserTest.create_users()
+        cls.registered = {}
+        for user in cls.users.values():
+            add_to_registered(user)
+            cls.registered.update(**{
+                user.username: user
+            })
 
     @classmethod
     def get_user_by_index(cls, index: int) -> tuple[User, str]:

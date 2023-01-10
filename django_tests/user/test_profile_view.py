@@ -32,8 +32,8 @@ from user.constants import USER_USERNAME_ROUTE_NAME
 from utils import reverse_q, namespaced_url
 from user import USER_ID_ROUTE_NAME
 from user.models import User
-from .base_user_test_cls import BaseUserTest
-from ..soup_mixin import SoupMixin
+from django_tests.user.base_user_test_cls import BaseUserTest
+from django_tests.soup_mixin import SoupMixin
 
 
 class AccessBy(Enum):
@@ -155,8 +155,9 @@ class TestProfileView(SoupMixin, BaseUserTest):
             response.content.decode("utf-8", errors="ignore"), features="lxml"
         )
         # check h1 tags for username
-        TestProfileView.find_tag(self, soup.find_all('h1'),
-                                 lambda tag: user.username in tag.text)
+        TestProfileView.find_tag(
+            self, soup.find_all('h1'),
+            check_func=lambda tag: user.username in tag.text)
 
         # check input tags for first/last name and email
         for field in [user.FIRST_NAME_FIELD, User.LAST_NAME_FIELD,
@@ -165,15 +166,16 @@ class TestProfileView(SoupMixin, BaseUserTest):
                 expected = getattr(user, field)
                 TestProfileView.find_tag(
                     self, soup.find_all('input'),
-                    lambda tag: TestProfileView.equal_tag_attr(
+                    check_func=lambda tag: TestProfileView.equal_tag_attr(
                         tag, 'value', expected)
                 )
 
         # check img tags for image
         TestProfileView.find_tag(
             self, soup.find_all('img'),
-            lambda tag: TestProfileView.USER_INFO[key][User.AVATAR_FIELD]
-            in tag.get('src'),
+            check_func=lambda tag:
+            TestProfileView.USER_INFO[key][User.AVATAR_FIELD] in
+            tag.get('src'),
             count=2     # img in navbar & avatar
         )
 
@@ -181,13 +183,12 @@ class TestProfileView(SoupMixin, BaseUserTest):
         if is_readonly:
             # check for readonly_content div, can't check content as its
             # replaced by javascript
-            self.find_tag(self, soup.find_all(id='readonly_content'),
-                          lambda tag: True)
+            self.find_tag(self, soup.find_all(id='readonly_content'))
         else:
             # check textarea tags for content
             self.find_tag(self, soup.find_all('textarea'),
-                          lambda tag: user.bio in tag.text)
+                          check_func=lambda tag: user.bio in tag.text)
 
         # check read only
         self.check_tag(self, soup.find_all('fieldset'), is_readonly,
-                       lambda tag: tag.has_attr('disabled'))
+                       check_func=lambda tag: tag.has_attr('disabled'))

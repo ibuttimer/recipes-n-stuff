@@ -29,7 +29,7 @@
 
 <article id="article-content" class="row d-flex justify-content-center">
     <row class="col-lg-10 col-md-11 col-sm-12">
-        <form {% if not read_only %} method="post" action="{{ submit_url }}" enctype="multipart/form-data" {% endif %}>
+        <form {% if not read_only %} method="post" action="{{ submit_url }}" enctype="multipart/x-www-form-urlencoded" {% endif %}>
             {% if not read_only %}
                 {% csrf_token %}
             {% endif %}

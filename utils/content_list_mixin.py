@@ -127,6 +127,9 @@ class ContentListMixin(generic.ListView):
         query_params = self.req_query_args()(request)
         self.validate_queryset(query_params)
 
+        self.additional_check_func(
+            request, query_params, args=args, kwargs=kwargs)
+
         # set queryset
         query_set_params, query_kwargs = \
             self.set_queryset(query_params)
@@ -157,8 +160,20 @@ class ContentListMixin(generic.ListView):
         :return: permission check function
         """
         raise NotImplementedError(
-            "'permission_check_func' method must be overridden by sub "
-            "classes")
+            "'permission_check_func' method must be overridden by subclasses")
+
+    def additional_check_func(
+            self, request: HttpRequest, query_params: dict[str, QueryArg],
+            *args, **kwargs):
+        """
+        Perform additional access checks.
+        (Subclasses should override this method to perform additional access
+         checks as required)
+        :param request: http request
+        :param query_params: request query
+        :param args: additional arbitrary arguments
+        :param kwargs: additional keyword arguments
+        """
 
     def req_query_args(
             self) -> Callable[[HttpRequest], dict[str, QueryArg]]:
@@ -175,7 +190,7 @@ class ContentListMixin(generic.ListView):
         :return: dict of query args
         """
         raise NotImplementedError(
-            "'valid_req_query_args' method must be overridden by sub classes")
+            "'valid_req_query_args' method must be overridden by subclasses")
 
     def valid_req_non_reorder_query_args(self) -> List[str]:
         """

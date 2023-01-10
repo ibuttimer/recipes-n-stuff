@@ -21,7 +21,7 @@
 #  DEALINGS IN THE SOFTWARE.
 
 from inspect import isclass
-from typing import Union, Type
+from typing import Union, Type, Any
 from string import capwords
 
 from django.db.models import Model
@@ -57,7 +57,7 @@ class ModelMixin:
     @classmethod
     def model_name(cls):
         """
-        Get the model name of this model
+        Get the model name of this object
         :return: model name
         """
         return ModelMixin.model_name_obj(cls)
@@ -65,7 +65,7 @@ class ModelMixin:
     @classmethod
     def model_name_caps(cls):
         """
-        Get the model name of this model
+        Get the caps model name of this object
         :return: model name
         """
         return capwords(cls.model_name())
@@ -73,7 +73,7 @@ class ModelMixin:
     @classmethod
     def model_name_lower(cls):
         """
-        Get the model name of this model
+        Get the lowercase model name of this object
         :return: model name
         """
         return cls.model_name().lower()
@@ -113,6 +113,18 @@ class ModelMixin:
         lookup = lookup.lower()
         return lookup == cls.id_field() or \
             lookup == f'{DESC_LOOKUP}{cls.id_field()}'
+
+    def get_field(self, field: str, raise_ex: bool = True) -> Any:
+        """
+        Get the value of a specified field
+        :param field: name of field
+        :param raise_ex: raise exception if field not found; default True
+        :return: field value or None if not found
+        :raises: ValueError if field not found and `raise_ex` is True
+        """
+        if field not in self.__dict__ and raise_ex:
+            raise ValueError(f'{field} not found')
+        return self.__dict__.get(field, None)
 
     def __repr__(self):
         return f'{self.model_name()}[{self.id}]: {str(self)}'

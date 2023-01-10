@@ -21,6 +21,7 @@
 #  DEALINGS IN THE SOFTWARE.
 from typing import Union, List
 
+from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest
 from django.template.loader import render_to_string
 
@@ -30,7 +31,10 @@ from base import (
 from profiles.constants import COUNT_CTX
 from profiles.models import Address
 from recipesnstuff import PROFILES_APP_NAME, BASE_APP_NAME
-from utils import Crud, permission_check, app_template_path
+from utils import (
+    Crud, permission_check, app_template_path, GET, PATCH, POST, DELETE,
+    ModelMixin
+)
 
 
 def address_permission_check(
@@ -76,3 +80,26 @@ def address_dflt_unmod_snippets(count: int) -> List[str]:
             }
         )
     ]
+
+
+ACTIONS = {
+    GET: 'viewed',
+    PATCH: 'updated',
+    POST: 'updated',
+    DELETE: 'deleted'
+}
+
+
+def raise_permission_denied(
+        request: HttpRequest, model: ModelMixin, plural: str = 's'):
+    """
+    Raise a PermissionDenied exception
+    :param request: http request
+    :param model: model
+    :param plural: model name pluralising addition; default 's'
+    :raises: PermissionDenied
+    """
+    action = ACTIONS[request.method.upper()]
+    raise PermissionDenied(
+        f"{model.model_name_caps()}{plural} may only be {action} by "
+        f"their owners")

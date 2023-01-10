@@ -46,9 +46,11 @@ from utils import (
     replace_inner_html_payload, redirect_payload,
     GET, PATCH, POST, DELETE, STATUS_CTX, USER_QUERY
 )
-from .address_create import for_address_form_render, manage_default
+from .address_create import (
+    for_address_form_render, manage_default, get_user_addresses_url
+)
 from .address_queries import addresses_query, DEFAULT_ADDRESS_QUERY
-from .utils import address_permission_check
+from .utils import address_permission_check, raise_permission_denied
 
 TITLE_UPDATE = 'Update Address'
 
@@ -105,7 +107,6 @@ class AddressDetail(LoginRequiredMixin, View):
                 # prevent default address change; display info modal
                 form.instance.is_default = is_default
                 query_kwargs = {
-                    USER_QUERY: request.user.username,
                     DEFAULT_ADDRESS_QUERY:
                         addresses_query(request.user).count(),
                 }
@@ -121,16 +122,12 @@ class AddressDetail(LoginRequiredMixin, View):
             # django autocommits changes
             # https://docs.djangoproject.com/en/4.1/topics/db/transactions/#autocommit
 
-            redirect_to = reverse_q(
-                namespaced_url(
-                    PROFILES_APP_NAME, ADDRESSES_ROUTE_NAME),
-                query_kwargs=query_kwargs
-            )
+            redirect_to = get_user_addresses_url(
+                request, query_kwargs=query_kwargs)
             template_path, context = None, None
         else:
             redirect_to = None
             template_path, context = self.render_info(form)
-            # response = render(request, template_path, context=context)
 
         return redirect_on_success_or_render(
             request, redirect_to is not None, redirect_to=redirect_to,
@@ -246,25 +243,14 @@ def address_default(request: HttpRequest, pk: int) -> HttpResponse:
 
     return JsonResponse(
         redirect_payload(
-            reverse_q(
-                namespaced_url(PROFILES_APP_NAME, ADDRESSES_ROUTE_NAME)
-            )
+            get_user_addresses_url(request)
         ),
         status=HTTPStatus.OK
     )
 
 
-ACTIONS = {
-    GET: 'viewed',
-    PATCH: 'updated',
-    POST: 'updated',
-    DELETE: 'deleted'
-}
-
-
-def own_address_check(
-        request: HttpRequest, address: Address,
-        raise_ex: bool = True) -> bool:
+def own_address_check(request: HttpRequest, address: Address,
+                      raise_ex: bool = True) -> bool:
     """
     Check request user is address owner
     :param request: http request
@@ -273,9 +259,6 @@ def own_address_check(
     """
     is_own = request.user.id == address.user.id
     if not is_own and raise_ex:
-        action = ACTIONS[request.method.upper()]
-        raise PermissionDenied(
-            f"{address.model_name_caps()}es "
-            f"may only be {action} by their owners")
+        raise_permission_denied(request, address, plural='es')
 
     return is_own

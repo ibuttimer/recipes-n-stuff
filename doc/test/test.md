@@ -50,7 +50,7 @@ Run all tests
 > python -m unittest discover -p "*_test.py"
 
 Run an individual test, e.g.
-> python -m unittest tests/user/test_forms.py
+> python -m unittest tests/user/forms_test.py
 ```
 Alternatively, if using:
 * Visual Studio Code

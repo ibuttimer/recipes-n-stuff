@@ -1,6 +1,6 @@
 #  MIT License
 #
-#  Copyright (c) 2022 Ian Buttimer
+#  Copyright (c) 2023 Ian Buttimer
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to
@@ -19,28 +19,3 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-#
-from django.test import TestCase
-
-from user.models import User
-
-
-class TestUserModel(TestCase):
-    """
-    Test user model
-    https://docs.djangoproject.com/en/4.1/topics/testing/tools/
-    """
-
-    def test_user_defaults(self):
-        """ Test user model defaults """
-        user = User.objects.create()
-        self.assertIsNotNone(user)
-        for field in [
-            User.FIRST_NAME_FIELD, User.LAST_NAME_FIELD,
-            User.PASSWORD_FIELD, User.EMAIL_FIELD,
-            User.BIO_FIELD
-        ]:
-            with self.subTest(field=field):
-                self.assertEqual(user.get_field(field), '')
-
-        self.assertIn(User.AVATAR_FIELD, user.avatar.url)

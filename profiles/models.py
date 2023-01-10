@@ -54,7 +54,7 @@ class CountryInfo(ModelMixin, models.Model):
 
     @dataclass
     class Meta:
-        pass
+        """ Model metadata """
 
     def __str__(self):
         return f'{self.country.name} {self.subdivision}'
@@ -67,7 +67,6 @@ class Address(ModelMixin, models.Model):
     # field names
     USER_FIELD = USER_FIELD
     COUNTRY_FIELD = COUNTRY_FIELD
-    USER_FIELD = USER_FIELD
     STREET_FIELD = STREET_FIELD
     STREET2_FIELD = STREET2_FIELD
     CITY_FIELD = CITY_FIELD
@@ -82,9 +81,6 @@ class Address(ModelMixin, models.Model):
     ADDRESS_ATTRIB_POSTCODE_MAX_LEN: int = 50
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    # country = models.ForeignKey(CountryInfo, on_delete=models.CASCADE)
-    country = models.ForeignKey(CountryInfo, on_delete=models.CASCADE)
 
     country = CountryField(blank_label='(Select country)')
 

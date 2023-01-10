@@ -25,7 +25,6 @@ from typing import Type, Callable, Tuple, Optional, Union, List
 from string import capwords
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import QuerySet, F
 from django.http import HttpRequest
 from django.template.loader import render_to_string
 
@@ -61,8 +60,11 @@ from utils import (
 # )
 
 from recipesnstuff import PROFILES_APP_NAME
-from profiles.models import Address, CountryInfo
-from .utils import address_permission_check, address_dflt_unmod_snippets
+from profiles.models import Address
+from .utils import (
+    address_permission_check, address_dflt_unmod_snippets,
+    raise_permission_denied
+)
 from ..dto import AddressDto
 from ..forms import AddressForm
 
@@ -125,6 +127,22 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         :return: dict of query args
         """
         return ADDRESS_LIST_QUERY_ARGS
+
+    def additional_check_func(
+            self, request: HttpRequest, query_params: dict[str, QueryArg],
+            *args, **kwargs):
+        """
+        Perform additional access checks.
+        :param request: http request
+        :param query_params: request query
+        :param args: additional arbitrary arguments
+        :param kwargs: additional keyword arguments
+        """
+        active = request.user.is_active
+        super_or_own = request.user.is_superuser or \
+            self.is_query_own(query_params)
+        if not (active and super_or_own):
+            raise_permission_denied(request, Address, plural='es')
 
     def validate_queryset(self, query_params: dict[str, QueryArg]):
         """

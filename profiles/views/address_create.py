@@ -19,7 +19,7 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from typing import Callable
+from typing import Callable, Optional
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpRequest, HttpResponse
@@ -30,7 +30,7 @@ from recipesnstuff.constants import PROFILES_APP_NAME
 from utils import (
     Crud, READ_ONLY_CTX, SUBMIT_URL_CTX, app_template_path, reverse_q,
     namespaced_url, TITLE_CTX, redirect_on_success_or_render,
-    PAGE_HEADING_CTX, SUBMIT_BTN_TEXT_CTX
+    PAGE_HEADING_CTX, SUBMIT_BTN_TEXT_CTX, USER_QUERY
 )
 
 from profiles.constants import (
@@ -94,8 +94,7 @@ class AddressCreate(LoginRequiredMixin, View):
 
         return redirect_on_success_or_render(
             request, success,
-            redirect_to=namespaced_url(
-                PROFILES_APP_NAME, ADDRESSES_ROUTE_NAME),
+            redirect_to=get_user_addresses_url(request),
             template_path=template_path, context=context)
 
     def render_info(self, form: AddressForm):
@@ -190,3 +189,21 @@ def manage_default(
         }).update(**{
             f'{Address.IS_DEFAULT_FIELD}': False
         })
+
+
+def get_user_addresses_url(
+        request: HttpRequest, query_kwargs: Optional[dict] = None):
+    """
+    Get the addresses url for a user
+    :param request: user's request
+    :param query_kwargs: additional query args; default None
+    :return: url
+    """
+    if not query_kwargs:
+        query_kwargs = {}
+    query_kwargs[USER_QUERY] = request.user.username
+    return reverse_q(
+        namespaced_url(
+            PROFILES_APP_NAME, ADDRESSES_ROUTE_NAME),
+        query_kwargs=query_kwargs
+    )

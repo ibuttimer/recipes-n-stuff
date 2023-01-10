@@ -18,7 +18,7 @@
 
                     {# address dto template expects: 'address_dto' as AddressDto #}
                     {#                               'identifier' as individual identifier #}
-                    {% with identifier=forloop.counter0 %}
+                    {% with identifier=address_dto.id %}
                         {% include "profiles/address_dto.html" %}
                     {% endwith %}
             {% if forloop.counter|divisibleby:2 %}

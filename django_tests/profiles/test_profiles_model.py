@@ -20,27 +20,36 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 #
-from django.test import TestCase
+from ..user.base_user_test_cls import BaseUserTest
 
-from user.models import User
+from profiles.models import Address
 
 
-class TestUserModel(TestCase):
+class TestUserModel(BaseUserTest):
     """
     Test user model
     https://docs.djangoproject.com/en/4.1/topics/testing/tools/
     """
 
-    def test_user_defaults(self):
+    @classmethod
+    def setUpTestData(cls):
+        """ Set up data for the whole TestCase """
+        super().setUpTestData()
+
+    def test_address_defaults(self):
         """ Test user model defaults """
-        user = User.objects.create()
-        self.assertIsNotNone(user)
+        user = self.login_user(self, self.get_user_by_index(0)[0])
+
+        address = Address.objects.create(**{
+            f'{Address.USER_FIELD}': user
+        })
+        self.assertIsNotNone(address)
         for field in [
-            User.FIRST_NAME_FIELD, User.LAST_NAME_FIELD,
-            User.PASSWORD_FIELD, User.EMAIL_FIELD,
-            User.BIO_FIELD
+            Address.COUNTRY_FIELD, Address.STREET_FIELD,
+            Address.STREET2_FIELD, Address.CITY_FIELD,
+            Address.STATE_FIELD, Address.POSTCODE_FIELD
         ]:
             with self.subTest(field=field):
-                self.assertEqual(user.get_field(field), '')
+                self.assertEqual(address.get_field(field), '')
 
-        self.assertIn(User.AVATAR_FIELD, user.avatar.url)
+        self.assertEqual(address.get_field(Address.IS_DEFAULT_FIELD), False)
