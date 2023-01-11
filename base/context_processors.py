@@ -24,10 +24,12 @@
 from django.http import HttpRequest
 
 from recipesnstuff.constants import (
-    HOME_MENU_CTX, HELP_MENU_CTX, HELP_ROUTE_NAME, HOME_ROUTE_NAME
+    HOME_MENU_CTX, HELP_MENU_CTX, HELP_ROUTE_NAME, HOME_ROUTE_NAME,
+    APP_NAME
 )
 from utils import resolve_req, add_navbar_attr
 
+from .constants import APP_NAME_CTX
 
 def base_context(request: HttpRequest) -> dict:
     """
@@ -35,7 +37,9 @@ def base_context(request: HttpRequest) -> dict:
     :param request: http request
     :return: dictionary to add to template context
     """
-    context = {}
+    context = {
+        APP_NAME_CTX: APP_NAME
+    }
     called_by = resolve_req(request)
     if called_by:
         for ctx, routes in [

@@ -16,7 +16,7 @@
     <link rel="mask-icon" href="{% static 'safari-pinned-tab.svg' %}" color="#00504a">
     <meta name="msapplication-TileColor" content="#e6b3a0">
     <meta name="theme-color" content="#e6b3a0">
-    <meta name="description" content="Recipes 'N' Stuff is a community platform for those looking for recipe suggestions and online shopping convenience.">
+    <meta name="description" content="{{app_name}} is a community platform for those looking for recipe suggestions and online shopping convenience.">
     <meta name="google-site-verification" content="{{ google_site_verification }}">
 
     {% if not val_test %}
@@ -54,8 +54,8 @@
         <nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
             <div class="container-fluid">
                 <a class="navbar-brand a__logo_bg" href="{% url 'home' %}">
-                    <span class="theme-colour">Recipes 'N' Stuff</span>
-                    <img src="{% static 'fontawesome/svgs/solid/bowl-rice.svg' %}" alt="Recipes 'N' Stuff logo" width="24" height="24" class="d-inline-block align-text-top theme-colour">
+                    <span class="theme-colour">{{app_name}}</span>
+                    <img src="{% static 'fontawesome/svgs/solid/bowl-rice.svg' %}" alt="{{app_name}} logo" width="24" height="24" class="d-inline-block align-text-top theme-colour">
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
                     <span class="navbar-toggler-icon"></span>
@@ -183,7 +183,7 @@
     <footer class="container d-flex flex-wrap justify-content-between align-items-center py-3 border-top bg-white div__panel">
         <div class="col-md-4 d-flex align-items-center">
             <a href="{% url 'home' %}" class="ms-2 me-2 mb-md-0 text-muted text-decoration-none lh-1">
-                <img class="bi" width="24" height="24" src="{% static 'fontawesome/svgs/solid/bowl-rice.svg' %}" alt="Recipes 'N' Stuff logo">
+                <img class="bi" width="24" height="24" src="{% static 'fontawesome/svgs/solid/bowl-rice.svg' %}" alt="{{app_name}} logo">
             </a>
             <span class="mb-md-0 text-muted">&copy; {{ copyright_year }} {{ copyright }}</span>
         </div>

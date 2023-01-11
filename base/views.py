@@ -26,6 +26,8 @@ from typing import TypeVar, Optional, Union
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
+from django.templatetags.static import static
+
 
 from utils import app_template_path
 from utils.views import REDIRECT_CTX
@@ -44,13 +46,42 @@ TypeInfoModalTemplate = \
     TypeVar("TypeInfoModalTemplate", bound="InfoModalTemplate")
 
 
+CAROUSEL_CTX = 'carousel'
+
+CAROUSEL = [(
+    'img/chef-4807317_1920.jpg', 'Oriental chef image',
+    'Oriental inspiration', True
+), (
+    'img/meat-skewer-1440105_1920.jpg', 'Barbeque skewers image',
+    'Chillin while grilling', False
+), (
+    'img/baked-goods-1846460_1920.jpg', 'Baked goods image',
+     'Blueberry bakes', False
+),
+]
+
+@dataclass
+class CarouselItem:
+    """ Class representing a carousel item """
+    url: str
+    alt: str
+    lead: str
+    active: bool
+
+
 def get_landing(request: HttpRequest) -> HttpResponse:
     """
     Render landing page
     :param request: request
     :return: response
     """
-    return render(request, "base.html")
+    return render(request, app_template_path(THIS_APP, 'landing.html'),
+                  context={
+                      CAROUSEL_CTX: [
+                          CarouselItem(static(url), alt, lead, active)
+                          for url, alt, lead, active in CAROUSEL
+                      ]
+                  })
 
 
 @dataclass
