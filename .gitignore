@@ -195,6 +195,7 @@ cloudinary_python.txt
 # temp
 /doc/test/django_report/
 /doc/test/unittest_report/
+/doc/test/pytest_report/
 /static/fontawesome/svgs/
 /static/fontawesome/css/all.css
 /static/fontawesome/css/all.min.css

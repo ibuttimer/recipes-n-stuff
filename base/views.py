@@ -56,9 +56,10 @@ CAROUSEL = [(
     'Chillin while grilling', False
 ), (
     'img/baked-goods-1846460_1920.jpg', 'Baked goods image',
-     'Blueberry bakes', False
+    'Blueberry bakes', False
 ),
 ]
+
 
 @dataclass
 class CarouselItem:

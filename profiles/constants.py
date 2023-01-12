@@ -19,7 +19,11 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from pathlib import Path
 from utils import append_slash, url_path
+
+# name of this app
+THIS_APP = Path(__file__).resolve().parent.name
 
 # common field names
 COUNTRY_FIELD = "country"
