@@ -26,6 +26,8 @@ THIS_APP = Path(__file__).resolve().parent.name
 
 NAME_FIELD = "name"
 TYPE_FIELD = "type"
+SYSTEM_FIELD = "system"
+IS_DEFAULT_FIELD = "is_default"
 ABBREV_FIELD = 'abbrev'
 BASE_US_FIELD = 'base_us'
 BASE_METRIC_FIELD = 'base_metric'

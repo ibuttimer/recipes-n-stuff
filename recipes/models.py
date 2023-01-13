@@ -20,6 +20,7 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 from dataclasses import dataclass
+from typing import TypeVar
 
 from django.db import models
 from django.db.models import DurationField
@@ -28,9 +29,12 @@ from django.utils.translation import gettext_lazy as _
 from utils import ModelMixin
 
 from .constants import (
-    NAME_FIELD, TYPE_FIELD, ABBREV_FIELD, BASE_US_FIELD, BASE_METRIC_FIELD,
-    MEASURE_FIELD
+    NAME_FIELD, TYPE_FIELD, SYSTEM_FIELD, IS_DEFAULT_FIELD, ABBREV_FIELD,
+    BASE_US_FIELD, BASE_METRIC_FIELD, MEASURE_FIELD
 )
+
+# workaround for self type hints from https://peps.python.org/pep-0673/
+TypeMeasure = TypeVar("TypeMeasure", bound="Measure")
 
 
 class Category(ModelMixin, models.Model):
@@ -81,6 +85,8 @@ class Measure(ModelMixin, models.Model):
     """
     # field names
     TYPE_FIELD = TYPE_FIELD
+    SYSTEM_FIELD = SYSTEM_FIELD
+    IS_DEFAULT_FIELD = IS_DEFAULT_FIELD
     NAME_FIELD = NAME_FIELD
     ABBREV_FIELD = ABBREV_FIELD
     BASE_US_FIELD = BASE_US_FIELD
@@ -97,12 +103,26 @@ class Measure(ModelMixin, models.Model):
         (WEIGHT, 'Weight'),
         (UNIT, 'Unit'),
     ]
+    SYSTEM_US = 'us'
+    SYSTEM_METRIC = 'si'
+    SYSTEM_ONE = '1'
+    SYSTEM_CHOICES = [
+        (SYSTEM_US, 'US'),
+        (SYSTEM_METRIC, 'Metric'),
+        (SYSTEM_ONE, 'Dimensionless'),
+    ]
 
     type = models.CharField(
         max_length=2,
         choices=TYPE_CHOICES,
         default=DRY_FLUID,
     )
+    system = models.CharField(
+        max_length=2,
+        choices=SYSTEM_CHOICES,
+        default=SYSTEM_US,  # since the recipes use US measures
+    )
+    is_default = models.BooleanField(default=False, blank=False)
     name = models.CharField(
         _('name'), max_length=MEASURE_ATTRIB_NAME_MAX_LEN, unique=True)
     abbrev = models.CharField(
@@ -114,12 +134,85 @@ class Measure(ModelMixin, models.Model):
     # Values taken from
     # https://en.wikipedia.org/wiki/Cooking_weights_and_measures#British_(Imperial)_measures
     # https://en.wikipedia.org/wiki/United_States_customary_units
-    base_us = models.DecimalField(max_digits=12, decimal_places=5)
-    base_metric = models.DecimalField(max_digits=12, decimal_places=5)
+    base_us = models.DecimalField(max_digits=19, decimal_places=10)
+    base_metric = models.DecimalField(max_digits=19, decimal_places=10)
 
     @dataclass
     class Meta:
         """ Model metadata """
+
+    @classmethod
+    def _get_default_instance(
+            cls, name: str, abbrev: str, measure_type: str,
+            system: str) -> TypeMeasure:
+        """
+        Get a default instance for objects requiring a Measure field
+        :param name: measure name
+        :param abbrev: abbreviation
+        :param measure_type: type of unit
+        :param system: measurement system
+        :return: default instance
+        """
+        default_inst, _ = cls.objects.get_or_create(**{
+                f'{Measure.NAME_FIELD}': name,
+            },
+            defaults={
+                f'{Measure.TYPE_FIELD}': measure_type,
+                f'{Measure.ABBREV_FIELD}': abbrev,
+                f'{Measure.SYSTEM_FIELD}': system,
+                f'{Measure.IS_DEFAULT_FIELD}': True,
+                f'{Measure.BASE_US_FIELD}': 1.0,
+                f'{Measure.BASE_METRIC_FIELD}': 1.0,
+            },
+        )
+        return default_inst
+
+    @classmethod
+    def get_default_unit(cls) -> TypeMeasure:
+        """ Get the default pk for objects requiring a Measure field """
+        default_inst, _ = cls._get_default_instance(
+            'unit', '', Measure.UNIT, Measure.SYSTEM_ONE)
+        return default_inst
+
+    @classmethod
+    def get_default_us_dry_fluid(cls) -> TypeMeasure:
+        """
+        Get the default US base unit for objects requiring a dry/fluid
+        Measure field
+        """
+        default_inst, _ = cls._get_default_instance(
+            'fluid ounce', 'fl. oz.', Measure.DRY_FLUID, Measure.SYSTEM_US)
+        return default_inst
+
+    @classmethod
+    def get_default_us_weight(cls) -> TypeMeasure:
+        """
+        Get the default US base unit for objects requiring a weight
+        Measure field
+        """
+        default_inst, _ = cls._get_default_instance(
+            'ounce', 'oz.', Measure.WEIGHT, Measure.SYSTEM_US)
+        return default_inst
+
+    @classmethod
+    def get_default_metric_dry_fluid(cls) -> TypeMeasure:
+        """
+        Get the default US base unit for objects requiring a dry/fluid
+        Measure field
+        """
+        default_inst, _ = cls._get_default_instance(
+            'decilitre', 'dl', Measure.DRY_FLUID, Measure.SYSTEM_METRIC)
+        return default_inst
+
+    @classmethod
+    def get_default_metric_weight(cls) -> TypeMeasure:
+        """
+        Get the default US base unit for objects requiring a weight
+        Measure field
+        """
+        default_inst, _ = cls._get_default_instance(
+            'gram', 'g', Measure.WEIGHT, Measure.SYSTEM_METRIC)
+        return default_inst
 
     def __str__(self):
         return f'{self.name}'
