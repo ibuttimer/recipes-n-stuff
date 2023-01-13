@@ -29,6 +29,7 @@ COPYRIGHT = "Ian Buttimer"
 BASE_APP_NAME = "base"
 USER_APP_NAME = "user"
 PROFILES_APP_NAME = "profiles"
+RECIPES_APP_NAME = "recipes"
 
 # Base routes related
 HOME_URL = "/"

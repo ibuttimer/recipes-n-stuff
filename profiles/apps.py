@@ -23,11 +23,11 @@
 from django.apps import AppConfig
 from django.utils.translation import gettext_lazy as _
 
-from recipesnstuff.constants import PROFILES_APP_NAME
+from .constants import THIS_APP
 
 
 class ProfilesConfig(AppConfig):
     """ Config class for profiles application """
     default_auto_field = 'django.db.models.BigAutoField'
-    name = PROFILES_APP_NAME
+    name = THIS_APP
     verbose_name = _("Profiles Management")

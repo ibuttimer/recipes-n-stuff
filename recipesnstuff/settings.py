@@ -40,6 +40,7 @@ from django.contrib.messages import constants as messages
 
 from .constants import (
     BASE_APP_NAME, MIN_PASSWORD_LEN, USER_APP_NAME, PROFILES_APP_NAME,
+    RECIPES_APP_NAME,
     LOGIN_URL as USER_LOGIN_URL, LOGIN_ROUTE_NAME, HOME_ROUTE_NAME
 )
 
@@ -159,6 +160,7 @@ INSTALLED_APPS = [
     BASE_APP_NAME,
     USER_APP_NAME,
     PROFILES_APP_NAME,
+    RECIPES_APP_NAME,
 
     # needs to be after app with django template overrides
     'django.forms',
@@ -385,6 +387,11 @@ DEFAULT_FILE_STORAGE = \
     'django.core.files.storage.FileSystemStorage' \
     if DEVELOPMENT else \
     'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# fixtures
+FIXTURE_DIRS = [
+    os.path.join(BASE_DIR, 'data', 'fixtures')
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field

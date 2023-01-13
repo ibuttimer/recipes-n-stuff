@@ -22,9 +22,23 @@
 
 from django.contrib import admin
 
-from .models import CountryInfo
+from .models import Category, Keyword, Measure
 
 
-@admin.register(CountryInfo)
-class CountryInfoAdmin(admin.ModelAdmin):
-    """ Class representing the CountryInfo model in the admin interface """
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    """ Class representing the Category model in the admin interface """
+
+
+@admin.register(Keyword)
+class KeywordAdmin(admin.ModelAdmin):
+    """ Class representing the Keyword model in the admin interface """
+
+
+@admin.register(Measure)
+class MeasureAdmin(admin.ModelAdmin):
+    """ Class representing the Measure model in the admin interface """
+    list_display = (
+        Measure.NAME_FIELD,
+        Measure.TYPE_FIELD,
+    )

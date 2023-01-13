@@ -25,6 +25,7 @@
 
 import os
 import sys
+from enum import IntEnum, auto
 from pathlib import Path
 import re
 import csv
@@ -35,7 +36,12 @@ import environ
 import psycopg2
 from django.conf import settings
 from django_countries import countries
+import pyarrow.parquet as pq
+import pyarrow.compute as pc
+
 from recipesnstuff import settings as app_settings
+from data.recipes import load_recipe
+from data.data_utils import insert_content, get_content_id
 
 
 # project folder
@@ -46,7 +52,8 @@ if not settings.configured:
     settings.configure(app_settings, DEBUG=True)
 
 COUNTRYINFO_TABLE = 'profiles_countryinfo'
-COUNTRYINFO_COUNTRY = 'country'     # country column
+COUNTRYINFO_COUNTRY_COL = 'country'             # country column
+COUNTRYINFO_SUBDIVISION_COL = 'subdivision'     # subdivision column
 
 # subdivisions csv
 COUNTRYINFO_TSV = 'subdivisions.txt'
@@ -64,6 +71,7 @@ NO_SUBDIV = '-'
 DEFAULT_HOST = 'http://127.0.0.1:8000/'
 DEFAULT_DATA_FOLDER = 'data'
 DEFAULT_DB_VAR = 'DATABASE_URL'
+DEFAULT_PROGRESS = 100
 
 
 def parse_args():
@@ -82,6 +90,22 @@ def parse_args():
     parser.add_argument('-u', '--host',
                         help=f'Host url e.g. {DEFAULT_HOST}',
                         default=DEFAULT_HOST)
+    parser.add_argument('-a', '--all', action='store_true',
+                        help='Load all data',
+                        default=False)
+    parser.add_argument('-c', '--country', action='store_true',
+                        help='Load country data',
+                        default=False)
+    parser.add_argument('-m', '--measures', action='store_true',
+                        help='Load measures data',
+                        default=False)
+    parser.add_argument('-r', '--recipe', action='store_true',
+                        help='Load recipe data',
+                        default=False)
+    parser.add_argument('-p', '--progress',
+                        help=f'Progress indicator rate; '
+                             f'default {DEFAULT_PROGRESS}',
+                        default=DEFAULT_PROGRESS)
     args = parser.parse_args()
     return args
 
@@ -116,44 +140,53 @@ def process():
                  f"password='{db_password}'"
     with psycopg2.connect(connection) as conn:
         with conn.cursor() as curs:
-            # load country info
-            folder = Path(args.data_folder).resolve()
-            filepath = os.path.join(folder, COUNTRYINFO_TSV)
+            # load country
+            if args.all or args.country:
+                load_country(args, curs)
+            # load recipes
+            if args.all or args.recipe:
+                load_recipe(args, curs)
 
-            with open(filepath, encoding='utf-8') as csvfile:
-                existing = 0
-                added = 0
-                # use | as quote char to avoid messing with " inside quotes
-                opinion_reader = csv.reader(
-                    csvfile, delimiter='\t', quotechar='|')
-                for row in opinion_reader:
-                    if not row or row[0].startswith('#'):
-                        # skip comments and empty lines
-                        continue
-                    if len(row) != COUNTRYINFO_NUM_COLS:
-                        raise ValueError(f'Unexpected length: {row}')
 
-                    row[COUNTRYINFO_CODE] = row[COUNTRYINFO_CODE].upper()
-                    row[COUNTRYINFO_SUBDIVISION] = \
-                        capwords(row[COUNTRYINFO_SUBDIVISION],
-                                 sep=MULTI_SUBDIV_SEP)
-                    if row[COUNTRYINFO_CODE] not in countries.alt_codes:
-                        # skip unrecognised country codes
-                        continue
+def load_country(args: argparse.Namespace, curs):
+    # load country info
+    folder = Path(args.data_folder).resolve()
+    filepath = os.path.join(folder, COUNTRYINFO_TSV)
 
-                    content = get_content_id(
-                        curs, COUNTRYINFO_TABLE, COUNTRYINFO_COUNTRY,
-                        row[COUNTRYINFO_CODE])
-                    if content:
-                        existing += 1
-                    else:
-                        save_countryinfo(
-                            curs, row[COUNTRYINFO_CODE],
-                            row[COUNTRYINFO_SUBDIVISION])
-                        added += 1
+    with open(filepath, encoding='utf-8') as csvfile:
+        existing = 0
+        added = 0
+        # use | as quote char to avoid messing with " inside quotes
+        opinion_reader = csv.reader(
+            csvfile, delimiter='\t', quotechar='|')
+        for row in opinion_reader:
+            if not row or row[0].startswith('#'):
+                # skip comments and empty lines
+                continue
+            if len(row) != COUNTRYINFO_NUM_COLS:
+                raise ValueError(f'Unexpected length: {row}')
 
-            print(f'Added {added} entries to {COUNTRYINFO_TABLE}')
-            print(f'Skipped {existing} entries in {COUNTRYINFO_TABLE}')
+            row[COUNTRYINFO_CODE] = row[COUNTRYINFO_CODE].upper()
+            row[COUNTRYINFO_SUBDIVISION] = \
+                capwords(row[COUNTRYINFO_SUBDIVISION],
+                         sep=MULTI_SUBDIV_SEP)
+            if row[COUNTRYINFO_CODE] not in countries.alt_codes:
+                # skip unrecognised country codes
+                continue
+
+            content = get_content_id(
+                curs, COUNTRYINFO_TABLE, COUNTRYINFO_COUNTRY_COL,
+                row[COUNTRYINFO_CODE])
+            if content:
+                existing += 1
+            else:
+                save_countryinfo(
+                    curs, row[COUNTRYINFO_CODE],
+                    row[COUNTRYINFO_SUBDIVISION])
+                added += 1
+
+    print(f'Country: Added {added} entries to {COUNTRYINFO_TABLE}, '
+          f'skipped {existing} entries')
 
 
 def save_countryinfo(curs, country: str, subdivision: str) -> int:
@@ -163,39 +196,12 @@ def save_countryinfo(curs, country: str, subdivision: str) -> int:
         subdivision if subdivision != NO_SUBDIV else '',    # subdivision
     )
 
-    fields = 'country, subdivision'
-    opinion = insert_content(curs, fields, values, COUNTRYINFO_TABLE)
+    fields = [
+        COUNTRYINFO_COUNTRY_COL, COUNTRYINFO_SUBDIVISION_COL
+    ]
+    result = insert_content(curs, fields, values, COUNTRYINFO_TABLE)
 
-    return opinion
-
-
-def insert_content(curs, fields: str, values: tuple, table: str,
-                   seek_field: str = None, seek_value: str = None):
-
-    sql = f"INSERT INTO {table} ({fields}) " \
-          f"VALUES ({','.join(['%s' for _ in range(len(values))])});"
-    curs.execute(sql, values)
-
-    # get id of new content
-    content = None
-    if seek_field and seek_value:
-        content = get_content_id(
-            curs, table, seek_field, seek_value, exception=True)
-
-    return content
-
-
-def get_content_id(curs, table: str, seek_field: str, seek_value: str,
-                   ignore_case: bool = True, exception: bool = False):
-    if ignore_case:
-        seek_field = f"LOWER({seek_field})"
-        seek_value = f"LOWER('{seek_value}')"
-    curs.execute(f"SELECT id FROM {table} WHERE "
-                 f"{seek_field}={seek_value};")
-    content = curs.fetchone()
-    if not content and exception:
-        raise ValueError(f"Content {seek_field}={seek_value} not found")
-    return content[0] if content else None
+    return result
 
 
 if __name__ == "__main__":

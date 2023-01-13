@@ -20,11 +20,14 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 
-from django.contrib import admin
+from django.apps import AppConfig
+from django.utils.translation import gettext_lazy as _
 
-from .models import CountryInfo
+from .constants import THIS_APP
 
 
-@admin.register(CountryInfo)
-class CountryInfoAdmin(admin.ModelAdmin):
-    """ Class representing the CountryInfo model in the admin interface """
+class RecipesConfig(AppConfig):
+    """ Config class for recipes application """
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = THIS_APP
+    verbose_name = _("Recipe Management")

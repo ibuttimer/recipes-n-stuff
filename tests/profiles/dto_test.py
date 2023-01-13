@@ -39,6 +39,7 @@ EX_COUNTRY_ORDER = [
 INC_COUNTRY_ORDER = EX_COUNTRY_ORDER.copy()
 INC_COUNTRY_ORDER.append(COUNTRY_FIELD)
 
+
 @pytest.mark.django_db
 class TestAddressDto(unittest.TestCase):
     """
@@ -69,7 +70,7 @@ class TestAddressDto(unittest.TestCase):
         self.assertEqual(
             self.dto.display_order, [
                 getattr(self.address, key) for key in INC_COUNTRY_ORDER
-        ])
+            ])
 
     def test_add_new(self):
         """ Test add new placeholder """

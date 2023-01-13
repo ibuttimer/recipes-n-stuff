@@ -19,12 +19,14 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from pathlib import Path
 
-from django.contrib import admin
+# name of this app
+THIS_APP = Path(__file__).resolve().parent.name
 
-from .models import CountryInfo
-
-
-@admin.register(CountryInfo)
-class CountryInfoAdmin(admin.ModelAdmin):
-    """ Class representing the CountryInfo model in the admin interface """
+NAME_FIELD = "name"
+TYPE_FIELD = "type"
+ABBREV_FIELD = 'abbrev'
+BASE_US_FIELD = 'base_us'
+BASE_METRIC_FIELD = 'base_metric'
+MEASURE_FIELD = 'measure'
