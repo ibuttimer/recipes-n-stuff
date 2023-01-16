@@ -13,9 +13,30 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+
+from recipesnstuff import settings
+from .constants import (
+    BASE_APP_NAME, ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL,
+    USERS_URL, USER_APP_NAME, PROFILES_APP_NAME, PROFILES_URL
+)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path(ADMIN_URL, admin.site.urls),
+    path(SUMMERNOTE_URL, include('django_summernote.urls')),
+
+    # urls_auth precedes allauth so that its urls override allauth's
+    path(ACCOUNTS_URL, include(f'{USER_APP_NAME}.urls_auth')),
+    path(ACCOUNTS_URL, include('allauth.urls')),
+    path(USERS_URL, include(f'{USER_APP_NAME}.urls')),
+
+    path(PROFILES_URL, include(f'{PROFILES_APP_NAME}.urls')),
+
+    path('', include(f'{BASE_APP_NAME}.root_urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)

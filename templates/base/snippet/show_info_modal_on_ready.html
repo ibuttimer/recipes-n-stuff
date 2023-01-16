@@ -1,0 +1,11 @@
+<!-- show_info_modal_on_ready.html start -->
+{# --- template variable defines for includes --- #}
+{# info modal template expects: 'identifier' as unique identifier #}
+<script>
+    $(document).ready(function () {
+
+        // display info modal
+        $(modelSelector("-{{identifier}}")).modal('show');
+    });
+</script>
+<!-- show_info_modal_on_ready.html end -->

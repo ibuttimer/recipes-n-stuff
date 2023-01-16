@@ -1,0 +1,20 @@
+<!-- info_title.html start -->
+{# --- template variable defines for includes --- #}
+{# info modal title template expects: 'title' as modal title #}
+{#                                    'title_class' as class for title text #}
+{#                                    'modal_level' as modal level; one of 'danger', 'warn', 'info', 'question' or 'none' #}
+
+{% load i18n %}
+<span class="{{ title_class }}">
+    {% if modal_level == 'danger' %}
+        <i class="fa-solid fa-triangle-exclamation"></i>
+    {% elif modal_level == 'warn' %}
+        <i class="fa-solid fa-circle-exclamation"></i>
+    {% elif modal_level == 'info' %}
+        <i class="fa-solid fa-circle-info"></i>
+    {% elif modal_level == 'question' %}
+        <i class="fa-solid fa-circle-question"></i>
+    {% endif %}
+    {{ title }}
+</span>
+<!-- info_title.html end -->

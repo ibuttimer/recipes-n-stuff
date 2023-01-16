@@ -1,0 +1,28 @@
+
+.country-select-flag {
+    margin: 6px 4px 0;
+    padding-left: 5px;
+    width: 24px;
+    height: 16px;
+}
+
+.card--new-address {
+    border-style: dashed;
+    cursor: pointer;
+}
+
+.a--addr-edit {
+
+}
+
+.a--addr-del {
+
+}
+
+.a--addr-dflt {
+
+}
+
+.h6--default-addr {
+
+}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+<!-- address_form.html start -->
+{# --- template variable defines for includes --- #}
+{# address form template expects: 'address_form' as AddressForm #}
+{#                                'submit_url' as url to submit new/updated address #}
+
+{% load i18n %}
+{% load static %}
+
+{% block head_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+    <link href="{% static 'css/styles-address.css' %}" rel="stylesheet" type="text/css">
+{% endblock extra_css %}
+
+{% block extra_js_head %}
+    {% include "snippet/jquery.html" %}
+{% endblock extra_js_head %}
+
+{% block content %}
+<div class="row mt-2 mb-2">
+    {% if page_heading %}
+    <div class="col-12 text-center">
+        <h3>{{ page_heading | safe }}</h3>
+    </div>
+    {% endif %}
+</div>
+
+<article id="article-content" class="row d-flex justify-content-center">
+    <row class="col-lg-10 col-md-11 col-sm-12">
+        <form {% if not read_only %} method="post" action="{{ submit_url }}" enctype="multipart/x-www-form-urlencoded" {% endif %}>
+            {% if not read_only %}
+                {% csrf_token %}
+            {% endif %}
+
+            <div id="id--address-form-errors-container">
+                {% with form=address_form %}
+                    {% include "snippet/form_errors.html" %}
+                {% endwith %}
+            </div>
+
+            <fieldset {% if read_only %} disabled {% endif %}>
+                {% for field in address_form %}
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-start">
+                        <label for="id_{{ field.name }}" class="col-form-label">{{ field.label }}</label>
+                    </div>
+                    <div {% if field.name == "country" %} class="col-sm-8 d-flex align-items-center" {% else %} class="col-sm-8" {% endif %}>
+                        {{ field }}
+                    </div>
+                </div>
+                {% endfor %}
+            </fieldset>
+
+            <div class="row mb-3">
+                <div class="col-12 text-center">
+                    <button id="id--address-form-submit-btn" type="submit" class="btn btn-primary btn__text">{{ submit_btn_text }}</button>
+                </div>
+            </div>
+        </form>
+    </row>
+</article>
+
+{% endblock content %}
+
+{% block extra_js_body %}
+{% with country_code_mark='country_code_mark' %}
+<script>
+    const COUNTRY_CODE = "{{country_code_mark}}";
+    const SUBDIVISION_URL = "{% url 'profiles:countryinfo_country' country_code_mark %}";
+</script>
+{% endwith %}
+<script src="{% static 'js/address_form.js' %}"></script>
+{% endblock extra_js_body %}
+
+<!-- address_form.html end -->

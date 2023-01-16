@@ -1,6 +1,63 @@
-# Recipes-N-Stuff
+- [Recipes 'N' Stuff](#recipes-n-stuff)
+          - [Fig 1: Responsive Mockup](#fig-1-responsive-mockup)
+  - [Features](#features)
+    - [Existing Features](#existing-features)
+      - [Common Features](#common-features)
+        - [Navigation Bar](#navigation-bar)
+          - [Fig 2: Navigation Bar](#fig-2-navigation-bar)
+    - [User registration and authentication](#user-registration-and-authentication)
+          - [Fig 3: User registration and authentication](#fig-3-user-registration-and-authentication)
+    - [User roles](#user-roles)
+    - [User notifications](#user-notifications)
+          - [Fig 4: User notifications](#fig-4-user-notifications)
+    - [Content CRUD](#content-crud)
+      - [Content creation](#content-creation)
+      - [Content view](#content-view)
+      - [Content edit](#content-edit)
+      - [Content delete](#content-delete)
+          - [Fig 5: Content CRUD](#fig-5-content-crud)
+    - [Content interaction](#content-interaction)
+          - [Fig 6: Content interaction](#fig-6-content-interaction)
+    - [Content search](#content-search)
+          - [Fig 6: Content search](#fig-6-content-search)
+    - [Recipe feeds](#recipe-feeds)
+          - [Fig 7: Recipe feeds](#fig-7-recipe-feeds)
+    - [Future enhancements](#future-enhancements)
+  - [Design](#design)
+  - [Development and Local Deployment](#development-and-local-deployment)
+    - [Environment](#environment)
+    - [Setup](#setup)
+      - [Clone Repository](#clone-repository)
+      - [Virtual Environment](#virtual-environment)
+      - [Environment Setup](#environment-setup)
+      - [Python Setup](#python-setup)
+        - [Production versus Development Setup](#production-versus-development-setup)
+          - [Table 1: Configuration settings](#table-1-configuration-settings)
+      - [Environment variables](#environment-variables)
+        - [Secret Key Generation](#secret-key-generation)
+      - [Social Account Login](#social-account-login)
+        - [Google](#google)
+        - [Twitter](#twitter)
+    - [Before first run](#before-first-run)
+      - [Initialise the database](#initialise-the-database)
+      - [Populate the database](#populate-the-database)
+      - [Create a superuser](#create-a-superuser)
+      - [Build Bootstrap](#build-bootstrap)
+      - [Configure authentication](#configure-authentication)
+    - [Run server](#run-server)
+    - [Application structure](#application-structure)
+  - [Cloud-based Deployment](#cloud-based-deployment)
+    - [Heroku CLI](#heroku-cli)
+    - [Deployment](#deployment)
+  - [Test](#test)
+  - [Credits](#credits)
+    - [Content](#content)
+    - [Code](#code)
 
-Recipes-N-Stuff is an e-commerce site, focused on a community looking for recipe suggestions and online shopping convenience.
+
+# Recipes 'N' Stuff
+
+Recipes 'N' Stuff is an e-commerce site, focused on a community looking for recipe suggestions and online shopping convenience.
 It utilises a subscription-based model, whereby registered users receive recipe suggestions, with the option to optionally purchase the
 required ingredients.
 
@@ -232,6 +289,21 @@ the following steps must be performed, from a terminal window, in the `recipes-n
 ````shell
 $ python manage.py migrate
 ````
+#### Populate the database
+Download the recipe data from [Food.com - Recipes and Reviews](https://www.kaggle.com/datasets/irkaal/foodcom-recipes-and-reviews)
+and save the `recipes.parquet` file to [data](data) folder. 
+
+Populate the database with predefined data via the [populate.py](data/populate.py) script.
+When run using [run_populate.py](run_populate.py) it will load the data from [subdivisions.txt](data/subdivisions.txt).
+
+From the project root folder run the following
+```bash
+# Help listing
+python run_populate.py -h
+
+# E.g. populated the remote database 
+python run_populate.py -f data -dv REMOTE_DATABASE_URL
+```
 #### Create a superuser
 Enter `Username`, `Password` and optionally `Email address`.
 ````shell
@@ -278,6 +350,17 @@ From [django-allauth Post-Installation](https://django-allauth.readthedocs.io/en
 
       And add the Site for your domain to the `Chosen sites` list
 
+### Run server
+In order to run the development server, run the following command from the `recipes-n-stuff` folder:
+
+````shell
+$ python manage.py runserver
+````
+
+By default, the server runs on port 8000 on the IP address 127.0.0.1.
+See [runserver](https://docs.djangoproject.com/en/4.1/ref/django-admin/#runserver) for details on passing an IP address and port number explicitly.
+
+
 ### Application structure
 The application structure is as follows:
 
@@ -288,10 +371,11 @@ The application structure is as follows:
 │  ├─ design            - design related documentation
 │  └─ test              - test reports
 ├─ manage.py            - application entry point
-├─ recipes-n-stuff       - main Django application
+├─ recipesnstuff        - main Django application
 ├─ base                 - base Django application
 ├─ django_tests         - Django Test Tools test scripts
 ├─ jest_tests           - Jest javascript tests
+├─ profiles             - shopping profiles Django application
 ├─ user                 - user Django application
 ├─ static               - static files
 │  ├─ css               - custom CSS
@@ -330,7 +414,7 @@ The following steps were followed to deploy the website:
 
            __Note:__ In order the access the dashboard for the provisioned Cloudinary account, use the [Heroku CLI](https://devcenter.heroku.com/articles/cloudinary#management-console)
               ```shell
-              $ heroku addons:open cloudinary
+              $ heroku addons:open cloudinary --app=recipesnstuff
               ```
 
 - From the app settings, select the `Settings` tab.
@@ -442,6 +526,15 @@ The following resources were used to build the website.
 
 ### Content
 
+- Logo [bowl rice image](https://github.com/FortAwesome/Font-Awesome/blob/6.x/svgs/solid/bowl-rice.svg), [Icons License](https://github.com/FortAwesome/Font-Awesome#license) [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), by [Font Awesome](https://fontawesome.com/)
+- The favicon for the site was generated by [RealFaviconGenerator](https://realfavicongenerator.net/) from [bowl rice image](https://github.com/FortAwesome/Font-Awesome/blob/6.x/svgs/solid/bowl-rice.svg) , [Icons License](https://github.com/FortAwesome/Font-Awesome#license) [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), by [Font Awesome](https://fontawesome.com/)
+- [Blank avatar image](static/img/avatar_blank.svg) by [WingTillDie](https://pixabay.com/users/wingtilldie-3058071/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1577909) from [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1577909)
+- [Chef image](static/img/chef-4807317_1920.jpg) by [abdulla binmassam](https://pixabay.com/users/binmassam-15041405/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=4807317) from [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=4807317), cropped
+- [Barbeque skewers image](static/img/meat-skewer-1440105_1920.jpg) by [-Rita-👩‍🍳 und 📷 mit ❤](https://pixabay.com/users/ritae-19628/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1440105) from [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1440105)
+- [Baked goods image](static/img/baked-goods-1846460_1920.jpg) by [Pexels](https://pixabay.com/users/pexels-2286921/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1846460) from [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1846460), cropped
+- Country [subdivision data](data/subdivisions.txt) courtesy of https://en.wikipedia.org/wiki/ISO_3166-2
+- Standard measures data courtesy of [Cooking weights and measures](https://en.wikipedia.org/wiki/Cooking_weights_and_measures) and [United States customary units](https://en.wikipedia.org/wiki/United_States_customary_units)
+- Recipe data courtesy of [Food.com - Recipes and Reviews](https://www.kaggle.com/datasets/irkaal/foodcom-recipes-and-reviews) by [Alvin](https://www.kaggle.com/irkaal)
 
 ### Code
 

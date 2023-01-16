@@ -1,0 +1,55 @@
+<!-- address_dto.html start -->
+{# --- template variable defines for includes --- #}
+{# address dto template expects: 'address_dto' as AddressDto #}
+{#                               'identifier' as individual identifier #}
+
+{% load i18n %}
+{% load static %}
+{% load attr_append %}
+{% load countries %}
+
+<div class="col-lg-6">
+    {% attr_append 'class="card rounded-3 mb-4"' 'card--new-address' address_dto.add_new as card_class %}
+    <div {{card_class | safe}}>
+        <div {% if address_dto.add_new %} id="id--address-new" {% else %} id="id--address-{{identifier}}" {% endif %} class="card-body">
+            {% if address_dto.add_new %}
+                <div class="row mb-3">
+                    <div class="col-12 text-center">
+                        <p>Add address</p>
+                        <p><i class="fa-solid fa-plus"></i></p>
+                    </div>
+                </div>
+            {% else %}
+                <div class="row mb-3">
+                    <div class="col-12 text-center">
+                        {% for field in address_dto.display_order_ex_country %}
+                            {% if field %}
+                                <p class="mb-0">{{ field }}</p>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% get_country address_dto.country as country %}
+                        <p class="mb-0">{{ country.name }}</p>
+
+                        {% for field in address_dto.display_order_ex_country %}
+                            {% if not field %}
+                                <p class="mb-0"></p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="row mb-0">
+                    <div class="col-sm-9">
+                        <a class="a--addr-edit" href="{% url 'profiles:address_id' address_dto.id %}">{% trans "Edit" %}</a>{% if not address_dto.is_default %}&ensp;&ensp;&VerticalLine;&ensp;&ensp;<a class="a--addr-del" href="{% url 'profiles:address_id' address_dto.id %}">{% trans "Delete" %}</a>&ensp;&ensp;&VerticalLine;&ensp;&ensp;<a class="a--addr-dflt" href="{% url 'profiles:address_id_default' address_dto.id %}">{% trans "Make Default" %}</a>{% endif %}
+                    </div>
+                    {% if address_dto.is_default %}
+                        <div class="col-sm-3 text-end">
+                            <h6 class="h6--default-addr">Default</h6>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<!-- address_dto.html end -->
