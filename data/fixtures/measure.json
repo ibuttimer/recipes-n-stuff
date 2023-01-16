@@ -100,7 +100,7 @@
         "name": "fluid ounce",
         "abbrev": "fl. oz.",
         "base_us": "1.0000000000",
-        "base_metric": "0.2957352956"
+        "base_metric": "0.2957352968"
     }
 },
 {
@@ -228,7 +228,7 @@
         "system": "us",
         "is_default": false,
         "name": "drop",
-        "abbrev": "dr.",
+        "abbrev": "gt.",
         "base_us": "0.0017361111",
         "base_metric": "0.0005134293"
     }
@@ -243,7 +243,7 @@
         "name": "dram",
         "abbrev": "dr.",
         "base_us": "0.0625000000",
-        "base_metric": "1.7718500000"
+        "base_metric": "1.7718451953"
     }
 },
 {
@@ -256,7 +256,7 @@
         "name": "ounce",
         "abbrev": "oz.",
         "base_us": "1.0000000000",
-        "base_metric": "28.3495200000"
+        "base_metric": "28.3495231250"
     }
 },
 {
@@ -277,8 +277,8 @@
     "pk": 22,
     "fields": {
         "type": "u",
-        "system": "us",
-        "is_default": false,
+        "system": "1",
+        "is_default": true,
         "name": "unit",
         "abbrev": "",
         "base_us": "1.0000000000",
@@ -294,7 +294,7 @@
         "is_default": false,
         "name": "litre",
         "abbrev": "l",
-        "base_us": "33.8140000000",
+        "base_us": "33.8140225589",
         "base_metric": "10.0000000000"
     }
 },
@@ -303,11 +303,11 @@
     "pk": 24,
     "fields": {
         "type": "w",
-        "system": "us",
+        "system": "si",
         "is_default": false,
         "name": "kilogram",
         "abbrev": "kg",
-        "base_us": "35.2740000000",
+        "base_us": "35.2739619495",
         "base_metric": "1000.0000000000"
     }
 },
@@ -320,7 +320,7 @@
         "is_default": false,
         "name": "millilitre",
         "abbrev": "ml",
-        "base_us": "0.0338100000",
+        "base_us": "0.0338140225",
         "base_metric": "0.0100000000"
     }
 },
@@ -333,7 +333,7 @@
         "is_default": false,
         "name": "centilitre",
         "abbrev": "cl",
-        "base_us": "0.3381400000",
+        "base_us": "0.3381402255",
         "base_metric": "0.1000000000"
     }
 },
@@ -346,7 +346,7 @@
         "is_default": true,
         "name": "decilitre",
         "abbrev": "dl",
-        "base_us": "3.3814000000",
+        "base_us": "3.3814022558",
         "base_metric": "1.0000000000"
     }
 },
@@ -355,11 +355,11 @@
     "pk": 28,
     "fields": {
         "type": "w",
-        "system": "us",
+        "system": "si",
         "is_default": true,
         "name": "gram",
         "abbrev": "g",
-        "base_us": "0.0352740000",
+        "base_us": "0.0352739619",
         "base_metric": "1.0000000000"
     }
 },
@@ -373,7 +373,7 @@
         "name": "stone",
         "abbrev": "st.",
         "base_us": "224.0000000000",
-        "base_metric": "6350.2990000000"
+        "base_metric": "6350.2931800000"
     }
 },
 {
@@ -381,11 +381,11 @@
     "pk": 30,
     "fields": {
         "type": "w",
-        "system": "us",
+        "system": "si",
         "is_default": false,
         "name": "milligram",
         "abbrev": "mg",
-        "base_us": "0.0000352740",
+        "base_us": "0.0000352739",
         "base_metric": "0.0010000000"
     }
 }

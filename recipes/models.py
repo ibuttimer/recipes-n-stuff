@@ -21,6 +21,7 @@
 #  DEALINGS IN THE SOFTWARE.
 from dataclasses import dataclass
 from typing import TypeVar
+from decimal import Decimal
 
 from django.db import models
 from django.db.models import DurationField
@@ -134,8 +135,25 @@ class Measure(ModelMixin, models.Model):
     # Values taken from
     # https://en.wikipedia.org/wiki/Cooking_weights_and_measures#British_(Imperial)_measures
     # https://en.wikipedia.org/wiki/United_States_customary_units
-    base_us = models.DecimalField(max_digits=19, decimal_places=10)
-    base_metric = models.DecimalField(max_digits=19, decimal_places=10)
+    base_us = models.DecimalField(
+        max_digits=19, decimal_places=10, default=1.0)
+    base_metric = models.DecimalField(
+        max_digits=19, decimal_places=10, default=1.0)
+
+    @property
+    def base_system(self) -> Decimal:
+        """ Conversion factor to system base unit """
+        return self.other_system(self)
+
+    def other_system(self, measure: TypeMeasure) -> Decimal:
+        """
+        Conversion factor to another system base unit
+        :param measure: measure for which conversion factor is needed
+        :return:
+        """
+        # doesn't matter which base used for SYSTEM_ONE as they're the same
+        return self.base_metric if measure.system == Measure.SYSTEM_METRIC \
+            else self.base_us
 
     @dataclass
     class Meta:
@@ -170,9 +188,8 @@ class Measure(ModelMixin, models.Model):
     @classmethod
     def get_default_unit(cls) -> TypeMeasure:
         """ Get the default pk for objects requiring a Measure field """
-        default_inst, _ = cls._get_default_instance(
+        return cls._get_default_instance(
             'unit', '', Measure.UNIT, Measure.SYSTEM_ONE)
-        return default_inst
 
     @classmethod
     def get_default_us_dry_fluid(cls) -> TypeMeasure:
@@ -180,9 +197,8 @@ class Measure(ModelMixin, models.Model):
         Get the default US base unit for objects requiring a dry/fluid
         Measure field
         """
-        default_inst, _ = cls._get_default_instance(
+        return cls._get_default_instance(
             'fluid ounce', 'fl. oz.', Measure.DRY_FLUID, Measure.SYSTEM_US)
-        return default_inst
 
     @classmethod
     def get_default_us_weight(cls) -> TypeMeasure:
@@ -190,9 +206,8 @@ class Measure(ModelMixin, models.Model):
         Get the default US base unit for objects requiring a weight
         Measure field
         """
-        default_inst, _ = cls._get_default_instance(
+        return cls._get_default_instance(
             'ounce', 'oz.', Measure.WEIGHT, Measure.SYSTEM_US)
-        return default_inst
 
     @classmethod
     def get_default_metric_dry_fluid(cls) -> TypeMeasure:
@@ -200,9 +215,8 @@ class Measure(ModelMixin, models.Model):
         Get the default US base unit for objects requiring a dry/fluid
         Measure field
         """
-        default_inst, _ = cls._get_default_instance(
+        return cls._get_default_instance(
             'decilitre', 'dl', Measure.DRY_FLUID, Measure.SYSTEM_METRIC)
-        return default_inst
 
     @classmethod
     def get_default_metric_weight(cls) -> TypeMeasure:
@@ -210,9 +224,8 @@ class Measure(ModelMixin, models.Model):
         Get the default US base unit for objects requiring a weight
         Measure field
         """
-        default_inst, _ = cls._get_default_instance(
+        return cls._get_default_instance(
             'gram', 'g', Measure.WEIGHT, Measure.SYSTEM_METRIC)
-        return default_inst
 
     def __str__(self):
         return f'{self.name}'
