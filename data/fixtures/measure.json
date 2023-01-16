@@ -1,0 +1,392 @@
+[
+{
+    "model": "recipes.measure",
+    "pk": 1,
+    "fields": {
+        "type": "df",
+        "system": "us",
+        "is_default": false,
+        "name": "gallon",
+        "abbrev": "gal.",
+        "base_us": "128.0000000000",
+        "base_metric": "37.8541178400"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 2,
+    "fields": {
+        "type": "df",
+        "system": "us",
+        "is_default": false,
+        "name": "quart",
+        "abbrev": "qt.",
+        "base_us": "32.0000000000",
+        "base_metric": "9.4635294600"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 3,
+    "fields": {
+        "type": "df",
+        "system": "us",
+        "is_default": false,
+        "name": "pint",
+        "abbrev": "pt.",
+        "base_us": "16.0000000000",
+        "base_metric": "4.7317647300"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 4,
+    "fields": {
+        "type": "df",
+        "system": "us",
+        "is_default": false,
+        "name": "cup",
+        "abbrev": "C",
+        "base_us": "8.0000000000",
+        "base_metric": "2.3658823650"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 5,
+    "fields": {
+        "type": "df",
+        "system": "us",
+        "is_default": false,
+        "name": "teacup",
+        "abbrev": "tcf.",
+        "base_us": "4.0000000000",
+        "base_metric": "1.1829411825"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 6,
+    "fields": {
+        "type": "df",
+        "system": "us",
+        "is_default": false,
+        "name": "gill",
+        "abbrev": "gi.",
+        "base_us": "4.0000000000",
+        "base_metric": "1.1829411825"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 7,
+    "fields": {
+        "type": "df",
+        "system": "us",
+        "is_default": false,
+        "name": "wineglass",
+        "abbrev": "wgf.",
+        "base_us": "2.0000000000",
+        "base_metric": "0.5914705912"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 8,
+    "fields": {
+        "type": "df",
+        "system": "us",
+        "is_default": true,
+        "name": "fluid ounce",
+        "abbrev": "fl. oz.",
+        "base_us": "1.0000000000",
+        "base_metric": "0.2957352968"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 9,
+    "fields": {
+        "type": "df",
+        "system": "us",
+        "is_default": false,
+        "name": "tablespoon",
+        "abbrev": "tbsp.",
+        "base_us": "0.5000000000",
+        "base_metric": "0.1478676478"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 10,
+    "fields": {
+        "type": "df",
+        "system": "us",
+        "is_default": false,
+        "name": "dessertspoon",
+        "abbrev": "dsp.",
+        "base_us": "0.3333333333",
+        "base_metric": "0.0985784319"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 11,
+    "fields": {
+        "type": "df",
+        "system": "us",
+        "is_default": false,
+        "name": "teaspoon",
+        "abbrev": "tsp.",
+        "base_us": "0.1666666666",
+        "base_metric": "0.0492892159"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 12,
+    "fields": {
+        "type": "df",
+        "system": "us",
+        "is_default": false,
+        "name": "fluid dram",
+        "abbrev": "fl. dr.",
+        "base_us": "0.1250000000",
+        "base_metric": "0.0369669119"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 13,
+    "fields": {
+        "type": "df",
+        "system": "us",
+        "is_default": false,
+        "name": "coffeespoon",
+        "abbrev": "csp.",
+        "base_us": "0.0625000000",
+        "base_metric": "0.0184834559"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 14,
+    "fields": {
+        "type": "df",
+        "system": "us",
+        "is_default": false,
+        "name": "saltspoon",
+        "abbrev": "ssp.",
+        "base_us": "0.0312500000",
+        "base_metric": "0.0092417279"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 15,
+    "fields": {
+        "type": "df",
+        "system": "us",
+        "is_default": false,
+        "name": "dash",
+        "abbrev": "ds.",
+        "base_us": "0.0156250000",
+        "base_metric": "0.0046208639"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 16,
+    "fields": {
+        "type": "df",
+        "system": "us",
+        "is_default": false,
+        "name": "pinch",
+        "abbrev": "pn.",
+        "base_us": "0.0078125000",
+        "base_metric": "0.0023104319"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 17,
+    "fields": {
+        "type": "df",
+        "system": "us",
+        "is_default": false,
+        "name": "smidgen",
+        "abbrev": "smdg.",
+        "base_us": "0.0039062500",
+        "base_metric": "0.0011552159"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 18,
+    "fields": {
+        "type": "df",
+        "system": "us",
+        "is_default": false,
+        "name": "drop",
+        "abbrev": "gt.",
+        "base_us": "0.0017361111",
+        "base_metric": "0.0005134293"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 19,
+    "fields": {
+        "type": "w",
+        "system": "us",
+        "is_default": false,
+        "name": "dram",
+        "abbrev": "dr.",
+        "base_us": "0.0625000000",
+        "base_metric": "1.7718451953"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 20,
+    "fields": {
+        "type": "w",
+        "system": "us",
+        "is_default": true,
+        "name": "ounce",
+        "abbrev": "oz.",
+        "base_us": "1.0000000000",
+        "base_metric": "28.3495231250"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 21,
+    "fields": {
+        "type": "w",
+        "system": "us",
+        "is_default": false,
+        "name": "pound",
+        "abbrev": "lb.",
+        "base_us": "16.0000000000",
+        "base_metric": "453.5923700000"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 22,
+    "fields": {
+        "type": "u",
+        "system": "1",
+        "is_default": true,
+        "name": "unit",
+        "abbrev": "",
+        "base_us": "1.0000000000",
+        "base_metric": "1.0000000000"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 23,
+    "fields": {
+        "type": "df",
+        "system": "si",
+        "is_default": false,
+        "name": "litre",
+        "abbrev": "l",
+        "base_us": "33.8140225589",
+        "base_metric": "10.0000000000"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 24,
+    "fields": {
+        "type": "w",
+        "system": "si",
+        "is_default": false,
+        "name": "kilogram",
+        "abbrev": "kg",
+        "base_us": "35.2739619495",
+        "base_metric": "1000.0000000000"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 25,
+    "fields": {
+        "type": "df",
+        "system": "si",
+        "is_default": false,
+        "name": "millilitre",
+        "abbrev": "ml",
+        "base_us": "0.0338140225",
+        "base_metric": "0.0100000000"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 26,
+    "fields": {
+        "type": "df",
+        "system": "si",
+        "is_default": false,
+        "name": "centilitre",
+        "abbrev": "cl",
+        "base_us": "0.3381402255",
+        "base_metric": "0.1000000000"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 27,
+    "fields": {
+        "type": "df",
+        "system": "si",
+        "is_default": true,
+        "name": "decilitre",
+        "abbrev": "dl",
+        "base_us": "3.3814022558",
+        "base_metric": "1.0000000000"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 28,
+    "fields": {
+        "type": "w",
+        "system": "si",
+        "is_default": true,
+        "name": "gram",
+        "abbrev": "g",
+        "base_us": "0.0352739619",
+        "base_metric": "1.0000000000"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 29,
+    "fields": {
+        "type": "w",
+        "system": "us",
+        "is_default": false,
+        "name": "stone",
+        "abbrev": "st.",
+        "base_us": "224.0000000000",
+        "base_metric": "6350.2931800000"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 30,
+    "fields": {
+        "type": "w",
+        "system": "si",
+        "is_default": false,
+        "name": "milligram",
+        "abbrev": "mg",
+        "base_us": "0.0000352739",
+        "base_metric": "0.0010000000"
+    }
+}
+]

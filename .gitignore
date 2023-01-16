@@ -192,6 +192,25 @@ cloudinary_python.txt
 # unnecessary artifacts
 /doc/test/lighthouse/results.md
 
+# size exceed github max
+/data/recipes.parquet
+
 # temp
 /doc/test/django_report/
 /doc/test/unittest_report/
+/doc/test/pytest_report/
+/static/fontawesome/svgs/
+/static/fontawesome/css/all.css
+/static/fontawesome/css/all.min.css
+/static/fontawesome/webfonts/fa-v4compatibility.ttf
+/static/fontawesome/webfonts/fa-v4compatibility.woff2
+/static/fontawesome/css/regular.css
+/static/fontawesome/css/regular.min.css
+/static/fontawesome/css/svg-with-js.css
+/static/fontawesome/css/svg-with-js.min.css
+/static/fontawesome/css/v4-font-face.css
+/static/fontawesome/css/v4-font-face.min.css
+/static/fontawesome/css/v4-shims.css
+/static/fontawesome/css/v4-shims.min.css
+/static/fontawesome/css/v5-font-face.css
+/static/fontawesome/css/v5-font-face.min.css

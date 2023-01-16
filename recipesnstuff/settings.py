@@ -1,3 +1,25 @@
+#  MIT License
+#
+#  Copyright (c) 2023 Ian Buttimer
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to
+#  deal in the Software without restriction, including without limitation the
+#  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+#  sell copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#  DEALINGS IN THE SOFTWARE.
+
 """
 Django settings for recipesnstuff project.
 
@@ -9,13 +31,23 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
+
 import os
 from pathlib import Path
 
 import environ
+from django.contrib.messages import constants as messages
+
+from .constants import (
+    BASE_APP_NAME, MIN_PASSWORD_LEN, USER_APP_NAME, PROFILES_APP_NAME,
+    RECIPES_APP_NAME,
+    LOGIN_URL as USER_LOGIN_URL, LOGIN_ROUTE_NAME, HOME_ROUTE_NAME
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+# name of main app
+MAIN_APP = Path(__file__).resolve().parent.name
 
 # required environment variables are keys of 'scheme' plus REQUIRED_ENV_VARS
 scheme = {
@@ -45,6 +77,50 @@ DEBUG = env('DEBUG')
 DEVELOPMENT = env('DEVELOPMENT')
 TEST = env('TEST')
 
+# https://docs.djangoproject.com/en/4.1/ref/clickjacking/
+# required for Summernote editor
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+SUMMERNOTE_THEME = 'bs4'    # TODO bs5 not working at the moment
+# https://github.com/summernote/django-summernote#options
+SUMMERNOTE_CONFIG = {
+    # Using SummernoteWidget - iframe mode, default
+    'iframe': True,
+
+    # You can put custom Summernote settings
+    'summernote': {
+        # As an example, using Summernote Air-mode
+        'airMode': False,
+
+        # Change editor size
+        'width': '100%',
+        'height': '480',
+
+        # Use proper language setting automatically (default)
+        'lang': None,
+
+        # Toolbar customization
+        # https://summernote.org/deep-dive/#custom-toolbar-popover
+        'toolbar': [
+            ['style', ['style']],
+            ['font', ['bold', 'underline', 'clear']],
+            ['fontname', ['fontname']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['table', ['table']],
+            ['insert', ['link', 'picture']],
+            ['view', ['fullscreen', 'codeview', 'help']],
+        ],
+    },
+    # Require users to be authenticated for uploading attachments.
+    'attachment_require_authentication': True,
+
+    # Lazy initialization
+    # If you want to initialize summernote at the bottom of page,
+    # set this as True and call `initSummernote()` on your page.
+    'lazy': False,
+    # TODO need to figure out initSummernote for admin site to enable this
+}
+
 if env('DEVELOPMENT'):
     ALLOWED_HOSTS = ['testserver'] \
         if env('TEST') else ['localhost', '127.0.0.1']
@@ -62,13 +138,41 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.humanize',
 
+    # The following apps are required by 'allauth':
+    #   django.contrib.auth, django.contrib.messages
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.twitter',
+
     # https://pypi.org/project/dj3-cloudinary-storage/
     # If using for static and/or media files, make sure that cloudinary_storage
     # is before django.contrib.staticfiles
     'cloudinary_storage',
     'django.contrib.staticfiles',
     'cloudinary',
+    'django_summernote',
+
+    'django_countries',
+
+    BASE_APP_NAME,
+    USER_APP_NAME,
+    PROFILES_APP_NAME,
+    RECIPES_APP_NAME,
+
+    # needs to be after app with django template overrides
+    'django.forms',
 ]
+
+# To supply custom templates to django widgets:
+# 1) Add 'django.forms' to INSTALLED_APPS; *after* the app with the overrides.
+# 2) Add FORM_RENDERER = 'django.forms.renderers.TemplatesSetting' to
+#    settings.py.
+# Courtesy of https://stackoverflow.com/a/52184422/4054609
+# https://docs.djangoproject.com/en/4.1/ref/forms/renderers/#django.forms.renderers.TemplatesSetting
+FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -80,12 +184,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'recipesnstuff.urls'
+# https://docs.djangoproject.com/en/4.1/ref/settings/#root-urlconf
+ROOT_URLCONF = f'{MAIN_APP}.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -93,13 +198,24 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
+                # `allauth` needs this from django
+                'django.template.context_processors.request',
+
+                # app-specific context processors
+                f'{MAIN_APP}.context_processors.footer_context',
+                # f'{MAIN_APP}.context_processors.test_context',
+                f'{BASE_APP_NAME}.context_processors.base_context',
+                f'{USER_APP_NAME}.context_processors.user_context',
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'recipesnstuff.wsgi.application'
+# email
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+WSGI_APPLICATION = f'{MAIN_APP}.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
@@ -125,6 +241,37 @@ DATABASES = {
 }
 
 
+# https://docs.djangoproject.com/en/4.1/ref/settings/#auth-user-model
+AUTH_USER_MODEL = f'{USER_APP_NAME}.User'
+
+# 'allauth' site id
+SITE_ID = int(env('SITE_ID'))
+# 'allauth' provider specific settings
+SOCIALACCOUNT_PROVIDERS = {
+    # For each OAuth based provider, either add a ``SocialApp``
+    # (``socialaccount`` app) containing the required client
+    # credentials, or list them here:
+    "google": {
+        # https://django-allauth.readthedocs.io/en/latest/providers.html#google
+        "APP": {
+        },
+        # These are provider-specific settings that can only be
+        # listed here:
+        "SCOPE": [
+            "profile",
+            "email",
+        ],
+        "AUTH_PARAMS": {
+            "access_type": "online",
+        }
+    },
+    # https://django-allauth.readthedocs.io/en/latest/providers.html#twitter
+    "twitter": {
+        "APP": {
+        },
+    }
+}
+
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
@@ -134,6 +281,9 @@ AUTH_PASSWORD_VALIDATORS = [{
     }, {
         'NAME': 'django.contrib.auth.password_validation.'
                 'MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': MIN_PASSWORD_LEN,
+        }
     }, {
         'NAME': 'django.contrib.auth.password_validation.'
                 'CommonPasswordValidator',
@@ -144,6 +294,45 @@ AUTH_PASSWORD_VALIDATORS = [{
     },
 ]
 
+# https://docs.djangoproject.com/en/4.1/ref/settings/#login-url
+LOGIN_URL = USER_LOGIN_URL
+# https://docs.djangoproject.com/en/4.1/ref/settings/#login-redirect-url
+LOGIN_REDIRECT_URL = '/'
+# https://docs.djangoproject.com/en/4.1/ref/settings/#logout-redirect-url
+LOGOUT_REDIRECT_URL = '/'
+
+# https://django-allauth.readthedocs.io/en/latest/configuration.html
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE = True
+ACCOUNT_USERNAME_MIN_LENGTH = 4
+# needs route name (default value of settings.LOGIN_URL
+# i.e. a url doesn't work [except '/'?])
+ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = LOGIN_ROUTE_NAME
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = HOME_ROUTE_NAME
+
+# https://django-allauth.readthedocs.io/en/latest/forms.html
+ACCOUNT_FORMS = {
+    'signup': f'{USER_APP_NAME}.forms.UserSignupForm',
+    'login': f'{USER_APP_NAME}.forms.UserLoginForm',
+    'reset_password': f'{USER_APP_NAME}.forms.UserResetPasswordForm',
+    'change_password': f'{USER_APP_NAME}.forms.UserChangePasswordForm',
+    'add_email': f'{USER_APP_NAME}.forms.UserAddEmailForm',
+}
+# https://django-allauth.readthedocs.io/en/latest/forms.html#socialaccount-forms
+SOCIALACCOUNT_FORMS = {
+    'signup': f'{USER_APP_NAME}.forms.UserSocialSignupForm',
+}
+
+# https://docs.djangoproject.com/en/4.1/ref/settings/#std-setting-MESSAGE_TAGS
+MESSAGE_TAGS = {
+    messages.DEBUG: 'alert-info',
+    messages.INFO: 'alert-info',
+    messages.SUCCESS: 'alert-success',
+    messages.WARNING: 'alert-warning',
+    messages.ERROR: 'alert-danger',
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
@@ -199,7 +388,42 @@ DEFAULT_FILE_STORAGE = \
     if DEVELOPMENT else \
     'cloudinary_storage.storage.MediaCloudinaryStorage'
 
+# fixtures
+FIXTURE_DIRS = [
+    os.path.join(BASE_DIR, 'data', 'fixtures')
+]
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# url for blank avatar image
+AVATAR_BLANK_URL = env.get_value('AVATAR_BLANK_URL', default='')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        }
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+        }
+    },
+    'loggers': {
+        'django.db.backends': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+        }
+    }
+}
+
+# Google site verification
+# https://support.google.com/webmasters/answer/9008080#meta_tag_verification&zippy=%2Chtml-tag
+GOOGLE_SITE_VERIFICATION = env('GOOGLE_SITE_VERIFICATION', default='')

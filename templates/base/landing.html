@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+{% load static %}
+{% load attr_append %}
+
+{% block head_title %}{{app_name}}{% endblock %}
+
+{% block content %}
+<div class="px-4 pt-5 my-5 text-center border-bottom">
+    <h1 class="display-4 fw-bold">{{app_name}}</h1>
+    <div id="id--landing-carousel-cations" class="carousel slide">
+        <div class="carousel-indicators">
+            {% for item in carousel %}
+                <button type="button" data-bs-target="#id--landing-carousel-cations" data-bs-slide-to="{{forloop.counter0}}"
+                        {% if item.active %}class="active" aria-current="true"{% endif %} aria-label="Slide {{forloop.counter}}"></button>
+            {% endfor %}
+        </div>
+        <div class="carousel-inner">
+            {% for item in carousel %}
+                {% attr_append 'class="carousel-item"' 'active' item.active as item_class %}
+                <div {{ item_class | safe }}>
+                    <img src="{{ item.url }}" class="d-block w-100" alt="{{ item.alt }}">
+                    <div class="carousel-caption d-none d-md-block">
+                        <div class="col-lg-6 mx-auto">
+                            <p class="lead mb-4 bg-dark bg-gradient rounded">{{ item.lead }}</p>
+                            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
+                                <a id="id--sign-in-{{forloop.counter0}}" class="btn btn-success btn-lg px-4 me-sm-3" href="{% url 'account_login' %}">{% trans "Sign In" %}</a>
+                                <a id="id--register-{{forloop.counter0}}" class="btn btn-primary btn-lg px-4 me-sm-3" href="{% url 'account_signup' %}">{% trans "Register" %}</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#id--landing-carousel-cations" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#id--landing-carousel-cations" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+</div>
+
+{% include "snippet/site_warning.html" %}
+
+{% endblock %}
