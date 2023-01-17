@@ -22,16 +22,21 @@
 from dataclasses import dataclass
 from typing import TypeVar
 from decimal import Decimal
+from datetime import timedelta, datetime, MINYEAR, timezone
 
 from django.db import models
-from django.db.models import DurationField
 from django.utils.translation import gettext_lazy as _
 
+from user.models import User
 from utils import ModelMixin
 
 from .constants import (
     NAME_FIELD, TYPE_FIELD, SYSTEM_FIELD, IS_DEFAULT_FIELD, ABBREV_FIELD,
-    BASE_US_FIELD, BASE_METRIC_FIELD, MEASURE_FIELD
+    BASE_US_FIELD, BASE_METRIC_FIELD, MEASURE_FIELD, FOOD_ID_FIELD, TEXT_FIELD,
+    URL_FIELD, RECIPE_FIELD, PREP_TIME_FIELD, COOK_TIME_FIELD,
+    DATE_PUBLISHED_FIELD, DESCRIPTION_FIELD, CATEGORY_FIELD, KEYWORDS_FIELD,
+    AUTHOR_FIELD, SERVINGS_FIELD, RECIPE_YIELD_FIELD, INGREDIENTS_FIELD,
+    INSTRUCTIONS_FIELD
 )
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
@@ -114,16 +119,21 @@ class Measure(ModelMixin, models.Model):
     ]
 
     type = models.CharField(
-        max_length=2,
-        choices=TYPE_CHOICES,
-        default=DRY_FLUID,
+        max_length=2, choices=TYPE_CHOICES, default=DRY_FLUID, help_text=_(
+            "Designates the type of measurement."
+        )
     )
     system = models.CharField(
-        max_length=2,
-        choices=SYSTEM_CHOICES,
-        default=SYSTEM_US,  # since the recipes use US measures
+        # default is US since the sample recipes use US measures
+        max_length=2, choices=SYSTEM_CHOICES, default=SYSTEM_US, help_text=_(
+            "Designates the measurement system."
+        )
     )
-    is_default = models.BooleanField(default=False, blank=False)
+    is_default = models.BooleanField(
+        default=False, blank=False, help_text=_(
+            "Designates the default measurement for the system and type."
+        )
+    )
     name = models.CharField(
         _('name'), max_length=MEASURE_ATTRIB_NAME_MAX_LEN, unique=True)
     abbrev = models.CharField(
@@ -226,6 +236,34 @@ class Measure(ModelMixin, models.Model):
         """
         return cls._get_default_instance(
             'gram', 'g', Measure.WEIGHT, Measure.SYSTEM_METRIC)
+
+    def __str__(self):
+        return f'{self.name}'
+
+
+class Ingredient(ModelMixin, models.Model):
+    """
+    Ingredient model
+    """
+    # field names
+    NAME_FIELD = NAME_FIELD
+    MEASURE_FIELD = MEASURE_FIELD
+
+    KEYWORD_ATTRIB_NAME_MAX_LEN: int = 75
+
+    name = models.CharField(
+        _('name'), max_length=KEYWORD_ATTRIB_NAME_MAX_LEN,
+        blank=False, unique=True)
+
+    measure = models.ForeignKey(
+        Measure, on_delete=models.CASCADE, help_text=_(
+            "Designates the standard measure for the ingredient."
+        )
+    )
+
+    @dataclass
+    class Meta:
+        """ Model metadata """
 
     def __str__(self):
         return f'{self.name}'

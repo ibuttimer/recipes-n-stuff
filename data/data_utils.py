@@ -24,6 +24,7 @@
 # Script to load a set of standard data to the database
 
 from pathlib import Path
+from typing import Any, Optional
 
 from psycopg2.extras import execute_batch
 
@@ -34,7 +35,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 def insert_content(curs, fields: list[str], values: tuple, table: str,
                    unique: bool = False,
                    seek_field: str = None, seek_value: str = None):
-
+    """
+    Insert content into database
+    :param curs: cursor
+    :param fields: list of fields
+    :param values: list of values
+    :param table: table in insert into
+    :param unique: entry is unique flag: default False
+    :param seek_field: field to use to load inserted entry; default None
+    :param seek_value: value to use to load inserted entry; default None
+    """
     values_fmt = ','.join(['%s' for _ in range(len(values))])
     field_list = ', '.join(fields)
 
@@ -51,26 +61,38 @@ def insert_content(curs, fields: list[str], values: tuple, table: str,
     new_id = curs.fetchone()[0] if curs.rowcount else None
 
     # get id of new content
-    content = None
-    if seek_field and seek_value:
-        content = get_content_id(
+    if not new_id and seek_field and seek_value:
+        new_id = get_content_id(
             curs, table, seek_field, seek_value, exception=True)
 
     return new_id
 
 
-def single_quote_safe(val):
-    return str(val).replace("'", "''")
+def single_quote_safe(val: Any):
+    """ Make a single quote safe value"""
+    return str(val).replace("'", "''").replace("%", "%%")
 
 
-def vals(data):
+def vals(data: list):
+    """ Join a list of values """
     return ', '.join([
         f"'{single_quote_safe(val)}'" for val in data
     ])
 
 
 def get_content_id(curs, table: str, seek_field: str, seek_value: str,
-                   ignore_case: bool = True, exception: bool = False):
+                   ignore_case: bool = True, exception: bool = False
+                   ) -> Optional[int]:
+    """
+    Get the is of a database entry
+    :param curs: cursor
+    :param table: table to search
+    :param seek_field: field to use to load entry
+    :param seek_value: value to use to load entry
+    :param ignore_case: ignore case flag; default True
+    :param exception: raise exception flag; default False
+    :return: content id
+    """
     if ignore_case:
         seek_field = f"LOWER({seek_field})"
         seek_value = f"LOWER('{single_quote_safe(seek_value)}')"
@@ -83,5 +105,11 @@ def get_content_id(curs, table: str, seek_field: str, seek_value: str,
 
 
 def insert_batch(curs, fields: str, values: tuple, table: str):
-
+    """
+    Perform a batch insert
+    :param curs: cursor
+    :param fields: fields list
+    :param values: values to insert
+    :param table: table to insert into
+    """
     execute_batch(curs, f"INSERT INTO {table} ({fields}) VALUES (%s)", values)

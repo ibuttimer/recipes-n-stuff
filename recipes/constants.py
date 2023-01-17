@@ -32,3 +32,22 @@ ABBREV_FIELD = 'abbrev'
 BASE_US_FIELD = 'base_us'
 BASE_METRIC_FIELD = 'base_metric'
 MEASURE_FIELD = 'measure'
+
+FOOD_ID_FIELD = "food_id"
+
+TEXT_FIELD = 'text'
+
+URL_FIELD = 'url'
+RECIPE_FIELD = 'recipe'
+
+PREP_TIME_FIELD = 'prep_time'
+COOK_TIME_FIELD = 'cook_time'
+DATE_PUBLISHED_FIELD = 'date_published'
+DESCRIPTION_FIELD = 'description'
+CATEGORY_FIELD = 'category'
+KEYWORDS_FIELD = 'keywords'
+AUTHOR_FIELD = 'author'
+SERVINGS_FIELD = 'servings'
+RECIPE_YIELD_FIELD = 'recipe_yield'
+INGREDIENTS_FIELD = 'ingredients'
+INSTRUCTIONS_FIELD = 'instructions'

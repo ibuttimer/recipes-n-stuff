@@ -71,7 +71,7 @@ NO_SUBDIV = '-'
 DEFAULT_HOST = 'http://127.0.0.1:8000/'
 DEFAULT_DATA_FOLDER = 'data'
 DEFAULT_DB_VAR = 'DATABASE_URL'
-DEFAULT_PROGRESS = 100
+DEFAULT_PROGRESS = 150
 
 
 def parse_args():
@@ -102,7 +102,22 @@ def parse_args():
     parser.add_argument('-r', '--recipe', action='store_true',
                         help='Load recipe data',
                         default=False)
-    parser.add_argument('-p', '--progress',
+    parser.add_argument('-sc', '--skip_category', action='store_true',
+                        help='Skip categories during recipe data load',
+                        default=False)
+    parser.add_argument('-sk', '--skip_keyword', action='store_true',
+                        help='Skip keywords during recipe data load',
+                        default=False)
+    parser.add_argument('-si', '--skip_ingredient', action='store_true',
+                        help='Skip ingredients during recipe data load',
+                        default=False)
+    parser.add_argument('-sa', '--skip_author', action='store_true',
+                        help='Skip authors during recipe data load',
+                        default=False)
+    parser.add_argument('-sp', '--skip_pictures', action='store_true',
+                        help='Skip pictures during recipe data load',
+                        default=False)
+    parser.add_argument('-p', '--progress', type=int,
                         help=f'Progress indicator rate; '
                              f'default {DEFAULT_PROGRESS}',
                         default=DEFAULT_PROGRESS)
