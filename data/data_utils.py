@@ -24,16 +24,18 @@
 # Script to load a set of standard data to the database
 
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from psycopg2.extras import execute_batch
 
 # project folder
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+DEFAULT_PAGE_SIZE = 100     # default page size from execute_batch
 
-def insert_content(curs, fields: list[str], values: tuple, table: str,
-                   unique: bool = False,
+
+def insert_content(curs, fields: Union[str, list[str]], values: tuple,
+                   table: str, unique: bool = False,
                    seek_field: str = None, seek_value: str = None):
     """
     Insert content into database
@@ -46,15 +48,16 @@ def insert_content(curs, fields: list[str], values: tuple, table: str,
     :param seek_value: value to use to load inserted entry; default None
     """
     values_fmt = ','.join(['%s' for _ in range(len(values))])
-    field_list = ', '.join(fields)
+    if isinstance(fields, list):
+        fields = ', '.join(fields)
 
-    sql = f"INSERT INTO {table} ({field_list}) " \
+    sql = f"INSERT INTO {table} ({fields}) " \
           f"VALUES ({values_fmt});" \
           if not unique else \
-          f"INSERT INTO {table} ({field_list}) " \
+          f"INSERT INTO {table} ({fields}) " \
           f"SELECT {vals(values)} WHERE NOT EXISTS (" \
           f"SELECT NULL FROM {table} " \
-          f"WHERE ({field_list}) = ({values_fmt})) RETURNING id"
+          f"WHERE ({fields}) = ({values_fmt})) RETURNING id"
     curs.execute(sql, tuple([
         str(val) for val in values
     ]))
@@ -104,7 +107,9 @@ def get_content_id(curs, table: str, seek_field: str, seek_value: str,
     return content[0] if content else None
 
 
-def insert_batch(curs, fields: str, values: tuple, table: str):
+def insert_batch(
+        curs, fields: Union[str, list[str]], values: Union[tuple, list],
+        table: str, values_fmt: str = None):
     """
     Perform a batch insert
     :param curs: cursor
@@ -112,4 +117,69 @@ def insert_batch(curs, fields: str, values: tuple, table: str):
     :param values: values to insert
     :param table: table to insert into
     """
-    execute_batch(curs, f"INSERT INTO {table} ({fields}) VALUES (%s)", values)
+    if isinstance(fields, list):
+        fields = ', '.join(fields)
+    if not values_fmt:
+        values_fmt = ",".join([
+            '%s' for _ in range(len(values[0]))
+        ])
+    execute_batch(curs, f"INSERT INTO {table} ({fields}) VALUES ({values_fmt})", values)
+
+
+class Progress:
+    """ Progress indicator class """
+    title: str
+    tick: int
+    table: str
+    processed: int
+    added: int
+    size: int
+
+    LEAD: str = 'Processing '
+
+    def __init__(self, title: str, tick: int, table: str):
+        self.reset(title, tick, table)
+
+    def reset(self, title: str, tick: int, table: str):
+        """ Reset progress object """
+        self.title = title
+        self.tick = tick
+        self.table = table
+        self.processed = 0
+        self.added = 0
+        self.size = 0
+
+    def start(self):
+        """ Start progress object """
+        self.processed = 0
+        self.added = 0
+        self.size = 0
+        print(f'{self.title}: {Progress.LEAD}', end='', flush=True)
+
+    def skip(self, msg: str = ''):
+        """ Skip progress """
+        self.processed = 0
+        self.added = 0
+        self.size = 0
+        print(f'{self.title}: Skipped {msg}')
+
+    def inc(self, new_id: Optional[int] = None, processed: int = 1,
+            added: int = 1):
+        """ Increment progress """
+        self.processed += processed
+        if new_id:
+            self.added += added
+        if self.processed % self.tick == 0:
+            progress = f'{self.processed}'
+            backspace = '\b' * self.size if self.size else ''
+            self.size = len(progress)
+            print(f'{backspace}{progress}', end='', flush=True)
+
+    def end(self, msg: str = None):
+        """ Progress completed """
+        backspace = '\b' * (self.size + len(Progress.LEAD)) if self.size else ''
+        print(f'{backspace}Processed {self.processed} entries for '
+              f'{self.table}, adding {self.added} new entries')
+        if msg:
+            indent = ' ' * (len(f'{self.title}: '))
+            print(f'{indent}{msg}')

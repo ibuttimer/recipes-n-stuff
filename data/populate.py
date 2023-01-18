@@ -114,6 +114,9 @@ def parse_args():
     parser.add_argument('-sa', '--skip_author', action='store_true',
                         help='Skip authors during recipe data load',
                         default=False)
+    parser.add_argument('-sr', '--skip_recipe', action='store_true',
+                        help='Skip recipes during recipe data load',
+                        default=False)
     parser.add_argument('-sp', '--skip_pictures', action='store_true',
                         help='Skip pictures during recipe data load',
                         default=False)

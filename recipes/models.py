@@ -267,3 +267,142 @@ class Ingredient(ModelMixin, models.Model):
 
     def __str__(self):
         return f'{self.name}'
+
+
+class Instruction(ModelMixin, models.Model):
+    """
+    Ingredient model
+    """
+    # field names
+    TEXT_FIELD = TEXT_FIELD
+
+    INSTRUCTION_ATTRIB_TEXT_MAX_LEN: int = 250
+
+    text = models.CharField(
+        _('text'), max_length=INSTRUCTION_ATTRIB_TEXT_MAX_LEN,
+        blank=False)
+
+    @dataclass
+    class Meta:
+        """ Model metadata """
+
+    def __str__(self):
+        return f'{self.text}'
+
+
+class Recipe(ModelMixin, models.Model):
+    """
+    Recipe model
+    """
+    # field names
+    NAME_FIELD = NAME_FIELD
+    FOOD_ID_FIELD = FOOD_ID_FIELD
+    PREP_TIME_FIELD = PREP_TIME_FIELD
+    COOK_TIME_FIELD = COOK_TIME_FIELD
+    DATE_PUBLISHED_FIELD = DATE_PUBLISHED_FIELD
+    DESCRIPTION_FIELD = DESCRIPTION_FIELD
+    CATEGORY_FIELD = CATEGORY_FIELD
+    KEYWORDS_FIELD = KEYWORDS_FIELD
+    AUTHOR_FIELD = AUTHOR_FIELD
+    SERVINGS_FIELD = SERVINGS_FIELD
+    RECIPE_YIELD_FIELD = RECIPE_YIELD_FIELD
+    INGREDIENTS_FIELD = INGREDIENTS_FIELD
+    INSTRUCTIONS_FIELD = INSTRUCTIONS_FIELD
+
+    RECIPE_ATTRIB_NAME_MAX_LEN: int = 100
+    RECIPE_ATTRIB_DESC_MAX_LEN: int = 10000
+    RECIPE_ATTRIB_YIELD_MAX_LEN: int = 100
+
+    name = models.CharField(
+        _('name'), max_length=RECIPE_ATTRIB_NAME_MAX_LEN, blank=False)
+
+    food_id = models.BigIntegerField(
+        default=0, help_text=_("the id of the recipe from Food.com.")
+    )
+
+    prep_time = models.DurationField(
+        _('preparation time'), default=timedelta())
+
+    cook_time = models.DurationField(
+        _('cooking time'), default=timedelta())
+
+    date_published = models.DateTimeField(
+        _('date published'),
+        default=datetime(MINYEAR, 1, 1, tzinfo=timezone.utc))
+
+    description = models.CharField(
+        _('description'), max_length=RECIPE_ATTRIB_DESC_MAX_LEN)
+
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+
+    keywords = models.ManyToManyField(Keyword)
+
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    servings = models.IntegerField(
+        _('number of servings'), default=0)
+
+    recipe_yield = models.CharField(
+        _('recipe yield'), max_length=RECIPE_ATTRIB_YIELD_MAX_LEN)
+
+    ingredients = models.ManyToManyField(
+        Ingredient, through='RecipeIngredient')
+
+    instructions = models.ManyToManyField(Instruction)
+
+    calories = models.FloatField(_('calories'), default=0)
+    fat_content = models.FloatField(_('fat content'), default=0)
+    saturated_fat_content = models.FloatField(
+        _('saturated fat content'), default=0)
+    cholesterol_content = models.FloatField(
+        _('cholesterol content'), default=0)
+    sodium_content = models.FloatField(_('sodium content'), default=0)
+    carbohydrate_content = models.FloatField(
+        _('carbohydrate content'), default=0)
+    fibre_content = models.FloatField(_('fibre content'), default=0)
+    sugar_content = models.FloatField(_('sugar content'), default=0)
+    protein_content = models.FloatField(_('protein content'), default=0)
+
+    @dataclass
+    class Meta:
+        """ Model metadata """
+
+    def __str__(self):
+        return f'{self.name}'
+
+
+class RecipeIngredient(models.Model):
+    """
+    Recipe ingredients model
+    """
+
+    RECIPE_INGREDIENT_ATTRIB_QUANTITY_MAX_LEN: int = 30
+
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    quantity = models.CharField(
+        max_length=RECIPE_INGREDIENT_ATTRIB_QUANTITY_MAX_LEN)
+
+
+class Image(ModelMixin, models.Model):
+    """
+    Image model
+    """
+    # field names
+    URL_FIELD = URL_FIELD
+    RECIPE_FIELD = RECIPE_FIELD
+
+    IMAGE_ATTRIB_URL_MAX_LEN: int = 250
+
+    url = models.CharField(
+        _('image url'), max_length=IMAGE_ATTRIB_URL_MAX_LEN,
+        blank=False)
+
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+
+    @dataclass
+    class Meta:
+        """ Model metadata """
+
+    def __str__(self):
+        return f'{self.text}'

@@ -28,11 +28,11 @@ import os
 import pickle
 from enum import IntEnum, auto
 from pathlib import Path
-from typing import Optional, Callable, Union, Tuple, Any
+from typing import Optional, Callable, Union, Any
 import random
 import string
 from collections import namedtuple
-from datetime import datetime, MINYEAR, timezone
+from datetime import datetime, MINYEAR, timezone, timedelta
 
 import pyarrow as pa
 import pyarrow.compute as pc
@@ -40,8 +40,11 @@ import pyarrow.parquet as pq
 import numpy as np
 from argon2 import PasswordHasher
 from pyarrow import StringScalar
+from isoduration import parse_duration
 
-from data.data_utils import insert_content, get_content_id
+from data.data_utils import (
+    insert_content, get_content_id, Progress, insert_batch, DEFAULT_PAGE_SIZE
+)
 
 # recipe parquet
 RECIPES_PARQUET = 'recipes.parquet'
@@ -60,6 +63,7 @@ COL_NAMES = [
 class Cols(IntEnum):
     """
     Enum representing column names
+    Note: Must be same order as COL_NAMES
     Based on https://stackoverflow.com/a/61438054/4054609
     """
 
@@ -95,6 +99,20 @@ class Cols(IntEnum):
     RecipeServings = auto()
     RecipeYield = auto()
     RecipeInstructions = auto()
+
+    @staticmethod
+    def float_fields():
+        """ Field using float """
+        return [Cols.Calories, Cols.FatContent, Cols.SaturatedFatContent,
+            Cols.CholesterolContent, Cols.SodiumContent,
+            Cols.CarbohydrateContent, Cols.FiberContent, Cols.SugarContent,
+            Cols.ProteinContent
+        ]
+
+    @staticmethod
+    def int_fields():
+        """ Field using float """
+        return [Cols.RecipeId, Cols.RecipeServings]
 
 # password generation
 PASSWORD_CHARS = string.ascii_letters + string.digits + "!£$&*@#?%^=+-/~.,:;"
@@ -138,6 +156,65 @@ AUTHOR_FIELDS = [
 Author = namedtuple("Author", ["food_id", "new_id"])
 YEAR_DOT = datetime(MINYEAR, 1, 1, tzinfo=timezone.utc)
 AVATAR_BLANK = 'avatar_blank'
+# recipe info
+RECIPE_TABLE = 'recipes_recipe'
+RECIPE_NAME = 'name'
+RECIPE_FOOD_ID = 'food_id'
+RECIPE_PREP_TIME = 'prep_time'
+RECIPE_COOK_TIME = 'cook_time'
+RECIPE_DATE_PUBLISHED = 'date_published'
+RECIPE_DESCRIPTION = 'description'
+RECIPE_SERVINGS = 'servings'
+RECIPE_RECIPE_YIELD = 'recipe_yield'
+RECIPE_CALORIES = 'calories'
+RECIPE_FAT_CONTENT = 'fat_content'
+RECIPE_SATURATED_FAT_CONTENT = 'saturated_fat_content'
+RECIPE_CHOLESTEROL_CONTENT = 'cholesterol_content'
+RECIPE_SODIUM_CONTENT = 'sodium_content'
+RECIPE_CARBOHYDRATE_CONTENT = 'carbohydrate_content'
+RECIPE_FIBRE_CONTENT = 'fibre_content'
+RECIPE_SUGAR_CONTENT = 'sugar_content'
+RECIPE_PROTEIN_CONTENT = 'protein_content'
+RECIPE_AUTHOR = 'author_id'
+RECIPE_CATEGORY = 'category_id'
+RECIPE_FIELDS = [
+    RECIPE_NAME,
+    RECIPE_FOOD_ID,
+    RECIPE_PREP_TIME,
+    RECIPE_COOK_TIME,
+    RECIPE_DATE_PUBLISHED,
+    RECIPE_DESCRIPTION,
+    RECIPE_SERVINGS, RECIPE_RECIPE_YIELD, RECIPE_CALORIES,
+    RECIPE_FAT_CONTENT, RECIPE_SATURATED_FAT_CONTENT,
+    RECIPE_CHOLESTEROL_CONTENT, RECIPE_SODIUM_CONTENT,
+    RECIPE_CARBOHYDRATE_CONTENT, RECIPE_FIBRE_CONTENT,
+    RECIPE_SUGAR_CONTENT, RECIPE_PROTEIN_CONTENT, RECIPE_AUTHOR,
+    RECIPE_CATEGORY
+]
+RECIPE_COLS = {
+    key: val for key, val in [
+        (RECIPE_NAME, Cols.Name),
+        (RECIPE_FOOD_ID, Cols.RecipeId),
+        (RECIPE_PREP_TIME, Cols.PrepTime),
+        (RECIPE_COOK_TIME, Cols.CookTime),
+        (RECIPE_DATE_PUBLISHED, Cols.DatePublished),
+        (RECIPE_DESCRIPTION, Cols.Description),
+        (RECIPE_SERVINGS, Cols.RecipeServings),
+        (RECIPE_RECIPE_YIELD, Cols.RecipeYield),
+        (RECIPE_CALORIES, Cols.Calories),
+        (RECIPE_FAT_CONTENT, Cols.FatContent),
+        (RECIPE_SATURATED_FAT_CONTENT, Cols.SaturatedFatContent),
+        (RECIPE_CHOLESTEROL_CONTENT, Cols.CholesterolContent),
+        (RECIPE_SODIUM_CONTENT, Cols.SodiumContent),
+        (RECIPE_CARBOHYDRATE_CONTENT, Cols.CarbohydrateContent),
+        (RECIPE_FIBRE_CONTENT, Cols.FiberContent),
+        (RECIPE_SUGAR_CONTENT, Cols.SugarContent),
+        (RECIPE_PROTEIN_CONTENT, Cols.ProteinContent),
+        (RECIPE_AUTHOR, Cols.AuthorName),
+        (RECIPE_CATEGORY, Cols.RecipeCategory),
+    ]
+}
+assert list(RECIPE_COLS.keys()) == RECIPE_FIELDS
 # recipe images
 IMAGE_TABLE = 'recipes_image'
 IMAGE_NAME = 'name'
@@ -147,6 +224,7 @@ categories = {}     # key: category, val: id
 keywords = {}       # key: keyword, val: id
 ingredients = {}    # key: name, val: id
 authors = {}        # key: username, val: namedtuple Author
+recipes = {}        # key: food.com id, val: id
 
 
 def load_recipe(args: argparse.Namespace, curs):
@@ -159,6 +237,7 @@ def load_recipe(args: argparse.Namespace, curs):
     folder = Path(args.data_folder).resolve()
     filepath = os.path.join(folder, RECIPES_PARQUET)
 
+    # recipe table
     table = pq.read_table(filepath)
 
     # process category
@@ -193,11 +272,10 @@ def load_recipe(args: argparse.Namespace, curs):
 
         progress.end(f'pickled data to {pickle_file}')
 
-
     # process keywords
-    process_data(args, curs, progress, 'Keyword', KEYWORD_TABLE,
-                 KEYWORD_FIELDS, table[COL_NAMES[Cols.Keywords]],
-                 keywords, args.skip_keyword, folder)
+    table_fields = ', '.join(KEYWORD_FIELDS)
+    process_data(args, curs, progress, 'Keyword', KEYWORD_TABLE, table_fields, table[COL_NAMES[Cols.Keywords]],
+                 args.skip_keyword, folder, cache=keywords)
 
     # process ingredients
     curs.execute(
@@ -205,14 +283,13 @@ def load_recipe(args: argparse.Namespace, curs):
         ('unit',))
     unit_id = curs.fetchone()[0]
 
-    process_data(args, curs, progress, 'Ingredient', INGREDIENT_TABLE,
-                 INGREDIENT_FIELDS,
-                 table[COL_NAMES[Cols.RecipeIngredientParts]],
-                 ingredients, args.skip_ingredient, folder,
-                 values_func=lambda val: (val, unit_id))
+    table_fields = ', '.join(INGREDIENT_FIELDS)
+    process_data(args, curs, progress, 'Ingredient', INGREDIENT_TABLE, table_fields,
+                 table[COL_NAMES[Cols.RecipeIngredientParts]], args.skip_ingredient, folder,
+                 values_func=lambda val, row: (val, unit_id), cache=ingredients)
 
     # process authors
-    def user_values(author_name: Union[str, StringScalar])\
+    def user_values(author_name: Union[str, StringScalar], row: int)\
             -> tuple[str, str, str | StringScalar, str, str, bool, bool,
             bool, datetime, str, str]:
         """ Generate user values """
@@ -223,7 +300,7 @@ def load_recipe(args: argparse.Namespace, curs):
             author_name, get_random_password(), '', False, False, False, \
             YEAR_DOT, 'Imported from kaggle dataset', AVATAR_BLANK
 
-    user_table = None
+    user_table: Optional[pa.Table] = None
     def get_user_table():
         """ Get the user data """
         nonlocal user_table
@@ -243,93 +320,59 @@ def load_recipe(args: argparse.Namespace, curs):
         :param db_id: database id
         :param row: data row number
         """
-        id_cache[str(key)] = Author(
-            food_id=user_table[COL_NAMES[Cols.AuthorId]][row].as_py(),
-            new_id=db_id)
+        if id_cache is not None:
+            id_cache[str(key)] = Author(
+                food_id=user_table[COL_NAMES[Cols.AuthorId]][row].as_py(),
+                new_id=db_id)
 
-    process_data(args, curs, progress, 'Author', AUTHOR_TABLE,
-                 AUTHOR_FIELDS, get_user_table,
-                 authors, args.skip_author, folder,
-                 are_lists=False,
-                 values_func=user_values, cache_func=cache_user)
-
+    table_fields = ', '.join(AUTHOR_FIELDS)
+    process_data(args, curs, progress, 'Author', AUTHOR_TABLE, table_fields, get_user_table, args.skip_author, folder,
+                 are_lists=False, values_func=user_values, cache=authors, cache_func=cache_user)
 
     # process recipes
+    def recipe_values(recipe_id: Union[str, StringScalar], row: int) -> tuple:
+        """ Generate recipe values """
+        # same order as RECIPE_FIELDS
+        values = []
+        for key, col in RECIPE_COLS.items():
+            value = table[COL_NAMES[col]][row].as_py()
+            if col in [Cols.PrepTime, Cols.CookTime]:
+                # pass
+                if value:
+                    duration = parse_duration(value)
+                    value = timedelta(
+                        days=float(duration.date.days),
+                        minutes=float(duration.time.minutes),
+                        hours=float(duration.time.hours))
+                else:
+                    value = timedelta()
+            elif col == Cols.AuthorName:
+                value = authors.get(value).new_id
+            elif col == Cols.RecipeCategory:
+                value = categories.get(value or 'None')
+            elif col in Cols.int_fields():
+                value = int(value) if value else 0
+            values.append('' if value is None else value)
 
-    # process images
+        return tuple(values)
+
+    table_fields = ', '.join(RECIPE_FIELDS)
+    process_data(args, curs, progress, 'Recipe', RECIPE_TABLE, table_fields, table[COL_NAMES[Cols.RecipeId]], args.skip_recipe, folder,
+                 are_lists=False, values_func=recipe_values, cache=recipes)
+
+    # process recipe ingredient
+
+
+    # process recipe images
     # process_list(args, curs, progress, 'Image', IMAGE_TABLE, IMAGE_FIELDS, table[COL_NAMES[Cols.Images]], keywords,
     #              args.skip_pictures, folder)
 
 
-class Progress:
-    """ Progress indicator class """
-    title: str
-    tick: int
-    table: str
-    processed: int
-    added: int
-    size: int
-
-    LEAD: str = 'Processing '
-
-    def __init__(self, title: str, tick: int, table: str):
-        self.reset(title, tick, table)
-
-    def reset(self, title: str, tick: int, table: str):
-        """ Reset progress object """
-        self.title = title
-        self.tick = tick
-        self.table = table
-        self.processed = 0
-        self.added = 0
-        self.size = 0
-
-    def start(self):
-        """ Start progress object """
-        self.processed = 0
-        self.added = 0
-        self.size = 0
-        print(f'{self.title}: {Progress.LEAD}', end='', flush=True)
-
-    def skip(self, msg: str = ''):
-        """ Skip progress """
-        self.processed = 0
-        self.added = 0
-        self.size = 0
-        print(f'{self.title}: Skipped {msg}')
-
-    def inc(self, new_id: Optional[int] = None, processed: int = 1,
-            added: int = 1):
-        """ Increment progress """
-        self.processed += processed
-        if new_id:
-            self.added += added
-        if self.processed % self.tick == 0:
-            progress = f'{self.processed}'
-            backspace = '\b' * self.size if self.size else ''
-            self.size = len(progress)
-            print(f'{backspace}{progress}', end='', flush=True)
-
-    def end(self, msg: str = ''):
-        """ Progress completed """
-        backspace = '\b' * (self.size + len(Progress.LEAD)) if self.size else ''
-        print(f'{backspace}Processed {self.processed} entries for '
-              f'{self.table}, adding {self.added} new entries')
-        if msg:
-            indent = ' ' * (len(f'{self.title}: '))
-            print(f'{indent}{msg}')
-
-
-def process_data(args: argparse.Namespace, curs, progress: Progress,
-                 title: str, table_name: str, fields: list[str],
-                 parquet_data: Union[Callable[[], Any], pa.Table, pa.Array],
-                 cache: dict, skip: bool,
-                 folder: Union[str, Path],
-                 are_lists: bool = True,
-                 values_func: Optional[Callable[[str], tuple]] = None,
-                 cache_func: Optional[
-                     Callable[[dict, Any, int, int], None]] = None,
-                 get_field: str = None):
+def process_data(args: argparse.Namespace, curs, progress: Progress, title: str, table_name: str, fields: Union[str, list[str]],
+                 parquet_data: Union[Callable[[], Any], pa.Table, pa.Array], skip: bool, folder: Union[str, Path],
+                 are_lists: bool = True, batch_mode: bool = False, values_func: Optional[Callable[[Any, int], tuple]] = None,
+                 cache: dict = None, cache_func: Optional[
+            Callable[[dict, Any, int, int], None]] = None, get_field: str = None):
     """
     Process data
     :param args: program arguments
@@ -339,11 +382,12 @@ def process_data(args: argparse.Namespace, curs, progress: Progress,
     :param table_name: name of table to update
     :param fields: fields list
     :param parquet_data: data from parquet source or callable to retrieve data
-    :param cache: cache dict to store info
     :param skip: skip flag
     :param folder: path to data folder
     :param are_lists: values are lists flag; default True
+    :param batch_mode: batch mode insert data to database: default = False
     :param values_func: function to generate values to store in database
+    :param cache: cache dict to store info; default None
     :param cache_func: function to cache new entries;
                 default key: read value, value: id of new entry
     :param get_field: field to use to get id of inserted row;
@@ -365,9 +409,10 @@ def process_data(args: argparse.Namespace, curs, progress: Progress,
             :param db_id: database id
             :param row: data row number
             """
-            id_cache[str(key)] = \
-                db_id or \
-                get_content_id(curs, table_name, get_field, key)
+            if id_cache is not None:
+                id_cache[str(key)] = \
+                    db_id or \
+                    get_content_id(curs, table_name, get_field, key)
         cache_func = cache_key_id
 
     progress.reset(title, args.progress, table_name)
@@ -388,6 +433,8 @@ def process_data(args: argparse.Namespace, curs, progress: Progress,
             # do here so console has updated progress
             parquet_data = parquet_data()
 
+        batch = []
+
         for row, words in enumerate(parquet_data):
             if not words:
                 continue
@@ -397,15 +444,32 @@ def process_data(args: argparse.Namespace, curs, progress: Progress,
                 if not word:
                     continue
 
-                new_id = insert_content(
-                    curs, fields, values_func(word), table_name, unique=True)
-                cache_func(cache, word, new_id, row)
+                if batch_mode:
+                    # batch mode, so insert batch
+                    batch.append(values_func(word, row))
+                else:
+                    # non batch mode, so insert individually
+                    new_id = insert_content(
+                        curs, fields, values_func(word, row), table_name,
+                        unique=True)
+                    if cache is not None:
+                        cache_func(cache, word, new_id, row)
 
-                progress.inc(new_id)
+                    progress.inc(new_id)
 
-        pickle_file = pickle_data(table_name, cache, folder)
+            if len(batch) > 0:
+                insert_batch(curs, fields, tuple(batch), table_name)
+                added = len(batch)
+                progress.inc(added, added=added)
+                batch.clear()
 
-        progress.end(f'pickled data to {pickle_file}')
+        if cache is not None:
+            pickle_file = pickle_data(table_name, cache, folder)
+            msg = f'pickled data to {pickle_file}'
+        else:
+            msg = None
+
+        progress.end(msg=msg)
 
 
 def pickle_file_name(table_name: str) -> str:
@@ -450,10 +514,11 @@ def pickle_data(table_name: str, data: dict, folder: Union[str, Path]) -> str:
 
     return pickle_file
 
-def one_val_tuple(val) -> tuple:
+def one_val_tuple(val: Any, row: int) -> tuple:
     """
     Generate a tuple from a single value
     :param val: value
+    :param row: row index
     :return: tuple
     """
     return val,
