@@ -28,10 +28,18 @@ import os
 import pickle
 from enum import IntEnum, auto
 from pathlib import Path
-from typing import Optional, Callable
+from typing import Optional, Callable, Union, Tuple, Any
+import random
+import string
+from collections import namedtuple
+from datetime import datetime, MINYEAR, timezone
 
+import pyarrow as pa
 import pyarrow.compute as pc
 import pyarrow.parquet as pq
+import numpy as np
+from argon2 import PasswordHasher
+from pyarrow import StringScalar
 
 from data.data_utils import insert_content, get_content_id
 
@@ -88,26 +96,57 @@ class Cols(IntEnum):
     RecipeYield = auto()
     RecipeInstructions = auto()
 
+# password generation
+PASSWORD_CHARS = string.ascii_letters + string.digits + "!£$&*@#?%^=+-/~.,:;"
+PASSWORD_LEN = 10
+ph = PasswordHasher()
 
+# recipe categories
 CATEGORY_TABLE = 'recipes_category'
 CATEGORY_NAME = 'name'
 CATEGORY_FIELDS = [CATEGORY_NAME]
+# recipe keywords
 KEYWORD_TABLE = 'recipes_keyword'
 KEYWORD_NAME = 'name'
 KEYWORD_FIELDS = [KEYWORD_NAME]
+# recipe measures
 MEASURE_TABLE = 'recipes_measure'
 MEASURE_NAME = 'name'
+# recipe ingredients
 INGREDIENT_TABLE = 'recipes_ingredient'
 INGREDIENT_NAME = 'name'
 INGREDIENT_MEASURE = 'measure_id'
 INGREDIENT_FIELDS = [INGREDIENT_NAME, INGREDIENT_MEASURE]
+# recipe authors
+AUTHOR_TABLE = 'user_user'
+AUTHOR_FIRST_NAME = 'first_name'
+AUTHOR_LAST_NAME = 'last_name'
+AUTHOR_USERNAME = 'username'
+AUTHOR_PASSWORD = 'password'
+AUTHOR_EMAIL = 'email'
+AUTHOR_IS_SUPERUSER = 'is_superuser'
+AUTHOR_IS_STAFF = 'is_staff'
+AUTHOR_IS_ACTIVE = 'is_active'
+AUTHOR_DATE_JOINED = 'date_joined'
+AUTHOR_BIO = 'bio'
+AUTHOR_AVATAR = 'avatar'
+AUTHOR_FIELDS = [
+    AUTHOR_FIRST_NAME, AUTHOR_LAST_NAME, AUTHOR_USERNAME, AUTHOR_PASSWORD,
+    AUTHOR_EMAIL, AUTHOR_IS_SUPERUSER, AUTHOR_IS_STAFF, AUTHOR_IS_ACTIVE,
+    AUTHOR_DATE_JOINED, AUTHOR_BIO, AUTHOR_AVATAR
+]
+Author = namedtuple("Author", ["food_id", "new_id"])
+YEAR_DOT = datetime(MINYEAR, 1, 1, tzinfo=timezone.utc)
+AVATAR_BLANK = 'avatar_blank'
+# recipe images
 IMAGE_TABLE = 'recipes_image'
 IMAGE_NAME = 'name'
 IMAGE_FIELDS = [IMAGE_NAME]
 
 categories = {}     # key: category, val: id
 keywords = {}       # key: keyword, val: id
-ingredients = {}    # key: keyword, val: id
+ingredients = {}    # key: name, val: id
+authors = {}        # key: username, val: namedtuple Author
 
 
 def load_recipe(args: argparse.Namespace, curs):
@@ -156,7 +195,7 @@ def load_recipe(args: argparse.Namespace, curs):
 
 
     # process keywords
-    process_list(args, curs, progress, 'Keyword', KEYWORD_TABLE,
+    process_data(args, curs, progress, 'Keyword', KEYWORD_TABLE,
                  KEYWORD_FIELDS, table[COL_NAMES[Cols.Keywords]],
                  keywords, args.skip_keyword, folder)
 
@@ -166,13 +205,53 @@ def load_recipe(args: argparse.Namespace, curs):
         ('unit',))
     unit_id = curs.fetchone()[0]
 
-    process_list(args, curs, progress, 'Ingredient', INGREDIENT_TABLE,
+    process_data(args, curs, progress, 'Ingredient', INGREDIENT_TABLE,
                  INGREDIENT_FIELDS,
                  table[COL_NAMES[Cols.RecipeIngredientParts]],
                  ingredients, args.skip_ingredient, folder,
                  values_func=lambda val: (val, unit_id))
 
     # process authors
+    def user_values(author_name: Union[str, StringScalar])\
+            -> tuple[str, str, str | StringScalar, str, str, bool, bool,
+            bool, datetime, str, str]:
+        """ Generate user values """
+        # Note: password is a random hashed value as the user will never login
+        splits = str(author_name).split()
+        # same order as AUTHOR_FIELDS
+        return splits[0], ' '.join(splits[1:]) if len(splits) > 1 else '', \
+            author_name, get_random_password(), '', False, False, False, \
+            YEAR_DOT, 'Imported from kaggle dataset', AVATAR_BLANK
+
+    user_table = None
+    def get_user_table():
+        """ Get the user data """
+        nonlocal user_table
+        # only generate unique user table if required, it takes a while
+        user_table = drop_duplicates(pa.table([
+            table[COL_NAMES[Cols.AuthorName]],
+            table[COL_NAMES[Cols.AuthorId]]
+        ], names=[COL_NAMES[Cols.AuthorName], COL_NAMES[Cols.AuthorId]]),
+            COL_NAMES[Cols.AuthorName])
+        return user_table[COL_NAMES[Cols.AuthorName]]
+
+    def cache_user(id_cache: dict, key: Any, db_id: int, row: int) -> None:
+        """
+        Cache user info
+        :param id_cache: cache to update
+        :param key: username as key
+        :param db_id: database id
+        :param row: data row number
+        """
+        id_cache[str(key)] = Author(
+            food_id=user_table[COL_NAMES[Cols.AuthorId]][row].as_py(),
+            new_id=db_id)
+
+    process_data(args, curs, progress, 'Author', AUTHOR_TABLE,
+                 AUTHOR_FIELDS, get_user_table,
+                 authors, args.skip_author, folder,
+                 are_lists=False,
+                 values_func=user_values, cache_func=cache_user)
 
 
     # process recipes
@@ -241,33 +320,55 @@ class Progress:
             print(f'{indent}{msg}')
 
 
-def process_list(args: argparse.Namespace, curs, progress: Progress,
+def process_data(args: argparse.Namespace, curs, progress: Progress,
                  title: str, table_name: str, fields: list[str],
-                 parquet_col, cache: dict, skip: bool, folder: str,
+                 parquet_data: Union[Callable[[], Any], pa.Table, pa.Array],
+                 cache: dict, skip: bool,
+                 folder: Union[str, Path],
+                 are_lists: bool = True,
                  values_func: Optional[Callable[[str], tuple]] = None,
+                 cache_func: Optional[
+                     Callable[[dict, Any, int, int], None]] = None,
                  get_field: str = None):
     """
-    Process a list
+    Process data
     :param args: program arguments
     :param curs: cursor
     :param progress: progress instance
     :param title: progress title
     :param table_name: name of table to update
     :param fields: fields list
-    :param parquet_col: data from parquet source
+    :param parquet_data: data from parquet source or callable to retrieve data
     :param cache: cache dict to store info
     :param skip: skip flag
     :param folder: path to data folder
-    :param values_func: function to generate vales to store in database
+    :param are_lists: values are lists flag; default True
+    :param values_func: function to generate values to store in database
+    :param cache_func: function to cache new entries;
+                default key: read value, value: id of new entry
     :param get_field: field to use to get id of inserted row;
                     default first field in `fields`
     """
     if get_field is None:
         get_field = fields[0]   # default to first field
     if values_func is None:
-        def one_val_tuple(val):
-            return val,
+        # default single value tuple
         values_func = one_val_tuple
+    if cache_func is None:
+        # default single value tuple
+        def cache_key_id(id_cache: dict, key: Any, db_id: int,
+                         row: int) -> None:
+            """
+            Cache key and database id
+            :param id_cache: cache to update
+            :param key: cache key
+            :param db_id: database id
+            :param row: data row number
+            """
+            id_cache[str(key)] = \
+                db_id or \
+                get_content_id(curs, table_name, get_field, key)
+        cache_func = cache_key_id
 
     progress.reset(title, args.progress, table_name)
     if skip:
@@ -282,19 +383,24 @@ def process_list(args: argparse.Namespace, curs, progress: Progress,
 
     if not skip:
         progress.start()
-        for words in parquet_col:
+
+        if isinstance(parquet_data, Callable):
+            # do here so console has updated progress
+            parquet_data = parquet_data()
+
+        for row, words in enumerate(parquet_data):
             if not words:
                 continue
 
-            for word in words.as_py():
+            entries = words.as_py() if are_lists else [words]
+            for word in entries:
                 if not word:
                     continue
 
                 new_id = insert_content(
                     curs, fields, values_func(word), table_name, unique=True)
-                cache[str(word)] = \
-                    new_id or \
-                    get_content_id(curs, table_name, get_field, word)
+                cache_func(cache, word, new_id, row)
+
                 progress.inc(new_id)
 
         pickle_file = pickle_data(table_name, cache, folder)
@@ -307,7 +413,8 @@ def pickle_file_name(table_name: str) -> str:
     return f'{table_name}.pickle'
 
 
-def unpickle_data(table_name: str, folder: str) -> tuple[Optional[dict], str]:
+def unpickle_data(table_name: str,
+                  folder: Union[str, Path]) -> tuple[Optional[dict], str]:
     """
     Unpickle a data file
     :param table_name: database table name
@@ -327,7 +434,7 @@ def unpickle_data(table_name: str, folder: str) -> tuple[Optional[dict], str]:
     return data, pickle_file
 
 
-def pickle_data(table_name: str, data: dict, folder:str) -> str:
+def pickle_data(table_name: str, data: dict, folder: Union[str, Path]) -> str:
     """
     Pickle a data file
     :param table_name: database table name
@@ -342,3 +449,36 @@ def pickle_data(table_name: str, data: dict, folder:str) -> str:
         pickle.dump(data, file, pickle.HIGHEST_PROTOCOL)
 
     return pickle_file
+
+def one_val_tuple(val) -> tuple:
+    """
+    Generate a tuple from a single value
+    :param val: value
+    :return: tuple
+    """
+    return val,
+
+
+def get_random_password(length: int = PASSWORD_LEN) -> str:
+    """ Generate a hashed random password """
+    return ph.hash(
+        ''.join(random.choice(PASSWORD_CHARS) for _ in range(length))
+    )
+
+
+def drop_duplicates(table: pa.Table, column_name: str) -> pa.Table:
+    """
+    Drop duplicate rows from a table based on unique values of a column
+
+    [Taken from https://stackoverflow.com/a/66711534/4054609 by
+     https://stackoverflow.com/users/13076586/christine]
+
+    :param table: table to filter
+    :param column_name: column name for unique values
+    :return: filtered table
+    """
+    unique_values = pc.unique(table[column_name])
+    unique_indices = [pc.index(table[column_name], value).as_py() for value in unique_values]
+    mask = np.full((len(table)), False)
+    mask[unique_indices] = True
+    return table.filter(mask=mask)
