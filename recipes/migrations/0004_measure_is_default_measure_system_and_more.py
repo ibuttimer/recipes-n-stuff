@@ -18,7 +18,10 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='measure',
             name='system',
-            field=models.CharField(choices=[('us', 'US'), ('si', 'Metric'), ('1', 'Dimensionless')], default='us', max_length=2),
+            field=models.CharField(
+                choices=[
+                    ('us', 'US'), ('si', 'Metric'), ('1', 'Dimensionless')
+                ], default='us', max_length=2),
         ),
         migrations.AlterField(
             model_name='measure',

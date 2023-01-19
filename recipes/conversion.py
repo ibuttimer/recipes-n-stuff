@@ -161,11 +161,11 @@ class Quantity:
 
 
 def convert(
-        from_q: Union[int, float, Decimal], from_t: Measures,
-        to_t: Measures, quantised: bool = False,
-        places: int = Quantity.STD_PLACES,
-        rounding: str | None = None, context: Context | None = None
-    ) -> Optional[Decimal]:
+    from_q: Union[int, float, Decimal], from_t: Measures,
+    to_t: Measures, quantised: bool = False,
+    places: int = Quantity.STD_PLACES,
+    rounding: str | None = None, context: Context | None = None
+) -> Optional[Decimal]:
     """
     Convert a quantity
     :param from_q: amount to convert
@@ -202,6 +202,7 @@ def convert(
                 conversion = Quantity.standardise(conversion)
 
     return conversion
+
 
 def get_measure_by_name(name: str) -> Optional[Measure]:
     """

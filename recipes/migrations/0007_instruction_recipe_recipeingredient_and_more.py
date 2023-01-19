@@ -11,7 +11,8 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('recipes', '0006_alter_measure_is_default_alter_measure_system_and_more'),
+        ('recipes',
+         '0006_alter_measure_is_default_alter_measure_system_and_more'),
     ]
 
     operations = [

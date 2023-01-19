@@ -118,8 +118,6 @@ class TestMeasureModelFixtures(TestCase):
             Measure.DRY_FLUID, Measure.SYSTEM_US
         )).count(), 1)
 
-
-    # @skip
     def test_in_system_conversions(self):
         """ Test defined conversion within the same systems """
         amt = 2
@@ -145,49 +143,50 @@ class TestMeasureModelFixtures(TestCase):
             # us fluid
             (Quantity(Measures.FLUID_OUNCE, amt),
              Quantity(Measures.FLUID_OUNCE, amt), None),
-            (Quantity(Measures.FLUID_OUNCE, amt), # 1 gal. == 128 fl. oz.
+            (Quantity(Measures.FLUID_OUNCE, amt),   # 1 gal. == 128 fl. oz.
              Quantity.quantised_of(Measures.GALLON, (1/128)*amt, places=7), 7),
-            (Quantity(Measures.FLUID_OUNCE, amt), # 1 qt. == 32 fl. oz.
+            (Quantity(Measures.FLUID_OUNCE, amt),   # 1 qt. == 32 fl. oz.
              Quantity.quantised_of(Measures.QUART, (1/32)*amt, places=5), 5),
-            (Quantity(Measures.FLUID_OUNCE, amt), # 1 pt. == 16 fl. oz.
+            (Quantity(Measures.FLUID_OUNCE, amt),   # 1 pt. == 16 fl. oz.
              Quantity.quantised_of(Measures.PINT, (1/16)*amt, places=4), 4),
-            (Quantity(Measures.FLUID_OUNCE, amt), # 1 C == 8 fl. oz.
+            (Quantity(Measures.FLUID_OUNCE, amt),   # 1 C == 8 fl. oz.
              Quantity.quantised_of(Measures.CUP, (1/8)*amt), None),
-            (Quantity(Measures.FLUID_OUNCE, amt), # 1 gi. == 4 fl. oz.
+            (Quantity(Measures.FLUID_OUNCE, amt),   # 1 gi. == 4 fl. oz.
              Quantity.quantised_of(Measures.GILL, (1/4)*amt), None),
-            (Quantity(Measures.FLUID_OUNCE, amt), # 1 tcf. == 4 fl. oz.
+            (Quantity(Measures.FLUID_OUNCE, amt),   # 1 tcf. == 4 fl. oz.
              Quantity.quantised_of(Measures.TEACUP, (1/4)*amt), None),
-            (Quantity(Measures.FLUID_OUNCE, amt), # 1 wgf. == 2 fl. oz.
+            (Quantity(Measures.FLUID_OUNCE, amt),   # 1 wgf. == 2 fl. oz.
              Quantity.quantised_of(Measures.WINEGLASS, (1/2)*amt), None),
-            (Quantity(Measures.FLUID_OUNCE, amt), # 1 tbsp. == 1/2 fl. oz.
+            (Quantity(Measures.FLUID_OUNCE, amt),   # 1 tbsp. == 1/2 fl. oz.
              Quantity.quantised_of(Measures.TABLESPOON, 2*amt), None),
-            (Quantity(Measures.FLUID_OUNCE, amt), # 1 dsp. == 1/3 fl. oz.
+            (Quantity(Measures.FLUID_OUNCE, amt),   # 1 dsp. == 1/3 fl. oz.
              Quantity.quantised_of(Measures.DESSERTSPOON, 3*amt), None),
-            (Quantity(Measures.FLUID_OUNCE, amt), # 1 tsp. == 1/6 fl. oz.
+            (Quantity(Measures.FLUID_OUNCE, amt),   # 1 tsp. == 1/6 fl. oz.
              Quantity.quantised_of(Measures.TEASPOON, 6*amt), None),
-            (Quantity(Measures.FLUID_OUNCE, amt), # 1 fl. dr. == 1/8 fl. oz.
+            (Quantity(Measures.FLUID_OUNCE, amt),   # 1 fl. dr. == 1/8 fl. oz.
              Quantity.quantised_of(Measures.FLUID_DRAM, 8*amt), None),
-            (Quantity(Measures.FLUID_OUNCE, amt), # 1 csp. == 1/16 fl. oz.
+            (Quantity(Measures.FLUID_OUNCE, amt),   # 1 csp. == 1/16 fl. oz.
              Quantity.quantised_of(Measures.COFFEESPOON, 16*amt), None),
-            (Quantity(Measures.FLUID_OUNCE, amt), # 1 ssp. == 1/32 fl. oz.
+            (Quantity(Measures.FLUID_OUNCE, amt),   # 1 ssp. == 1/32 fl. oz.
              Quantity.quantised_of(Measures.SALTSPOON, 32*amt), None),
-            (Quantity(Measures.FLUID_OUNCE, amt), # 1 ds. == 1/64 fl. oz.
+            (Quantity(Measures.FLUID_OUNCE, amt),   # 1 ds. == 1/64 fl. oz.
              Quantity.quantised_of(Measures.DASH, 64*amt), None),
-            (Quantity(Measures.FLUID_OUNCE, amt), # 1 pn. == 1/128 fl. oz.
+            (Quantity(Measures.FLUID_OUNCE, amt),   # 1 pn. == 1/128 fl. oz.
              Quantity.quantised_of(Measures.PINCH, 128*amt), None),
-            (Quantity(Measures.FLUID_OUNCE, amt), # 1 smdg. == 1/256 fl. oz.
+            (Quantity(Measures.FLUID_OUNCE, amt),   # 1 smdg. == 1/256 fl. oz.
              Quantity.quantised_of(Measures.SMIDGEN, 256*amt), None),
-            (Quantity(Measures.FLUID_OUNCE, amt), # 1 dr. == 1/576 fl. oz.
+            (Quantity(Measures.FLUID_OUNCE, amt),   # 1 dr. == 1/576 fl. oz.
              Quantity.quantised_of(Measures.DROP, 576*amt), None),
             # us weight
             (Quantity(Measures.OUNCE, amt),
              Quantity(Measures.OUNCE, amt), None),
-            (Quantity(Measures.OUNCE, amt), # 1 dr. == 1/16 oz.
+            (Quantity(Measures.OUNCE, amt),     # 1 dr. == 1/16 oz.
              Quantity.quantised_of(Measures.DRAM, 16*amt), None),
-            (Quantity(Measures.OUNCE, amt), # 1 lb. == 16 oz.
+            (Quantity(Measures.OUNCE, amt),     # 1 lb. == 16 oz.
              Quantity.quantised_of(Measures.POUND, (1/16)*amt, places=4), 4),
-            (Quantity(Measures.OUNCE, amt), # 1 st. == 224 oz.
-             Quantity.quantised_of(Measures.STONE, Decimal(1/224)*amt, places=10), 10),
+            (Quantity(Measures.OUNCE, amt),     # 1 st. == 224 oz.
+             Quantity.quantised_of(
+                 Measures.STONE, Decimal(1/224)*amt, places=10), 10),
         ]:
             for idx in range(2):
                 if idx == 0:
@@ -212,13 +211,16 @@ class TestMeasureModelFixtures(TestCase):
             (Quantity(Measures.DECILITRE, amt),
              Quantity.quantised_of(Measures.FLUID_OUNCE, 3.3814*amt), None),
             (Quantity(Measures.MILLILITRE, amt),
-             Quantity.quantised_of(Measures.FLUID_OUNCE, 0.033814*amt, places=6), 6),
+             Quantity.quantised_of(
+                 Measures.FLUID_OUNCE, 0.033814*amt, places=6), 6),
             (Quantity(Measures.CENTILITRE, amt),
-             Quantity.quantised_of(Measures.FLUID_OUNCE, 0.33814*amt, places=6), 6),
+             Quantity.quantised_of(
+                 Measures.FLUID_OUNCE, 0.33814*amt, places=6), 6),
             (Quantity(Measures.LITRE, amt),
              Quantity.quantised_of(Measures.FLUID_OUNCE, 33.814*amt), None),
             (Quantity(Measures.DECILITRE, amt),
-             Quantity.quantised_of(Measures.GALLON, 0.0264172*amt, places=6), 6),
+             Quantity.quantised_of(
+                 Measures.GALLON, 0.0264172*amt, places=6), 6),
             (Quantity(Measures.DECILITRE, amt),
              Quantity.quantised_of(Measures.QUART, 0.105669*amt, places=4), 4),
             (Quantity(Measures.DECILITRE, amt),
@@ -233,7 +235,8 @@ class TestMeasureModelFixtures(TestCase):
             (Quantity(Measures.OUNCE, amt),
              Quantity.quantised_of(Measures.GRAM, 28.3495*amt), None),
             (Quantity(Measures.OUNCE, amt),
-             Quantity.quantised_of(Measures.KILOGRAM, 0.0283495*amt, places=4), 4),
+             Quantity.quantised_of(
+                 Measures.KILOGRAM, 0.0283495*amt, places=4), 4),
         ]:
             for idx in range(2):
                 if idx == 0:
