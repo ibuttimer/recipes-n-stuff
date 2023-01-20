@@ -276,7 +276,7 @@ class Instruction(ModelMixin, models.Model):
     # field names
     TEXT_FIELD = TEXT_FIELD
 
-    INSTRUCTION_ATTRIB_TEXT_MAX_LEN: int = 250
+    INSTRUCTION_ATTRIB_TEXT_MAX_LEN: int = 3000
 
     text = models.CharField(
         _('text'), max_length=INSTRUCTION_ATTRIB_TEXT_MAX_LEN,

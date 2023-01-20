@@ -226,6 +226,17 @@ RECIPE_INGREDIENT_FIELDS = [
     RECIPE_INGREDIENT_RECIPE_ID, RECIPE_INGREDIENT_INGREDIENT_ID,
     RECIPE_INGREDIENT_QUANTITY
 ]
+# recipe instructions
+INSTRUCTION_TABLE = 'recipes_instruction'
+INSTRUCTION_TEXT = 'text'
+INSTRUCTION_FIELDS = [INSTRUCTION_TEXT]
+# recipe instructions list
+RECIPE_INSTRUCTIONS_TABLE = 'recipes_recipe_instructions'
+RECIPE_INSTRUCTIONS_RECIPE_ID = 'recipe_id'
+RECIPE_INSTRUCTIONS_INSTRUCTION_ID = 'instruction_id'
+RECIPE_INSTRUCTIONS_FIELDS = [
+    RECIPE_INSTRUCTIONS_RECIPE_ID, RECIPE_INSTRUCTIONS_INSTRUCTION_ID,
+]
 # recipe images
 IMAGE_TABLE = 'recipes_image'
 IMAGE_NAME = 'name'
@@ -236,6 +247,7 @@ keywords = {}       # key: keyword, val: id
 ingredients = {}    # key: name, val: id
 authors = {}        # key: username, val: namedtuple Author
 recipes = {}        # key: food.com id, val: id
+instructions = {}   # key: food.com id, val: list of instruction ids
 
 
 def load_recipe(args: argparse.Namespace, curs):
@@ -328,7 +340,7 @@ def load_recipe(args: argparse.Namespace, curs):
         return user_table[COL_NAMES[Cols.AuthorName]]
 
     def cache_user(
-            id_cache: dict, key: Any, db_id: int, row: int, idx: int) -> None:
+            id_cache: dict, key: Any, db_id: int, row: int, *args) -> None:
         """
         Cache user info
         :param id_cache: cache to update
@@ -396,27 +408,42 @@ def load_recipe(args: argparse.Namespace, curs):
         are_lists=False, values_func=recipe_values, cache=recipes,
         proceed_test=recipe_check)
 
+    # save memory, clear no longer required caches
+    categories.clear()
+
+    # TODO process recipe keywords
+
     # process recipe ingredients list
     recipes_table: Optional[pa.Table] = None
     ingredients_table: Optional[pa.Table] = None
 
+    def get_recipes_table() -> pa.Table:
+        """ Get the ingredients list data """
+        nonlocal recipes_table
+
+        if recipes_table is None:
+            req_indices = [
+                pc.index(
+                    table[COL_NAMES[Cols.RecipeId]], float(food_id)).as_py()
+                for food_id in recipes
+            ]
+            mask = np.full((len(table)), False)
+            mask[req_indices] = True
+            recipes_table = table.filter(mask=mask)
+
+        return recipes_table
+
     def get_ingredients_table():
         """ Get the ingredients list data """
-        nonlocal ingredients_table, recipes_table
+        nonlocal ingredients_table
 
-        req_indices = [
-            pc.index(table[COL_NAMES[Cols.RecipeId]], float(food_id)).as_py()
-            for food_id in recipes
-        ]
-        mask = np.full((len(table)), False)
-        mask[req_indices] = True
-        recipes_table = table.filter(mask=mask)
+        recipe_table = get_recipes_table()
 
         ingredients_table = pa.table([
-            recipes_table[COL_NAMES[Cols.RecipeId]],
-            recipes_table[COL_NAMES[Cols.RecipeIngredientParts]],
-            recipes_table[COL_NAMES[Cols.RecipeIngredientQuantities]],
-            recipes_table[COL_NAMES[Cols.Name]]
+            recipe_table[COL_NAMES[Cols.RecipeId]],
+            recipe_table[COL_NAMES[Cols.RecipeIngredientParts]],
+            recipe_table[COL_NAMES[Cols.RecipeIngredientQuantities]],
+            recipe_table[COL_NAMES[Cols.Name]]
         ], names=[
             COL_NAMES[Cols.RecipeId], COL_NAMES[Cols.RecipeIngredientParts],
             COL_NAMES[Cols.RecipeIngredientQuantities], COL_NAMES[Cols.Name]
@@ -457,9 +484,45 @@ def load_recipe(args: argparse.Namespace, curs):
         table_fields, get_ingredients_table, args.skip_ingredient_list,
         folder, are_lists=True, values_func=ingredients_list_values)
 
+    # process recipe instructions
+
+    def cache_instruction(
+            id_cache: dict, text: Any, db_id: int, row: int,
+            idx: int) -> None:
+        """
+        Cache instruction info
+        :param id_cache: cache to update
+        :param text: instruction
+        :param db_id: database id
+        :param row: data row number
+        :param idx: index within recipe instructions list
+        """
+        if id_cache is not None:
+            # key: food.com id, val: list of instruction ids
+            food_id = recipes_table[COL_NAMES[Cols.RecipeId]][row].as_py()
+            id_list = id_cache[food_id] if food_id in id_cache else []
+            id_list.append(db_id)
+            id_cache[food_id] = id_list
+
+    table_fields = ', '.join(INSTRUCTION_FIELDS)
+    process_data(
+        args, curs, progress, 'Instructions', INSTRUCTION_TABLE,
+        table_fields,
+        lambda : get_recipes_table()[COL_NAMES[Cols.RecipeInstructions]],
+        args.skip_instruction_list, folder, unique=False, are_lists=True,
+        cache=instructions, cache_func=cache_instruction)
+
+    if not args.skip_instruction_list:
+        table_fields = ', '.join(RECIPE_INSTRUCTIONS_FIELDS)
+        process_link_table(
+            args, curs, progress, 'Link recipe instructions',
+            RECIPE_INSTRUCTIONS_TABLE, table_fields, instructions)
+
+
+
     # process recipe images
     # table_fields = ', '.join(IMAGE_FIELDS)
-    # process_data(args, curs, progress, 'Image', IMAGE_TABLE, table_fields, table[COL_NAMES[Cols.Images]],
+    # process_data(args, curs, progress, 'Image', IMAGE_TABLE, table_fields, recipes_table[COL_NAMES[Cols.Images]],
     #              args.skip_pictures, folder, are_lists=True)
 
 
@@ -467,12 +530,12 @@ def process_data(args: argparse.Namespace, curs, progress: Progress,
                  title: str, table_name: str, fields: Union[str, list[str]],
                  parquet_data: Union[Callable[[], Any], pa.Table, pa.Array],
                  skip: bool, folder: Union[str, Path], are_lists: bool = True,
-                 batch_mode: bool = False,
+                 batch_mode: bool = False, unique: bool = True,
                  values_func: Optional[
                      Callable[[Any, int, int], tuple]
                  ] = None, cache: dict = None,
                  cache_func: Optional[
-                     Callable[[dict, Any, int, int], None]] = None,
+                     Callable[[dict, Any, int, int, int], None]] = None,
                  proceed_test: Optional[
                         Callable[[Any, int], bool]
                  ] = None, get_field: str = None):
@@ -489,6 +552,7 @@ def process_data(args: argparse.Namespace, curs, progress: Progress,
     :param folder: path to data folder
     :param are_lists: values are lists flag; default True
     :param batch_mode: batch mode insert data to database: default = False
+    :param unique: database is unique: default = True
     :param values_func: function to generate values to store in database
     :param cache: cache dict to store info; default None
     :param cache_func: function to cache new entries;
@@ -498,17 +562,17 @@ def process_data(args: argparse.Namespace, curs, progress: Progress,
     :param get_field: field to use to get id of inserted row;
                     default first field in `fields`
     """
-    if get_field is None:
-        # default to first field
-        get_field = fields[0] if isinstance(fields, list) \
-            else fields.split(',')[0].strip()
     if values_func is None:
         # default single value tuple
         values_func = one_val_tuple
     if cache_func is None:
+        if get_field is None:
+            # default to first field
+            get_field = fields[0] if isinstance(fields, list) \
+                else fields.split(',')[0].strip()
+
         # default single value tuple
-        def cache_key_id(id_cache: dict, key: Any, db_id: int,
-                         row: int) -> None:
+        def cache_key_id(id_cache: dict, key: Any, db_id: int, *args) -> None:
             """
             Cache key and database id
             :param id_cache: cache to update
@@ -524,14 +588,17 @@ def process_data(args: argparse.Namespace, curs, progress: Progress,
 
     progress.reset(title, args.progress, table_name)
     if skip:
-        data, pickle_file = unpickle_data(table_name, folder)
-        if data:
-            cache.update(data)
+        if cache is not None:
+            data, pickle_file = unpickle_data(table_name, folder)
+            if data:
+                cache.update(data)
 
-            progress.skip(f'- read ids from {pickle_file}')
+                progress.skip(f'- read ids from {pickle_file}')
+            else:
+                # need to process as ids not available
+                skip = False
         else:
-            # need to process as ids not available
-            skip = False
+            progress.skip()
 
     if not skip:
         progress.start()
@@ -563,9 +630,9 @@ def process_data(args: argparse.Namespace, curs, progress: Progress,
                     # non batch mode, so insert individually
                     new_id = insert_content(
                         curs, fields, values_func(word, row, idx), table_name,
-                        unique=True)
+                        unique=unique)
                     if cache is not None:
-                        cache_func(cache, word, new_id, row)
+                        cache_func(cache, word, new_id, row, idx)
 
                     progress.inc(new_id)
 
@@ -582,6 +649,50 @@ def process_data(args: argparse.Namespace, curs, progress: Progress,
             msg = None
 
         progress.end(msg=msg)
+
+
+def process_link_table(
+        args: argparse.Namespace, curs, progress: Progress,
+        title: str, table_name: str, fields: Union[str, list[str]],
+        cache: dict):
+    """
+    Process a many-to-many link table
+    :param args: program arguments
+    :param curs: cursor
+    :param progress: progress instance
+    :param title: progress title
+    :param table_name: name of table to update
+    :param fields: fields list
+    :param cache: cache dict with food.com id as key and list of link ids
+                    as value
+    """
+    progress.reset(title, args.progress, table_name)
+    progress.start()
+
+    batch = []
+    for food_id, to_link_ids in cache.items():
+        if not to_link_ids:
+            continue
+
+        recipe_db_id = recipes.get(str(food_id))
+        batch.extend([
+            (recipe_db_id, link_id)
+            for link_id in to_link_ids
+        ])
+
+        if len(batch) > DEFAULT_PAGE_SIZE:
+            insert_batch(curs, fields, tuple(batch), table_name)
+
+            progress.inc(processed=len(batch))
+            batch.clear()
+
+    if len(batch) > 0:
+        insert_batch(curs, fields, tuple(batch), table_name)
+
+        progress.inc(processed=len(batch))
+        batch.clear()
+
+    progress.end()
 
 
 def pickle_file_name(table_name: str) -> str:

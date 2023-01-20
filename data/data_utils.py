@@ -52,12 +52,12 @@ def insert_content(curs, fields: Union[str, list[str]], values: tuple,
         fields = ', '.join(fields)
 
     sql = f"INSERT INTO {table} ({fields}) " \
-          f"VALUES ({values_fmt});" \
+          f"VALUES ({values_fmt}) RETURNING id" \
           if not unique else \
           f"INSERT INTO {table} ({fields}) " \
           f"SELECT {vals(values)} WHERE NOT EXISTS (" \
           f"SELECT NULL FROM {table} " \
-          f"WHERE ({fields}) = ({values_fmt})) RETURNING id"
+          f"WHERE ({fields}) = ({values_fmt})) RETURNING id;"
     curs.execute(sql, tuple([
         str(val) for val in values
     ]))

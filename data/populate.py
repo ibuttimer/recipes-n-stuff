@@ -117,6 +117,10 @@ def parse_args():
     parser.add_argument('-sl', '--skip_ingredient_list', action='store_true',
                         help='Skip ingredients list during recipe data load',
                         default=False)
+    parser.add_argument('-sd', '--skip_instruction_list',
+                        action='store_true',
+                        help='Skip instructions list during recipe data load',
+                        default=False)
     parser.add_argument('-sp', '--skip_pictures', action='store_true',
                         help='Skip pictures during recipe data load',
                         default=False)
