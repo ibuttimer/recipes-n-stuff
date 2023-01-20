@@ -103,7 +103,8 @@ class Cols(IntEnum):
     @staticmethod
     def float_fields():
         """ Field using float """
-        return [Cols.Calories, Cols.FatContent, Cols.SaturatedFatContent,
+        return [
+            Cols.Calories, Cols.FatContent, Cols.SaturatedFatContent,
             Cols.CholesterolContent, Cols.SodiumContent,
             Cols.CarbohydrateContent, Cols.FiberContent, Cols.SugarContent,
             Cols.ProteinContent
@@ -113,6 +114,7 @@ class Cols(IntEnum):
     def int_fields():
         """ Field using float """
         return [Cols.RecipeId, Cols.RecipeServings]
+
 
 # password generation
 PASSWORD_CHARS = string.ascii_letters + string.digits + "!£$&*@#?%^=+-/~.,:;"
@@ -215,6 +217,15 @@ RECIPE_COLS = {
     ]
 }
 assert list(RECIPE_COLS.keys()) == RECIPE_FIELDS
+# recipe ingredients list
+RECIPE_INGREDIENT_TABLE = 'recipes_recipeingredient'
+RECIPE_INGREDIENT_RECIPE_ID = 'recipe_id'
+RECIPE_INGREDIENT_INGREDIENT_ID = 'ingredient_id'
+RECIPE_INGREDIENT_QUANTITY = 'quantity'
+RECIPE_INGREDIENT_FIELDS = [
+    RECIPE_INGREDIENT_RECIPE_ID, RECIPE_INGREDIENT_INGREDIENT_ID,
+    RECIPE_INGREDIENT_QUANTITY
+]
 # recipe images
 IMAGE_TABLE = 'recipes_image'
 IMAGE_NAME = 'name'
@@ -274,8 +285,10 @@ def load_recipe(args: argparse.Namespace, curs):
 
     # process keywords
     table_fields = ', '.join(KEYWORD_FIELDS)
-    process_data(args, curs, progress, 'Keyword', KEYWORD_TABLE, table_fields, table[COL_NAMES[Cols.Keywords]],
-                 args.skip_keyword, folder, cache=keywords)
+    process_data(
+        args, curs, progress, 'Keyword', KEYWORD_TABLE, table_fields,
+        table[COL_NAMES[Cols.Keywords]], args.skip_keyword, folder,
+        cache=keywords)
 
     # process ingredients
     curs.execute(
@@ -284,14 +297,15 @@ def load_recipe(args: argparse.Namespace, curs):
     unit_id = curs.fetchone()[0]
 
     table_fields = ', '.join(INGREDIENT_FIELDS)
-    process_data(args, curs, progress, 'Ingredient', INGREDIENT_TABLE, table_fields,
-                 table[COL_NAMES[Cols.RecipeIngredientParts]], args.skip_ingredient, folder,
-                 values_func=lambda val, row: (val, unit_id), cache=ingredients)
+    process_data(
+        args, curs, progress, 'Ingredient', INGREDIENT_TABLE, table_fields,
+        table[COL_NAMES[Cols.RecipeIngredientParts]], args.skip_ingredient,
+        folder, values_func=lambda val, row, idx: (val, unit_id),
+        cache=ingredients)
 
     # process authors
-    def user_values(author_name: Union[str, StringScalar], row: int)\
-            -> tuple[str, str, str | StringScalar, str, str, bool, bool,
-            bool, datetime, str, str]:
+    def user_values(
+            author_name: Union[str, StringScalar], row: int) -> tuple:
         """ Generate user values """
         # Note: password is a random hashed value as the user will never login
         splits = str(author_name).split()
@@ -301,6 +315,7 @@ def load_recipe(args: argparse.Namespace, curs):
             YEAR_DOT, 'Imported from kaggle dataset', AVATAR_BLANK
 
     user_table: Optional[pa.Table] = None
+
     def get_user_table():
         """ Get the user data """
         nonlocal user_table
@@ -312,7 +327,8 @@ def load_recipe(args: argparse.Namespace, curs):
             COL_NAMES[Cols.AuthorName])
         return user_table[COL_NAMES[Cols.AuthorName]]
 
-    def cache_user(id_cache: dict, key: Any, db_id: int, row: int) -> None:
+    def cache_user(
+            id_cache: dict, key: Any, db_id: int, row: int, idx: int) -> None:
         """
         Cache user info
         :param id_cache: cache to update
@@ -326,15 +342,32 @@ def load_recipe(args: argparse.Namespace, curs):
                 new_id=db_id)
 
     table_fields = ', '.join(AUTHOR_FIELDS)
-    process_data(args, curs, progress, 'Author', AUTHOR_TABLE, table_fields, get_user_table, args.skip_author, folder,
-                 are_lists=False, values_func=user_values, cache=authors, cache_func=cache_user)
+    process_data(
+        args, curs, progress, 'Author', AUTHOR_TABLE, table_fields,
+        get_user_table, args.skip_author, folder, are_lists=False,
+        values_func=user_values, cache=authors, cache_func=cache_user)
 
     # process recipes
-    def recipe_values(recipe_id: Union[str, StringScalar], row: int) -> tuple:
+    def recipe_check(recipe_id: Any, row: int) -> bool:
+        """ Check ok to add recipe """
+        # length of recipe ingredients and quantities sometimes don't match,
+        # e.g. "1/2 cup butter or 1/2 cup margarine", only the butter will be
+        # in the quantities list, or
+        # if they don't have a link to an 'about' for the ingredient it won't
+        # appear in the ingredients list
+        # skip those as no way to generate a full list easily
+        ingredient_list = table[
+            COL_NAMES[Cols.RecipeIngredientParts]][row].as_py()
+        quantities = table[
+            COL_NAMES[Cols.RecipeIngredientQuantities]][row].as_py()
+        return len(ingredient_list) == len(quantities)
+
+    def recipe_values(
+            recipe_id: Union[str, StringScalar], row: int, idx: int) -> tuple:
         """ Generate recipe values """
         # same order as RECIPE_FIELDS
         values = []
-        for key, col in RECIPE_COLS.items():
+        for _, col in RECIPE_COLS.items():
             value = table[COL_NAMES[col]][row].as_py()
             if col in [Cols.PrepTime, Cols.CookTime]:
                 # pass
@@ -357,22 +390,92 @@ def load_recipe(args: argparse.Namespace, curs):
         return tuple(values)
 
     table_fields = ', '.join(RECIPE_FIELDS)
-    process_data(args, curs, progress, 'Recipe', RECIPE_TABLE, table_fields, table[COL_NAMES[Cols.RecipeId]], args.skip_recipe, folder,
-                 are_lists=False, values_func=recipe_values, cache=recipes)
+    process_data(
+        args, curs, progress, 'Recipe', RECIPE_TABLE, table_fields,
+        table[COL_NAMES[Cols.RecipeId]], args.skip_recipe, folder,
+        are_lists=False, values_func=recipe_values, cache=recipes,
+        proceed_test=recipe_check)
 
-    # process recipe ingredient
+    # process recipe ingredients list
+    recipes_table: Optional[pa.Table] = None
+    ingredients_table: Optional[pa.Table] = None
 
+    def get_ingredients_table():
+        """ Get the ingredients list data """
+        nonlocal ingredients_table, recipes_table
+
+        req_indices = [
+            pc.index(table[COL_NAMES[Cols.RecipeId]], float(food_id)).as_py()
+            for food_id in recipes
+        ]
+        mask = np.full((len(table)), False)
+        mask[req_indices] = True
+        recipes_table = table.filter(mask=mask)
+
+        ingredients_table = pa.table([
+            recipes_table[COL_NAMES[Cols.RecipeId]],
+            recipes_table[COL_NAMES[Cols.RecipeIngredientParts]],
+            recipes_table[COL_NAMES[Cols.RecipeIngredientQuantities]],
+            recipes_table[COL_NAMES[Cols.Name]]
+        ], names=[
+            COL_NAMES[Cols.RecipeId], COL_NAMES[Cols.RecipeIngredientParts],
+            COL_NAMES[Cols.RecipeIngredientQuantities], COL_NAMES[Cols.Name]
+        ])
+        return ingredients_table[COL_NAMES[Cols.RecipeIngredientParts]]
+
+    def ingredients_list_values(
+            ingredient: Union[str, StringScalar], row: int,
+            idx: int) -> tuple:
+        """ Generate ingredients list values """
+        # same order as RECIPE_INGREDIENT_FIELDS
+        food_id = ingredients_table[
+            COL_NAMES[Cols.RecipeId]][row].as_py()
+        quantities = ingredients_table[
+            COL_NAMES[Cols.RecipeIngredientQuantities]][row].as_py()
+        # TODO keys for ingredients name/id cache
+        # reprocess ingredients (takes long time) to verify fix for keys
+        # starting with '2%' having a value of in the pickled dict, and remove
+        # db this lookup
+        ingredient_id = ingredients.get(str(ingredient))
+        if ingredient_id is None:
+            ingredient_id = get_content_id(
+                curs, INGREDIENT_TABLE, INGREDIENT_NAME, str(ingredient))
+            ingredients[str(ingredient)] = ingredient_id
+
+        return tuple([
+            recipes.get(str(food_id)),
+            ingredients.get(str(ingredient)),
+            quantities[idx] or '' if quantities else ''
+        ])
+
+    # TODO remove after 'keys for ingredients name/id cache' ok
+    pickle_data(INGREDIENT_TABLE, ingredients, folder)
+
+    table_fields = ', '.join(RECIPE_INGREDIENT_FIELDS)
+    process_data(
+        args, curs, progress, 'Ingredients list', RECIPE_INGREDIENT_TABLE,
+        table_fields, get_ingredients_table, args.skip_ingredient_list,
+        folder, are_lists=True, values_func=ingredients_list_values)
 
     # process recipe images
-    # process_list(args, curs, progress, 'Image', IMAGE_TABLE, IMAGE_FIELDS, table[COL_NAMES[Cols.Images]], keywords,
-    #              args.skip_pictures, folder)
+    # table_fields = ', '.join(IMAGE_FIELDS)
+    # process_data(args, curs, progress, 'Image', IMAGE_TABLE, table_fields, table[COL_NAMES[Cols.Images]],
+    #              args.skip_pictures, folder, are_lists=True)
 
 
-def process_data(args: argparse.Namespace, curs, progress: Progress, title: str, table_name: str, fields: Union[str, list[str]],
-                 parquet_data: Union[Callable[[], Any], pa.Table, pa.Array], skip: bool, folder: Union[str, Path],
-                 are_lists: bool = True, batch_mode: bool = False, values_func: Optional[Callable[[Any, int], tuple]] = None,
-                 cache: dict = None, cache_func: Optional[
-            Callable[[dict, Any, int, int], None]] = None, get_field: str = None):
+def process_data(args: argparse.Namespace, curs, progress: Progress,
+                 title: str, table_name: str, fields: Union[str, list[str]],
+                 parquet_data: Union[Callable[[], Any], pa.Table, pa.Array],
+                 skip: bool, folder: Union[str, Path], are_lists: bool = True,
+                 batch_mode: bool = False,
+                 values_func: Optional[
+                     Callable[[Any, int, int], tuple]
+                 ] = None, cache: dict = None,
+                 cache_func: Optional[
+                     Callable[[dict, Any, int, int], None]] = None,
+                 proceed_test: Optional[
+                        Callable[[Any, int], bool]
+                 ] = None, get_field: str = None):
     """
     Process data
     :param args: program arguments
@@ -390,11 +493,15 @@ def process_data(args: argparse.Namespace, curs, progress: Progress, title: str,
     :param cache: cache dict to store info; default None
     :param cache_func: function to cache new entries;
                 default key: read value, value: id of new entry
+    :param proceed_test: function to check if entry should be added;
+                default None
     :param get_field: field to use to get id of inserted row;
                     default first field in `fields`
     """
     if get_field is None:
-        get_field = fields[0]   # default to first field
+        # default to first field
+        get_field = fields[0] if isinstance(fields, list) \
+            else fields.split(',')[0].strip()
     if values_func is None:
         # default single value tuple
         values_func = one_val_tuple
@@ -439,18 +546,23 @@ def process_data(args: argparse.Namespace, curs, progress: Progress, title: str,
             if not words:
                 continue
 
+            if proceed_test:
+                # check if ok to add entry
+                if not proceed_test(words, row):
+                    continue
+
             entries = words.as_py() if are_lists else [words]
-            for word in entries:
+            for idx, word in enumerate(entries):
                 if not word:
                     continue
 
                 if batch_mode:
                     # batch mode, so insert batch
-                    batch.append(values_func(word, row))
+                    batch.append(values_func(word, row, idx))
                 else:
                     # non batch mode, so insert individually
                     new_id = insert_content(
-                        curs, fields, values_func(word, row), table_name,
+                        curs, fields, values_func(word, row, idx), table_name,
                         unique=True)
                     if cache is not None:
                         cache_func(cache, word, new_id, row)
@@ -514,11 +626,13 @@ def pickle_data(table_name: str, data: dict, folder: Union[str, Path]) -> str:
 
     return pickle_file
 
-def one_val_tuple(val: Any, row: int) -> tuple:
+
+def one_val_tuple(val: Any, row: int, idx: int) -> tuple:
     """
     Generate a tuple from a single value
     :param val: value
     :param row: row index
+    :param idx: list item index
     :return: tuple
     """
     return val,
@@ -543,7 +657,9 @@ def drop_duplicates(table: pa.Table, column_name: str) -> pa.Table:
     :return: filtered table
     """
     unique_values = pc.unique(table[column_name])
-    unique_indices = [pc.index(table[column_name], value).as_py() for value in unique_values]
+    unique_indices = [
+        pc.index(table[column_name], value).as_py() for value in unique_values
+    ]
     mask = np.full((len(table)), False)
     mask[unique_indices] = True
     return table.filter(mask=mask)

@@ -96,9 +96,6 @@ def parse_args():
     parser.add_argument('-c', '--country', action='store_true',
                         help='Load country data',
                         default=False)
-    parser.add_argument('-m', '--measures', action='store_true',
-                        help='Load measures data',
-                        default=False)
     parser.add_argument('-r', '--recipe', action='store_true',
                         help='Load recipe data',
                         default=False)
@@ -116,6 +113,9 @@ def parse_args():
                         default=False)
     parser.add_argument('-sr', '--skip_recipe', action='store_true',
                         help='Skip recipes during recipe data load',
+                        default=False)
+    parser.add_argument('-sl', '--skip_ingredient_list', action='store_true',
+                        help='Skip ingredients list during recipe data load',
                         default=False)
     parser.add_argument('-sp', '--skip_pictures', action='store_true',
                         help='Skip pictures during recipe data load',

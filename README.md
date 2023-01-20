@@ -297,12 +297,26 @@ Populate the database with predefined data via the [populate.py](data/populate.p
 When run using [run_populate.py](run_populate.py) it will load the data from [subdivisions.txt](data/subdivisions.txt).
 
 From the project root folder run the following
+
+##### Measures table
+```bash
+# E.g. populated the remote database 
+python -m manage loaddata measure.json --database remote
+```
+##### Countryinfo table
 ```bash
 # Help listing
 python run_populate.py -h
 
 # E.g. populated the remote database 
-python run_populate.py -f data -dv REMOTE_DATABASE_URL
+python run_populate.py -c -f data -dv REMOTE_DATABASE_URL
+```
+##### Recipe tables
+> **Note:** Due to the large size of the dataset, this operation takes a long time to complete.
+
+```bash
+# E.g. populated the remote database 
+python run_populate.py -r -f data -dv REMOTE_DATABASE_URL
 ```
 #### Create a superuser
 Enter `Username`, `Password` and optionally `Email address`.
@@ -335,9 +349,9 @@ From [django-allauth Post-Installation](https://django-allauth.readthedocs.io/en
     - Google
       [django-allauth Google provider info](https://django-allauth.readthedocs.io/en/latest/providers.html#google)
 
-      | Provider | Name   | Client id                                        | Secret key                                        | 
-      |----------|--------|---------------------------------------------------|--------------------------------------------------| 
-      | google   | Google | `client_id` from the OAuth 2.0 Client credentials | `client_secret` from the OAuth 2.0 Client credentials | 
+      | Provider | Name   | Client id                                          | Secret key                                            | 
+      |----------|--------|----------------------------------------------------|-------------------------------------------------------| 
+      | google   | Google | `client_id` from the OAuth 2.0 Client credentials  | `client_secret` from the OAuth 2.0 Client credentials | 
 
       And add the Site for your domain to the `Chosen sites` list
 
@@ -373,6 +387,7 @@ The application structure is as follows:
 ├─ manage.py            - application entry point
 ├─ recipesnstuff        - main Django application
 ├─ base                 - base Django application
+├─ recipes              - recipes Django application
 ├─ django_tests         - Django Test Tools test scripts
 ├─ jest_tests           - Jest javascript tests
 ├─ profiles             - shopping profiles Django application
@@ -435,7 +450,7 @@ The following steps were followed to deploy the website:
     - Add the `DATABASE_URL` environment variable under `Config Vars`, if required
 
       | Key               | Value                                                                                                                                                                                                                                                                                 |
-            |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------|
+      |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------|
       | DATABASE_URL      | [Database url](https://docs.djangoproject.com/en/4.1/ref/settings/#databases)<br>- [Heroku Postgres](https://elements.heroku.com/addons/heroku-postgresql) database, automatically added when `Resources` are provisioned<br>- [ElephantSQL](https://www.elephantsql.com/) database, copy the `URL` from the instance details page |
 
 

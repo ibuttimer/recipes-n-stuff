@@ -71,15 +71,22 @@ def insert_content(curs, fields: Union[str, list[str]], values: tuple,
     return new_id
 
 
-def single_quote_safe(val: Any):
+def single_quote_percent_safe(val: Any):
     """ Make a single quote safe value"""
     return str(val).replace("'", "''").replace("%", "%%")
 
 
+def single_quote_safe(val: Any):
+    """ Make a single quote safe value"""
+    return str(val).replace("'", "''")
+
+
 def vals(data: list):
     """ Join a list of values """
+    # needs to be single & quote safe for SELECT values in sql for
+    # insert_content unique case
     return ', '.join([
-        f"'{single_quote_safe(val)}'" for val in data
+        f"'{single_quote_percent_safe(val)}'" for val in data
     ])
 
 
@@ -96,9 +103,10 @@ def get_content_id(curs, table: str, seek_field: str, seek_value: str,
     :param exception: raise exception flag; default False
     :return: content id
     """
+    seek_value = single_quote_safe(seek_value)
     if ignore_case:
         seek_field = f"LOWER({seek_field})"
-        seek_value = f"LOWER('{single_quote_safe(seek_value)}')"
+        seek_value = f"LOWER('{seek_value}')"
     curs.execute(f"SELECT id FROM {table} WHERE "
                  f"{seek_field}={seek_value};")
     content = curs.fetchone()
@@ -116,6 +124,7 @@ def insert_batch(
     :param fields: fields list
     :param values: values to insert
     :param table: table to insert into
+    :param values_fmt: format string for values; default None
     """
     if isinstance(fields, list):
         fields = ', '.join(fields)
@@ -123,7 +132,8 @@ def insert_batch(
         values_fmt = ",".join([
             '%s' for _ in range(len(values[0]))
         ])
-    execute_batch(curs, f"INSERT INTO {table} ({fields}) VALUES ({values_fmt})", values)
+    execute_batch(
+        curs, f"INSERT INTO {table} ({fields}) VALUES ({values_fmt})", values)
 
 
 class Progress:
@@ -177,7 +187,8 @@ class Progress:
 
     def end(self, msg: str = None):
         """ Progress completed """
-        backspace = '\b' * (self.size + len(Progress.LEAD)) if self.size else ''
+        backspace = '\b' * (self.size + len(Progress.LEAD)) \
+            if self.size else ''
         print(f'{backspace}Processed {self.processed} entries for '
               f'{self.table}, adding {self.added} new entries')
         if msg:
