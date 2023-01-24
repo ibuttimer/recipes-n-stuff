@@ -200,8 +200,7 @@ RECIPE_FIELDS = [
     RECIPE_SUGAR_CONTENT, RECIPE_PROTEIN_CONTENT, RECIPE_AUTHOR,
     RECIPE_CATEGORY
 ]
-RECIPE_COLS = {
-    key: val for key, val in [
+RECIPE_COLS = dict([
         (RECIPE_NAME, Cols.Name),
         (RECIPE_FOOD_ID, Cols.RecipeId),
         (RECIPE_PREP_TIME, Cols.PrepTime),
@@ -222,7 +221,7 @@ RECIPE_COLS = {
         (RECIPE_AUTHOR, Cols.AuthorName),
         (RECIPE_CATEGORY, Cols.RecipeCategory),
     ]
-}
+)
 assert list(RECIPE_COLS.keys()) == RECIPE_FIELDS
 # recipe ingredients list
 RECIPE_INGREDIENT_TABLE = 'recipes_recipeingredient'
@@ -246,8 +245,9 @@ RECIPE_INSTRUCTIONS_FIELDS = [
 ]
 # recipe images
 IMAGE_TABLE = 'recipes_image'
-IMAGE_NAME = 'name'
-IMAGE_FIELDS = [IMAGE_NAME]
+IMAGE_URL = 'url'
+IMAGE_RECIPE_ID = 'recipe_id'
+IMAGE_FIELDS = [IMAGE_URL, IMAGE_RECIPE_ID]
 
 categories = {}     # key: category, val: id
 keywords = {}       # key: food.com id, val: list of instruction ids
@@ -271,6 +271,7 @@ def load_recipe(args: argparse.Namespace, curs):
     raw_table = pq.read_table(filepath)
 
     # process category
+    # ~~~~~~~~~~~~~~~~
     progress = Progress('Category', args.progress, CATEGORY_TABLE)
     skip = args.skip_category
     if skip:
@@ -316,6 +317,8 @@ def load_recipe(args: argparse.Namespace, curs):
         cache=ingredients)
 
     # process authors
+    # ~~~~~~~~~~~~~~~
+
     def user_values(
             author_name: Union[str, StringScalar], row: int) -> tuple:
         """ Generate user values """
@@ -360,6 +363,8 @@ def load_recipe(args: argparse.Namespace, curs):
         values_func=user_values, cache=authors, cache_func=cache_user)
 
     # process recipes
+    # ~~~~~~~~~~~~~~~
+
     def recipe_check(recipe_id: Any, row: int) -> bool:
         """ Check ok to add recipe """
         # length of recipe ingredients and quantities sometimes don't match,
@@ -415,16 +420,18 @@ def load_recipe(args: argparse.Namespace, curs):
     # From here on only use 'recipes_table' NOT 'raw_table'
 
     # process keywords
+    # ~~~~~~~~~~~~~~~~
     recipes_table: Optional[pa.Table] = None
 
     def get_recipes_table() -> pa.Table:
-        """ Get the ingredients list data """
+        """ Get the recipes to load data """
         nonlocal recipes_table
 
         if recipes_table is None:
             req_indices = [
                 pc.index(
-                    raw_table[COL_NAMES[Cols.RecipeId]], float(food_id)).as_py()
+                    raw_table[COL_NAMES[Cols.RecipeId]],
+                    float(food_id)).as_py()
                 for food_id in recipes
             ]
             mask = np.full((len(raw_table)), False)
@@ -446,7 +453,7 @@ def load_recipe(args: argparse.Namespace, curs):
         :param data_table: parquet data table
         """
         if id_cache is not None:
-            # key: food.com id, val: list of instruction ids
+            # key: food.com id, val: list of ids
             food_id = data_table[COL_NAMES[Cols.RecipeId]][row].as_py()
             id_list = id_cache[food_id] if food_id in id_cache else []
             id_list.append(db_id)
@@ -468,17 +475,18 @@ def load_recipe(args: argparse.Namespace, curs):
     table_fields = ', '.join(KEYWORD_FIELDS)
     process_data(
         args, curs, progress, 'Keyword', KEYWORD_TABLE, table_fields,
-        lambda : get_recipes_table()[COL_NAMES[Cols.Keywords]],
+        lambda: get_recipes_table()[COL_NAMES[Cols.Keywords]],
         args.skip_keyword, folder,
         cache=keywords, cache_func=cache_keyword_id)
 
-    if not args.skip_keyword:
+    if not args.skip_keyword_list:
         table_fields = ', '.join(RECIPE_KEYWORDS_FIELDS)
         process_link_table(
             args, curs, progress, 'Link recipe keywords',
             RECIPE_KEYWORDS_TABLE, table_fields, keywords)
 
     # process recipe ingredients list
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ingredients_table: Optional[pa.Table] = None
 
     def get_ingredients_table():
@@ -537,6 +545,7 @@ def load_recipe(args: argparse.Namespace, curs):
     ingredients.clear()
 
     # process recipe instructions
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     def cache_instruction(
             id_cache: dict, text: Any, db_id: int, row: int,
@@ -555,7 +564,7 @@ def load_recipe(args: argparse.Namespace, curs):
     process_data(
         args, curs, progress, 'Instructions', INSTRUCTION_TABLE,
         table_fields,
-        lambda : get_recipes_table()[COL_NAMES[Cols.RecipeInstructions]],
+        lambda: get_recipes_table()[COL_NAMES[Cols.RecipeInstructions]],
         args.skip_instruction_list, folder, unique=False, are_lists=True,
         cache=instructions, cache_func=cache_instruction)
 
@@ -565,12 +574,22 @@ def load_recipe(args: argparse.Namespace, curs):
             args, curs, progress, 'Link recipe instructions',
             RECIPE_INSTRUCTIONS_TABLE, table_fields, instructions)
 
-
-
     # process recipe images
-    # table_fields = ', '.join(IMAGE_FIELDS)
-    # process_data(args, curs, progress, 'Image', IMAGE_TABLE, table_fields, recipes_table[COL_NAMES[Cols.Images]],
-    #              args.skip_pictures, folder, are_lists=True)
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    def images_values(url: Union[str, StringScalar], row: int,
+                      idx: int) -> tuple:
+        """ Generate images values """
+        # same order as IMAGE_FIELDS
+        food_id = recipes_table[
+            COL_NAMES[Cols.RecipeId]][row].as_py()
+        return url, recipes.get(str(food_id))
+
+    table_fields = ', '.join(IMAGE_FIELDS)
+    process_data(args, curs, progress, 'Image', IMAGE_TABLE, table_fields,
+                 lambda: get_recipes_table()[COL_NAMES[Cols.Images]],
+                 args.skip_pictures, folder, unique=False, are_lists=True,
+                 values_func=images_values)
 
 
 def process_data(args: argparse.Namespace, curs, progress: Progress,

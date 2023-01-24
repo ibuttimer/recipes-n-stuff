@@ -392,7 +392,7 @@ class Image(ModelMixin, models.Model):
     URL_FIELD = URL_FIELD
     RECIPE_FIELD = RECIPE_FIELD
 
-    IMAGE_ATTRIB_URL_MAX_LEN: int = 250
+    IMAGE_ATTRIB_URL_MAX_LEN: int = 1000
 
     url = models.CharField(
         _('image url'), max_length=IMAGE_ATTRIB_URL_MAX_LEN,
