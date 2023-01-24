@@ -19,34 +19,34 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-#
+from pathlib import Path
 
-from django.urls import path
+# name of this app
+THIS_APP = Path(__file__).resolve().parent.name
 
-from .constants import (
-    THIS_APP, ADDRESSES_URL, ADDRESSES_ROUTE_NAME,
-    ADDRESS_NEW_URL, ADDRESS_NEW_ROUTE_NAME,
-    ADDRESS_ID_URL, ADDRESS_ID_ROUTE_NAME,
-    ADDRESSES_ID_DEFAULT_URL, ADDRESSES_ID_DEFAULT_ROUTE_NAME,
-    COUNTRYINFO_CODE_URL, COUNTRYINFO_CODE_ROUTE_NAME,
-)
-from .views import (
-    AddressCreate, AddressList, subdivision_name, AddressDetail,
-    address_default
-)
+NAME_FIELD = "name"
+FREQUENCY_FIELD = "frequency"
+FREQUENCY_TYPE_FIELD = "frequency_type"
+AMOUNT_FIELD = "amount"
+BASE_CURRENCY_FIELD = "base_currency"
+DESCRIPTION_FIELD = "description"
+IS_ACTIVE_FIELD = "is_active"
 
-# https://docs.djangoproject.com/en/4.1/topics/http/urls/#url-namespaces-and-included-urlconfs
-app_name = THIS_APP
+USER_FIELD = "user"
+SUBSCRIPTION_FIELD = "subscription"
+START_DATE_FIELD = "start_date"
+END_DATE_FIELD = "end_date"
 
-urlpatterns = [
-    path(ADDRESSES_URL, AddressList.as_view(), name=ADDRESSES_ROUTE_NAME),
-    path(ADDRESS_NEW_URL, AddressCreate.as_view(),
-         name=ADDRESS_NEW_ROUTE_NAME),
-    path(ADDRESS_ID_URL, AddressDetail.as_view(),
-         name=ADDRESS_ID_ROUTE_NAME),
-    path(ADDRESSES_ID_DEFAULT_URL, address_default,
-         name=ADDRESSES_ID_DEFAULT_ROUTE_NAME),
+# urls/routes related
+SUBSCRIPTIONS_URL = ""
+SUBSCRIPTIONS_NEW_URL = "new/"
+SUBSCRIPTIONS_BY_ID_URL = "<int:pk>/"
 
-    path(COUNTRYINFO_CODE_URL, subdivision_name,
-         name=COUNTRYINFO_CODE_ROUTE_NAME),
-]
+SUBSCRIPTIONS_ROUTE_NAME = "subscriptions"
+SUBSCRIPTION_NEW_ROUTE_NAME = "subscription_new"
+SUBSCRIPTION_BY_ID_ROUTE_NAME = "subscriptions_by_id"
+
+
+# context related
+FORM_CTX = 'form'
+IS_NEW_CTX = 'is_new'

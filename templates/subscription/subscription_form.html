@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+<!-- subscription_form.html start -->
+{# --- template variable defines for includes --- #}
+{# address form template expects: 'form' as SubscriptionForm #}
+{#                                'submit_url' as url to submit new/updated subscription #}
+
+{% load i18n %}
+{% load static %}
+
+{% block head_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+    <link href="{% static 'css/styles-subscription.css' %}" rel="stylesheet" type="text/css">
+{% endblock extra_css %}
+
+{% block extra_js_head %}
+    {% include "snippet/jquery.html" %}
+{% endblock extra_js_head %}
+
+{% block content %}
+<div class="row mt-2 mb-2">
+    {% if page_heading %}
+    <div class="col-12 text-center">
+        <h3>{{ page_heading | safe }}</h3>
+    </div>
+    {% endif %}
+</div>
+
+<article id="article-content" class="row d-flex justify-content-center">
+    <row class="col-lg-10 col-md-11 col-sm-12">
+        <form {% if not read_only %} method="post" action="{{ submit_url }}" enctype="multipart/x-www-form-urlencoded" {% endif %}>
+            {% if not read_only %}
+                {% csrf_token %}
+            {% endif %}
+
+            <div id="id--subscription-form-errors-container">
+                {% include "snippet/form_errors.html" %}
+            </div>
+
+            <fieldset {% if read_only %} disabled {% endif %}>
+                {% for field in form %}
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-start">
+                        <label for="id_{{ field.name }}" class="col-form-label">{{ field.label }}</label>
+                    </div>
+                    <div class="col-sm-8">
+                        {{ field }}
+                    </div>
+                </div>
+                {% endfor %}
+            </fieldset>
+
+            <div class="row mb-3">
+                <div class="col-12 text-center">
+                    <button id="id--subscription-form-submit-btn" type="submit" class="btn btn-primary btn__text">{{ submit_btn_text }}</button>
+                </div>
+            </div>
+        </form>
+    </row>
+</article>
+
+{% endblock content %}
+
+<!-- subscription_form.html end -->

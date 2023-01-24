@@ -23,30 +23,27 @@
 
 from django.urls import path
 
+from recipesnstuff import PROFILES_APP_NAME
+
 from .constants import (
-    THIS_APP, ADDRESSES_URL, ADDRESSES_ROUTE_NAME,
-    ADDRESS_NEW_URL, ADDRESS_NEW_ROUTE_NAME,
-    ADDRESS_ID_URL, ADDRESS_ID_ROUTE_NAME,
-    ADDRESSES_ID_DEFAULT_URL, ADDRESSES_ID_DEFAULT_ROUTE_NAME,
-    COUNTRYINFO_CODE_URL, COUNTRYINFO_CODE_ROUTE_NAME,
+    THIS_APP,
+    SUBSCRIPTIONS_URL, SUBSCRIPTIONS_ROUTE_NAME,
+    SUBSCRIPTIONS_NEW_URL, SUBSCRIPTION_NEW_ROUTE_NAME,
+    SUBSCRIPTIONS_BY_ID_URL, SUBSCRIPTION_BY_ID_ROUTE_NAME,
 )
 from .views import (
-    AddressCreate, AddressList, subdivision_name, AddressDetail,
-    address_default
+    SubscriptionCreate,
 )
 
 # https://docs.djangoproject.com/en/4.1/topics/http/urls/#url-namespaces-and-included-urlconfs
 app_name = THIS_APP
 
 urlpatterns = [
-    path(ADDRESSES_URL, AddressList.as_view(), name=ADDRESSES_ROUTE_NAME),
-    path(ADDRESS_NEW_URL, AddressCreate.as_view(),
-         name=ADDRESS_NEW_ROUTE_NAME),
-    path(ADDRESS_ID_URL, AddressDetail.as_view(),
-         name=ADDRESS_ID_ROUTE_NAME),
-    path(ADDRESSES_ID_DEFAULT_URL, address_default,
-         name=ADDRESSES_ID_DEFAULT_ROUTE_NAME),
-
-    path(COUNTRYINFO_CODE_URL, subdivision_name,
-         name=COUNTRYINFO_CODE_ROUTE_NAME),
+    # path(ADDRESSES_URL, AddressList.as_view(), name=ADDRESSES_ROUTE_NAME),
+    path(SUBSCRIPTIONS_NEW_URL, SubscriptionCreate.as_view(),
+         name=SUBSCRIPTION_NEW_ROUTE_NAME),
+    # path(ADDRESS_ID_URL, AddressDetail.as_view(),
+    #      name=ADDRESS_ID_ROUTE_NAME),
+    # path(ADDRESSES_ID_DEFAULT_URL, address_default,
+    #      name=ADDRESSES_ID_DEFAULT_ROUTE_NAME),
 ]

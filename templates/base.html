@@ -89,6 +89,19 @@
                                     <li><a class="dropdown-item" href="#">Something else here</a></li>
                                 </ul>
                             </li>
+                                {% if user.is_superuser %}
+                                <li class="nav-item dropdown">
+                                    <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                       {% with has_permission=1 active=1 disabled=0 %}{% include "snippet/menu_dropdown_class.html" %}{% endwith %}
+                                    >
+                                        Subscriptions
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#">All</a></li>
+                                        <li><a class="dropdown-item" href="{% url 'subscription:subscription_new' %}">New</a></li>
+                                    </ul>
+                                </li>
+                                {% endif %}
                             {% endif %}
                         </ul>
                         <form class="d-flex" role="search">

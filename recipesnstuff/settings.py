@@ -40,7 +40,7 @@ from django.contrib.messages import constants as messages
 
 from .constants import (
     BASE_APP_NAME, MIN_PASSWORD_LEN, USER_APP_NAME, PROFILES_APP_NAME,
-    RECIPES_APP_NAME,
+    RECIPES_APP_NAME, SUBSCRIPTION_APP_NAME,
     LOGIN_URL as USER_LOGIN_URL, LOGIN_ROUTE_NAME, HOME_ROUTE_NAME
 )
 
@@ -161,6 +161,7 @@ INSTALLED_APPS = [
     USER_APP_NAME,
     PROFILES_APP_NAME,
     RECIPES_APP_NAME,
+    SUBSCRIPTION_APP_NAME,
 
     # needs to be after app with django template overrides
     'django.forms',
@@ -427,3 +428,6 @@ LOGGING = {
 # Google site verification
 # https://support.google.com/webmasters/answer/9008080#meta_tag_verification&zippy=%2Chtml-tag
 GOOGLE_SITE_VERIFICATION = env('GOOGLE_SITE_VERIFICATION', default='')
+
+# ISO 4217 code of the default currency
+DEFAULT_CURRENCY = 'eur'

@@ -1,0 +1,5 @@
+{# --- template variable defines for includes --- #}
+{# menu dropdown class template expects: 'has_permission' as has permission flag #}
+{#                                       'active' as active flag #}
+{#                                       'disabled' as disabled #}
+{% if has_permission %}{% if active %} class="nav-link dropdown-toggle active" aria-current="page" {% else %} class="nav-link dropdown-toggle" {% endif %} {% else %} class="nav-link dropdown-toggle disabled" {% endif %}

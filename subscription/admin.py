@@ -19,34 +19,33 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-#
 
-from django.urls import path
+from django.contrib import admin
 
-from .constants import (
-    THIS_APP, ADDRESSES_URL, ADDRESSES_ROUTE_NAME,
-    ADDRESS_NEW_URL, ADDRESS_NEW_ROUTE_NAME,
-    ADDRESS_ID_URL, ADDRESS_ID_ROUTE_NAME,
-    ADDRESSES_ID_DEFAULT_URL, ADDRESSES_ID_DEFAULT_ROUTE_NAME,
-    COUNTRYINFO_CODE_URL, COUNTRYINFO_CODE_ROUTE_NAME,
-)
-from .views import (
-    AddressCreate, AddressList, subdivision_name, AddressDetail,
-    address_default
-)
+from .models import Subscription, UserSubscription
 
-# https://docs.djangoproject.com/en/4.1/topics/http/urls/#url-namespaces-and-included-urlconfs
-app_name = THIS_APP
 
-urlpatterns = [
-    path(ADDRESSES_URL, AddressList.as_view(), name=ADDRESSES_ROUTE_NAME),
-    path(ADDRESS_NEW_URL, AddressCreate.as_view(),
-         name=ADDRESS_NEW_ROUTE_NAME),
-    path(ADDRESS_ID_URL, AddressDetail.as_view(),
-         name=ADDRESS_ID_ROUTE_NAME),
-    path(ADDRESSES_ID_DEFAULT_URL, address_default,
-         name=ADDRESSES_ID_DEFAULT_ROUTE_NAME),
+@admin.register(Subscription)
+class SubscriptionAdmin(admin.ModelAdmin):
+    """ Class representing the Subscription model in the admin interface """
+    list_display = (
+        Subscription.NAME_FIELD,
+        Subscription.FREQUENCY_TYPE_FIELD,
+        Subscription.FREQUENCY_FIELD,
+        Subscription.IS_ACTIVE_FIELD,
+    )
 
-    path(COUNTRYINFO_CODE_URL, subdivision_name,
-         name=COUNTRYINFO_CODE_ROUTE_NAME),
-]
+
+@admin.register(UserSubscription)
+class UserSubscriptionAdmin(admin.ModelAdmin):
+    """
+    Class representing the UserSubscription model in the admin interface
+    """
+    list_display = (
+        UserSubscription.USER_FIELD,
+        UserSubscription.SUBSCRIPTION_FIELD,
+        UserSubscription.START_DATE_FIELD,
+        UserSubscription.END_DATE_FIELD,
+        UserSubscription.IS_ACTIVE_FIELD,
+    )
+    ordering = (UserSubscription.USER_FIELD, UserSubscription.IS_ACTIVE_FIELD)
