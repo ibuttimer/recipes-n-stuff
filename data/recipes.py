@@ -129,6 +129,13 @@ CATEGORY_FIELDS = [CATEGORY_NAME]
 KEYWORD_TABLE = 'recipes_keyword'
 KEYWORD_NAME = 'name'
 KEYWORD_FIELDS = [KEYWORD_NAME]
+# keywords instructions list
+RECIPE_KEYWORDS_TABLE = 'recipes_recipe_keywords'
+RECIPE_KEYWORDS_RECIPE_ID = 'recipe_id'
+RECIPE_KEYWORDS_KEYWORD_ID = 'keyword_id'
+RECIPE_KEYWORDS_FIELDS = [
+    RECIPE_KEYWORDS_RECIPE_ID, RECIPE_KEYWORDS_KEYWORD_ID,
+]
 # recipe measures
 MEASURE_TABLE = 'recipes_measure'
 MEASURE_NAME = 'name'
@@ -243,7 +250,7 @@ IMAGE_NAME = 'name'
 IMAGE_FIELDS = [IMAGE_NAME]
 
 categories = {}     # key: category, val: id
-keywords = {}       # key: keyword, val: id
+keywords = {}       # key: food.com id, val: list of instruction ids
 ingredients = {}    # key: name, val: id
 authors = {}        # key: username, val: namedtuple Author
 recipes = {}        # key: food.com id, val: id
@@ -261,7 +268,7 @@ def load_recipe(args: argparse.Namespace, curs):
     filepath = os.path.join(folder, RECIPES_PARQUET)
 
     # recipe table
-    table = pq.read_table(filepath)
+    raw_table = pq.read_table(filepath)
 
     # process category
     progress = Progress('Category', args.progress, CATEGORY_TABLE)
@@ -278,7 +285,7 @@ def load_recipe(args: argparse.Namespace, curs):
 
     if not skip:
         progress.start()
-        for category in pc.unique(table[COL_NAMES[Cols.RecipeCategory]]):
+        for category in pc.unique(raw_table[COL_NAMES[Cols.RecipeCategory]]):
             if not category:
                 continue
 
@@ -295,13 +302,6 @@ def load_recipe(args: argparse.Namespace, curs):
 
         progress.end(f'pickled data to {pickle_file}')
 
-    # process keywords
-    table_fields = ', '.join(KEYWORD_FIELDS)
-    process_data(
-        args, curs, progress, 'Keyword', KEYWORD_TABLE, table_fields,
-        table[COL_NAMES[Cols.Keywords]], args.skip_keyword, folder,
-        cache=keywords)
-
     # process ingredients
     curs.execute(
         f'SELECT id FROM {MEASURE_TABLE} WHERE "{MEASURE_NAME}" = %s',
@@ -311,7 +311,7 @@ def load_recipe(args: argparse.Namespace, curs):
     table_fields = ', '.join(INGREDIENT_FIELDS)
     process_data(
         args, curs, progress, 'Ingredient', INGREDIENT_TABLE, table_fields,
-        table[COL_NAMES[Cols.RecipeIngredientParts]], args.skip_ingredient,
+        raw_table[COL_NAMES[Cols.RecipeIngredientParts]], args.skip_ingredient,
         folder, values_func=lambda val, row, idx: (val, unit_id),
         cache=ingredients)
 
@@ -333,8 +333,8 @@ def load_recipe(args: argparse.Namespace, curs):
         nonlocal user_table
         # only generate unique user table if required, it takes a while
         user_table = drop_duplicates(pa.table([
-            table[COL_NAMES[Cols.AuthorName]],
-            table[COL_NAMES[Cols.AuthorId]]
+            raw_table[COL_NAMES[Cols.AuthorName]],
+            raw_table[COL_NAMES[Cols.AuthorId]]
         ], names=[COL_NAMES[Cols.AuthorName], COL_NAMES[Cols.AuthorId]]),
             COL_NAMES[Cols.AuthorName])
         return user_table[COL_NAMES[Cols.AuthorName]]
@@ -368,9 +368,9 @@ def load_recipe(args: argparse.Namespace, curs):
         # if they don't have a link to an 'about' for the ingredient it won't
         # appear in the ingredients list
         # skip those as no way to generate a full list easily
-        ingredient_list = table[
+        ingredient_list = raw_table[
             COL_NAMES[Cols.RecipeIngredientParts]][row].as_py()
-        quantities = table[
+        quantities = raw_table[
             COL_NAMES[Cols.RecipeIngredientQuantities]][row].as_py()
         return len(ingredient_list) == len(quantities)
 
@@ -380,7 +380,7 @@ def load_recipe(args: argparse.Namespace, curs):
         # same order as RECIPE_FIELDS
         values = []
         for _, col in RECIPE_COLS.items():
-            value = table[COL_NAMES[col]][row].as_py()
+            value = raw_table[COL_NAMES[col]][row].as_py()
             if col in [Cols.PrepTime, Cols.CookTime]:
                 # pass
                 if value:
@@ -404,18 +404,18 @@ def load_recipe(args: argparse.Namespace, curs):
     table_fields = ', '.join(RECIPE_FIELDS)
     process_data(
         args, curs, progress, 'Recipe', RECIPE_TABLE, table_fields,
-        table[COL_NAMES[Cols.RecipeId]], args.skip_recipe, folder,
+        raw_table[COL_NAMES[Cols.RecipeId]], args.skip_recipe, folder,
         are_lists=False, values_func=recipe_values, cache=recipes,
         proceed_test=recipe_check)
 
     # save memory, clear no longer required caches
     categories.clear()
+    authors.clear()
 
-    # TODO process recipe keywords
+    # From here on only use 'recipes_table' NOT 'raw_table'
 
-    # process recipe ingredients list
+    # process keywords
     recipes_table: Optional[pa.Table] = None
-    ingredients_table: Optional[pa.Table] = None
 
     def get_recipes_table() -> pa.Table:
         """ Get the ingredients list data """
@@ -424,14 +424,62 @@ def load_recipe(args: argparse.Namespace, curs):
         if recipes_table is None:
             req_indices = [
                 pc.index(
-                    table[COL_NAMES[Cols.RecipeId]], float(food_id)).as_py()
+                    raw_table[COL_NAMES[Cols.RecipeId]], float(food_id)).as_py()
                 for food_id in recipes
             ]
-            mask = np.full((len(table)), False)
+            mask = np.full((len(raw_table)), False)
             mask[req_indices] = True
-            recipes_table = table.filter(mask=mask)
+            recipes_table = raw_table.filter(mask=mask)
 
         return recipes_table
+
+    def cache_link_id(
+            id_cache: dict, text: Any, db_id: int, row: int,
+            idx: int, data_table: pa.Table) -> None:
+        """
+        Cache instruction info
+        :param id_cache: cache to update
+        :param text: instruction
+        :param db_id: database id
+        :param row: data row number
+        :param idx: index within recipe instructions list
+        :param data_table: parquet data table
+        """
+        if id_cache is not None:
+            # key: food.com id, val: list of instruction ids
+            food_id = data_table[COL_NAMES[Cols.RecipeId]][row].as_py()
+            id_list = id_cache[food_id] if food_id in id_cache else []
+            id_list.append(db_id)
+            id_cache[food_id] = id_list
+
+    def cache_keyword_id(
+            id_cache: dict, text: Any, db_id: int, row: int,
+            idx: int) -> None:
+        """
+        Cache keyword info
+        :param id_cache: cache to update
+        :param text: instruction
+        :param db_id: database id
+        :param row: data row number
+        :param idx: index within recipe instructions list
+        """
+        cache_link_id(id_cache, text, db_id, row, idx, recipes_table)
+
+    table_fields = ', '.join(KEYWORD_FIELDS)
+    process_data(
+        args, curs, progress, 'Keyword', KEYWORD_TABLE, table_fields,
+        lambda : get_recipes_table()[COL_NAMES[Cols.Keywords]],
+        args.skip_keyword, folder,
+        cache=keywords, cache_func=cache_keyword_id)
+
+    if not args.skip_keyword:
+        table_fields = ', '.join(RECIPE_KEYWORDS_FIELDS)
+        process_link_table(
+            args, curs, progress, 'Link recipe keywords',
+            RECIPE_KEYWORDS_TABLE, table_fields, keywords)
+
+    # process recipe ingredients list
+    ingredients_table: Optional[pa.Table] = None
 
     def get_ingredients_table():
         """ Get the ingredients list data """
@@ -476,13 +524,17 @@ def load_recipe(args: argparse.Namespace, curs):
         ])
 
     # TODO remove after 'keys for ingredients name/id cache' ok
-    pickle_data(INGREDIENT_TABLE, ingredients, folder)
+    if not args.skip_ingredient_list:
+        pickle_data(INGREDIENT_TABLE, ingredients, folder)
 
     table_fields = ', '.join(RECIPE_INGREDIENT_FIELDS)
     process_data(
-        args, curs, progress, 'Ingredients list', RECIPE_INGREDIENT_TABLE,
+        args, curs, progress, 'Ingredient lists', RECIPE_INGREDIENT_TABLE,
         table_fields, get_ingredients_table, args.skip_ingredient_list,
         folder, are_lists=True, values_func=ingredients_list_values)
+
+    # save memory, clear no longer required caches
+    ingredients.clear()
 
     # process recipe instructions
 
@@ -497,12 +549,7 @@ def load_recipe(args: argparse.Namespace, curs):
         :param row: data row number
         :param idx: index within recipe instructions list
         """
-        if id_cache is not None:
-            # key: food.com id, val: list of instruction ids
-            food_id = recipes_table[COL_NAMES[Cols.RecipeId]][row].as_py()
-            id_list = id_cache[food_id] if food_id in id_cache else []
-            id_list.append(db_id)
-            id_cache[food_id] = id_list
+        cache_link_id(id_cache, text, db_id, row, idx, recipes_table)
 
     table_fields = ', '.join(INSTRUCTION_FIELDS)
     process_data(
@@ -565,12 +612,11 @@ def process_data(args: argparse.Namespace, curs, progress: Progress,
     if values_func is None:
         # default single value tuple
         values_func = one_val_tuple
+    if get_field is None:
+        # default to first field
+        get_field = fields[0] if isinstance(fields, list) \
+            else fields.split(',')[0].strip()
     if cache_func is None:
-        if get_field is None:
-            # default to first field
-            get_field = fields[0] if isinstance(fields, list) \
-                else fields.split(',')[0].strip()
-
         # default single value tuple
         def cache_key_id(id_cache: dict, key: Any, db_id: int, *args) -> None:
             """
@@ -609,6 +655,13 @@ def process_data(args: argparse.Namespace, curs, progress: Progress,
 
         batch = []
 
+        # kwargs for insert_content()
+        insert_seek = {
+            'unique': unique
+        }
+        if unique:
+            insert_seek['seek_field'] = get_field
+
         for row, words in enumerate(parquet_data):
             if not words:
                 continue
@@ -628,9 +681,13 @@ def process_data(args: argparse.Namespace, curs, progress: Progress,
                     batch.append(values_func(word, row, idx))
                 else:
                     # non batch mode, so insert individually
+
+                    if unique:
+                        insert_seek['seek_value'] = word
+
                     new_id = insert_content(
                         curs, fields, values_func(word, row, idx), table_name,
-                        unique=unique)
+                        **insert_seek)
                     if cache is not None:
                         cache_func(cache, word, new_id, row, idx)
 
