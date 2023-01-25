@@ -5,9 +5,10 @@
 
 # development requirements
 pycodestyle==2.10.0
-coverage==7.0.5
+coverage==7.1.0
 Pillow==9.4.0
 pytest-django==4.5.2
+pytest-subtests==0.9.0
 mixer==7.2.2
 argon2-cffi==21.3.0
 isoduration==20.11.0

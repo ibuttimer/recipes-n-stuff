@@ -33,6 +33,11 @@
                     <div class="col-sm-9">
                         <a class="a--sub-edit" href="{% url 'subscription:subscription_id' subscription_dto.id %}">{% trans "Edit" %}</a>&ensp;&ensp;&VerticalLine;&ensp;&ensp;<a class="a--sub-del" href="{% url 'subscription:subscription_id' subscription_dto.id %}">{% trans "Delete" %}</a>
                     </div>
+                    {% if subscription_dto.is_active %}
+                    <div class="col-sm-3 text-end">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    {% endif %}
                 </div>
             {% endif %}
         </div>

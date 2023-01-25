@@ -22,6 +22,7 @@
 
 import unittest
 import pytest
+from pytest_subtests import subtests
 from mixer.backend.django import mixer
 
 from recipesnstuff.constants import SUBSCRIPTION_APP_NAME
@@ -30,11 +31,11 @@ from subscription.constants import (
     NAME_FIELD, DESCRIPTION_FIELD, FREQUENCY_TYPE_FIELD, FREQUENCY_FIELD,
     BASE_CURRENCY_FIELD, AMOUNT_FIELD, IS_ACTIVE_FIELD
 )
+from subscription.forms import SubscriptionForm
+from subscription.models import FrequencyType
 
-# excluding country order
-DISPLAY_ORDER = [
-    NAME_FIELD, DESCRIPTION_FIELD, FREQUENCY_TYPE_FIELD, FREQUENCY_FIELD,
-    BASE_CURRENCY_FIELD, AMOUNT_FIELD, IS_ACTIVE_FIELD
+TEXTS_DISPLAY_ORDER = [
+    NAME_FIELD, DESCRIPTION_FIELD
 ]
 
 
@@ -53,15 +54,35 @@ class TestSubscriptionDto(unittest.TestCase):
 
     def setUp(self):
         """ Setup test """
-        self.subscription = mixer.blend(f'{SUBSCRIPTION_APP_NAME}.Subscription')
+        # https://mixer.readthedocs.io/en/latest/quickstart.html
+        self.subscription = mixer.blend(
+            f'{SUBSCRIPTION_APP_NAME}.Subscription')
         self.dto = SubscriptionDto.from_model(self.subscription)
 
     def test_display_order(self):
         """ Test display order """
-        self.assertEqual(
-            self.dto.display_order, [
-                getattr(self.subscription, key) for key in DISPLAY_ORDER
-            ])
+
+        # TODO investigate using 'pytest-subtests' plugin
+        # as pytest doesn't support self.subTest
+
+        display_order = self.dto.display_order
+        self.assertIn(
+            getattr(self.subscription, NAME_FIELD), display_order)
+        self.assertIn(
+            getattr(self.subscription, DESCRIPTION_FIELD), display_order)
+
+        # subscription details line; e.g. '5.00 EUR per 1 Weekly'
+        details_line = display_order[len(TEXTS_DISPLAY_ORDER)]
+        self.assertIn(FrequencyType.from_choice(
+            getattr(self.dto, FREQUENCY_TYPE_FIELD)
+        ).value.name, details_line)
+        self.assertIn(
+            str(getattr(self.dto, FREQUENCY_FIELD)), details_line)
+        self.assertIn(
+            getattr(self.dto, BASE_CURRENCY_FIELD), details_line)
+        self.assertIn(
+            str(SubscriptionForm.quantise_amount(
+                getattr(self.dto, AMOUNT_FIELD))), details_line)
 
     def test_add_new(self):
         """ Test add new placeholder """
