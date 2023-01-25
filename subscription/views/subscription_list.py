@@ -28,8 +28,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpRequest
 from django.template.loader import render_to_string
 
-from profiles.constants import ADDRESS_LIST_CTX, NEW_ENTRY_CTX
-from profiles.enums import AddressQueryType, AddressSortOrder
+from base.utils import raise_permission_denied
 from profiles.views.address_queries import get_lookup, DEFAULT_ADDRESS_QUERY
 # from opinions.constants import (
 #     STATUS_QUERY, AUTHOR_QUERY, SEARCH_QUERY, PINNED_QUERY,
@@ -59,51 +58,49 @@ from utils import (
 #     REVIEW_OPINION_LIST_QUERY_ARGS, CATEGORY_FEED_QUERY_ARGS
 # )
 
-from recipesnstuff import PROFILES_APP_NAME
-from profiles.models import Address
 from .utils import (
-    address_permission_check, address_dflt_unmod_snippets
+    subscription_permission_check
 )
-from base.utils import raise_permission_denied
-from ..dto import AddressDto
+from ..constants import THIS_APP, SUBSCRIPTION_LIST_CTX
+from ..dto import SubscriptionDto
+from ..enums import SubscriptionSortOrder, SubscriptionQueryType
+from ..models import Subscription
 
 
 # args for an address reorder/next page/etc. request
-ADDRESS_REORDER_QUERY_ARGS = [
-    QueryOption(ORDER_QUERY, AddressSortOrder, AddressSortOrder.DEFAULT),
+REORDER_QUERY_ARGS = [
+    QueryOption(ORDER_QUERY, SubscriptionSortOrder, SubscriptionSortOrder.DEFAULT),
     QueryOption.of_no_cls(PAGE_QUERY, 1),
     QueryOption(PER_PAGE_QUERY, PerPage, PerPage.DEFAULT),
     QueryOption.of_no_cls(REORDER_QUERY, 0),
 ]
 assert REORDER_REQ_QUERY_ARGS == list(
-    map(lambda query_opt: query_opt.query, ADDRESS_REORDER_QUERY_ARGS)
+    map(lambda query_opt: query_opt.query, REORDER_QUERY_ARGS)
 )
 
-# request arguments for an address list request
-ADDRESS_LIST_QUERY_ARGS = ADDRESS_REORDER_QUERY_ARGS.copy()
-ADDRESS_LIST_QUERY_ARGS.extend([
+# request arguments for a subscription list request
+LIST_QUERY_ARGS = REORDER_QUERY_ARGS.copy()
+LIST_QUERY_ARGS.extend([
     # non-reorder query args
-    QueryOption.of_no_cls(USER_QUERY, None),
-    QueryOption.of_no_cls(DEFAULT_ADDRESS_QUERY, -1),
 ])
-# ADDRESS_LIST_QUERY_ARGS.extend(OPINION_APPLIED_DEFAULTS_QUERY_ARGS)
+# LIST_QUERY_ARGS.extend(OPINION_APPLIED_DEFAULTS_QUERY_ARGS)
 
 
 class ListTemplate(Enum):
     """ Enum representing possible response template """
-    FULL_TEMPLATE = app_template_path(PROFILES_APP_NAME, 'address_list.html')
+    FULL_TEMPLATE = app_template_path(THIS_APP, 'subscription_list.html')
     """ Whole page template """
     CONTENT_TEMPLATE = app_template_path(
-        PROFILES_APP_NAME, 'address_list_content.html')
+        THIS_APP, 'subscription_list_content.html')
     """ List-only template for requery """
 
 
-class AddressList(LoginRequiredMixin, ContentListMixin):
+class SubscriptionList(LoginRequiredMixin, ContentListMixin):
     """
-    Address list response
+    Subscription list response
     """
     # inherited from MultipleObjectMixin via ListView
-    model = Address
+    model = Subscription
 
     def __init__(self):
         super().__init__()
@@ -118,14 +115,14 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         Get the permission check function
         :return: permission check function
         """
-        return address_permission_check
+        return subscription_permission_check
 
     def valid_req_query_args(self) -> List[QueryOption]:
         """
         Get the valid request query args
         :return: dict of query args
         """
-        return ADDRESS_LIST_QUERY_ARGS
+        return LIST_QUERY_ARGS
 
     def additional_check_func(
             self, request: HttpRequest, query_params: dict[str, QueryArg],
@@ -141,7 +138,7 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         super_or_own = request.user.is_superuser or \
             self.is_query_own(query_params)
         if not (active and super_or_own):
-            raise_permission_denied(request, Address, plural='es')
+            raise_permission_denied(request, Subscription, plural='s')
 
     def validate_queryset(self, query_params: dict[str, QueryArg]):
         """
@@ -150,12 +147,10 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
          this function)
         :param query_params: request query
         """
-        self.query_type = AddressQueryType.UNKNOWN
-        if self.is_query_own(query_params):
-            self.query_type = AddressQueryType.MY_ADDRESSES
-        elif not self.query_param_was_set(query_params):
-            # no query params, basic all addresses query
-            self.query_type = AddressQueryType.ALL_ADDRESSES
+        self.query_type = SubscriptionQueryType.UNKNOWN
+        if not self.query_param_was_set(query_params):
+            # no query params, basic all subscriptions query
+            self.query_type = SubscriptionQueryType.ALL_SUBSCRIPTIONS
 
     def set_extra_context(self, query_params: dict[str, QueryArg],
                           query_set_params: QuerySetParams):
@@ -171,11 +166,6 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
             #     query_params, exclude_queries=REORDER_REQ_QUERY_ARGS)
         }
 
-        addr_count = query_params.get(DEFAULT_ADDRESS_QUERY).value
-        if addr_count >= 0:
-            self.extra_context[SNIPPETS_CTX] = \
-                address_dflt_unmod_snippets(addr_count)
-
         self.extra_context.update(
             self.get_title_heading(query_params))
 
@@ -184,7 +174,7 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         Get the title and page heading for context
         :param query_params: request query
         """
-        title = 'Address'
+        title = 'Subscriptions'
 
         return {
             TITLE_CTX: title,
@@ -217,7 +207,7 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         Apply `query_set_params` to set the queryset
         :param query_set_params: QuerySetParams to apply
         """
-        self.queryset = query_set_params.apply(Address.objects)
+        self.queryset = query_set_params.apply(Subscription.objects)
 
     def set_sort_order_options(self, query_params: dict[str, QueryArg]):
         """
@@ -238,7 +228,7 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         #         OpinionSortOrder.STATUS_AZ, OpinionSortOrder.STATUS_ZA
         #     ])
         self.sort_order = [
-            so for so in AddressSortOrder if so not in excludes
+            so for so in SubscriptionSortOrder if so not in excludes
         ]
 
     def get_sort_order_enum(self) -> Type[SortOrder]:
@@ -246,7 +236,7 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         Get the subclass-specific SortOrder enum
         :return: SortOrder enum
         """
-        return AddressSortOrder
+        return SubscriptionSortOrder
 
     def select_template(
             self, query_params: dict[str, QueryArg]):
@@ -275,17 +265,17 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         # )
         self.context_std_elements(context=context)
 
-        if len(context[ADDRESS_LIST_CTX]) == 0:
+        if len(context[SUBSCRIPTION_LIST_CTX]) == 0:
             # move list heading to page heading as no content
             context[PAGE_HEADING_CTX] = context[LIST_HEADING_CTX]
             del context[LIST_HEADING_CTX]
 
-        dto_list = [AddressDto.add_new_obj()]
+        dto_list = [SubscriptionDto.add_new_obj()]
         dto_list.extend([
-            AddressDto.from_model(address)
-            for address in context[ADDRESS_LIST_CTX]
+            SubscriptionDto.from_model(address)
+            for address in context[SUBSCRIPTION_LIST_CTX]
         ])
-        context[ADDRESS_LIST_CTX] = dto_list
+        context[SUBSCRIPTION_LIST_CTX] = dto_list
 
         return self.add_no_content_context(context)
 
@@ -295,7 +285,7 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         :param context: context
         :return: context
         """
-        if len(context[ADDRESS_LIST_CTX]) == 0:
+        if len(context[SUBSCRIPTION_LIST_CTX]) == 0:
             context[NO_CONTENT_MSG_CTX] = 'No addresses found.'
 
             # template = None
@@ -332,7 +322,7 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         if template:
             context[NO_CONTENT_HELP_CTX] = render_to_string(
                 app_template_path(
-                    PROFILES_APP_NAME, "messages", template),
+                    THIS_APP, "messages", template),
                 context=template_ctx)
         return context
 

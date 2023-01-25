@@ -19,33 +19,39 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from pathlib import Path
+from copy import deepcopy
+from dataclasses import dataclass
 
-# name of this app
-THIS_APP = Path(__file__).resolve().parent.name
+from django.db.models import Model
 
-NAME_FIELD = "name"
-FREQUENCY_FIELD = "frequency"
-FREQUENCY_TYPE_FIELD = "frequency_type"
-AMOUNT_FIELD = "amount"
-BASE_CURRENCY_FIELD = "base_currency"
-DESCRIPTION_FIELD = "description"
-IS_ACTIVE_FIELD = "is_active"
 
-USER_FIELD = "user"
-SUBSCRIPTION_FIELD = "subscription"
-START_DATE_FIELD = "start_date"
-END_DATE_FIELD = "end_date"
+@dataclass
+class BaseDto:
+    """ Base data transfer object """
 
-# urls/routes related
-SUBSCRIPTIONS_URL = ""
-SUBSCRIPTIONS_NEW_URL = "new/"
-SUBSCRIPTIONS_BY_ID_URL = "<int:pk>/"
+    add_new: bool = False
+    """ Add new placeholder flag"""
 
-SUBSCRIPTIONS_ROUTE_NAME = "subscriptions"
-SUBSCRIPTION_NEW_ROUTE_NAME = "subscription_new"
-SUBSCRIPTION_ID_ROUTE_NAME = "subscription_id"
+    @staticmethod
+    def from_model_to_obj(model: Model, instance):
+        """
+        Generate a DTO from the specified `model`
+        :param model: model class
+        :param instance: DTO instance to populate
+        :return: updated instance
+        """
+        for key in list(model.__dict__.keys()):
+            if key.startswith('_'):
+                continue
+            setattr(instance, key, deepcopy(getattr(model, key)))
+        return instance
 
-# context related
-SUBSCRIPTION_FORM_CTX = 'subscription_form'
-SUBSCRIPTION_LIST_CTX = 'subscription_list'
+    @staticmethod
+    def to_add_new_obj(instance):
+        """
+        Generate add new placeholder a DTO from the specified `instance`
+        :param instance: DTO instance to update
+        :return: updated instance
+        """
+        instance.add_new = True
+        return instance

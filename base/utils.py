@@ -19,33 +19,29 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from pathlib import Path
+from django.core.exceptions import PermissionDenied
+from django.http import HttpRequest
 
-# name of this app
-THIS_APP = Path(__file__).resolve().parent.name
+from utils import GET, PATCH, POST, DELETE, ModelMixin
 
-NAME_FIELD = "name"
-FREQUENCY_FIELD = "frequency"
-FREQUENCY_TYPE_FIELD = "frequency_type"
-AMOUNT_FIELD = "amount"
-BASE_CURRENCY_FIELD = "base_currency"
-DESCRIPTION_FIELD = "description"
-IS_ACTIVE_FIELD = "is_active"
+ACTIONS = {
+    GET: 'viewed',
+    PATCH: 'updated',
+    POST: 'updated',
+    DELETE: 'deleted'
+}
 
-USER_FIELD = "user"
-SUBSCRIPTION_FIELD = "subscription"
-START_DATE_FIELD = "start_date"
-END_DATE_FIELD = "end_date"
 
-# urls/routes related
-SUBSCRIPTIONS_URL = ""
-SUBSCRIPTIONS_NEW_URL = "new/"
-SUBSCRIPTIONS_BY_ID_URL = "<int:pk>/"
-
-SUBSCRIPTIONS_ROUTE_NAME = "subscriptions"
-SUBSCRIPTION_NEW_ROUTE_NAME = "subscription_new"
-SUBSCRIPTION_ID_ROUTE_NAME = "subscription_id"
-
-# context related
-SUBSCRIPTION_FORM_CTX = 'subscription_form'
-SUBSCRIPTION_LIST_CTX = 'subscription_list'
+def raise_permission_denied(
+        request: HttpRequest, model: ModelMixin, plural: str = 's'):
+    """
+    Raise a PermissionDenied exception
+    :param request: http request
+    :param model: model
+    :param plural: model name pluralising addition; default 's'
+    :raises: PermissionDenied
+    """
+    action = ACTIONS[request.method.upper()]
+    raise PermissionDenied(
+        f"{model.model_name_caps()}{plural} may only be {action} by "
+        f"their owners")

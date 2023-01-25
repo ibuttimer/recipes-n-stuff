@@ -23,6 +23,8 @@ from enum import Enum
 from collections import namedtuple
 from pathlib import Path
 
+from utils import Crud
+
 # name of this app
 THIS_APP = Path(__file__).resolve().parent.name
 
@@ -57,10 +59,17 @@ class InfoModalLevel(Enum):
     INFO = (3, InfoModalCfg(name='info', title_class='text-info'))
     QUESTION = (4, InfoModalCfg(name='question'))
 
+SUBMIT_BTN_TEXT = {
+    Crud.CREATE: 'Save',
+    Crud.UPDATE: 'Update',
+    Crud.DELETE: 'Delete',
+    Crud.READ: 'Close',
+}
 
 exports = [
     'TITLE_CTX',
     'TITLE_CLASS_CTX',
     'MODAL_LEVEL_CTX',
     'InfoModalLevel',
+    'SUBMIT_BTN_TEXT',
 ]

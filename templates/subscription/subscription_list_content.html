@@ -1,0 +1,45 @@
+<!-- subscription_list_content.html start -->
+{# --- template variable defines for includes --- #}
+{# opinion list content template expects: 'paginator' as a Paginator #}
+{#                                        'subscription_list' as a list of Address #}
+{#                                        'content_status' as a list of ContentStatus in order corresponding to opinion_list #}
+{#                                        'popularity' as a dict with 'opinion_<id>' as the key and PopularityLevel value #}
+
+{% load i18n %}
+{% load static %}
+
+{% block subscription_list_content %}
+    <var id="var--repeat-search-term" hidden>{{ repeat_search_term }}</var>
+
+    <div class="row">
+        <div class="col-12 mt-2">
+            <div class="row d-flex align-items-center">
+                {% for subscription_dto in subscription_list %}
+
+                    {# subscription dto template expects: 'subscription_dto' as SubscriptionDto #}
+                    {#                                    'identifier' as individual identifier #}
+                    {% with identifier=subscription_dto.id %}
+                        {% include "subscription/subscription_dto.html" %}
+                    {% endwith %}
+            {% if forloop.counter|divisibleby:2 %}
+            </div>
+            <div class="row d-flex align-items-center">
+                    {% endif %}
+            {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {# per page and page selection #}
+    {% with "Subscriptions per page" as per_page_aria %}
+        {% include "snippet/per_page_pagination_select.html" %}
+    {% endwith %}
+{% endblock subscription_list_content %}
+
+{% block extra_js_body %}
+    <script>
+        const ADD_SUBSCRIPTION_URL = "{% url 'subscription:subscription_new' %}";
+    </script>
+    <script src="{% static 'js/subscription_dto.js' %}"></script>
+{% endblock extra_js_body %}
+<!-- subscription_list_content.html end -->

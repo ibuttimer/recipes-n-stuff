@@ -19,33 +19,26 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from pathlib import Path
+from typing import Union, List
 
-# name of this app
-THIS_APP = Path(__file__).resolve().parent.name
+from django.http import HttpRequest
 
-NAME_FIELD = "name"
-FREQUENCY_FIELD = "frequency"
-FREQUENCY_TYPE_FIELD = "frequency_type"
-AMOUNT_FIELD = "amount"
-BASE_CURRENCY_FIELD = "base_currency"
-DESCRIPTION_FIELD = "description"
-IS_ACTIVE_FIELD = "is_active"
+from subscription.constants import THIS_APP
+from subscription.models import Subscription
+from utils import (
+    Crud, permission_check
+)
 
-USER_FIELD = "user"
-SUBSCRIPTION_FIELD = "subscription"
-START_DATE_FIELD = "start_date"
-END_DATE_FIELD = "end_date"
 
-# urls/routes related
-SUBSCRIPTIONS_URL = ""
-SUBSCRIPTIONS_NEW_URL = "new/"
-SUBSCRIPTIONS_BY_ID_URL = "<int:pk>/"
-
-SUBSCRIPTIONS_ROUTE_NAME = "subscriptions"
-SUBSCRIPTION_NEW_ROUTE_NAME = "subscription_new"
-SUBSCRIPTION_ID_ROUTE_NAME = "subscription_id"
-
-# context related
-SUBSCRIPTION_FORM_CTX = 'subscription_form'
-SUBSCRIPTION_LIST_CTX = 'subscription_list'
+def subscription_permission_check(
+        request: HttpRequest,
+        perm_op: Union[Union[Crud, str], List[Union[Crud, str]]],
+        raise_ex: bool = True) -> bool:
+    """
+    Check request user has specified permission
+    :param request: http request
+    :param perm_op: Crud operation or permission name to check
+    :param raise_ex: raise exception; default True
+    """
+    return permission_check(request, Subscription, perm_op,
+                            app_label=THIS_APP, raise_ex=raise_ex)

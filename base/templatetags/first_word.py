@@ -29,7 +29,14 @@ register = template.Library()
 
 
 @register.simple_tag
-def first_word(text: str, lower: bool = True, upper: bool = True):
+def first_word(text: str, lower: bool = True, upper: bool = False):
+    """
+    Get first word of `text`
+    :param text: text
+    :param lower: convert to lowercase flag; default True
+    :param upper: convert to uppercase flag; default False
+    :return: first word
+    """
     words = text.split()
     return words[0].lower() if lower else \
         words[0].upper() if upper else words[0]

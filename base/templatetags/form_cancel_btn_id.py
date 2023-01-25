@@ -1,6 +1,6 @@
 #  MIT License
 #
-#  Copyright (c) 2023 Ian Buttimer
+#  Copyright (c) 2022 Ian Buttimer
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to
@@ -19,33 +19,16 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from pathlib import Path
+#
 
-# name of this app
-THIS_APP = Path(__file__).resolve().parent.name
+from django import template
+from django.forms import ModelForm
 
-NAME_FIELD = "name"
-FREQUENCY_FIELD = "frequency"
-FREQUENCY_TYPE_FIELD = "frequency_type"
-AMOUNT_FIELD = "amount"
-BASE_CURRENCY_FIELD = "base_currency"
-DESCRIPTION_FIELD = "description"
-IS_ACTIVE_FIELD = "is_active"
+register = template.Library()
 
-USER_FIELD = "user"
-SUBSCRIPTION_FIELD = "subscription"
-START_DATE_FIELD = "start_date"
-END_DATE_FIELD = "end_date"
+# https://docs.djangoproject.com/en/4.1/howto/custom-template-tags/#simple-tags
 
-# urls/routes related
-SUBSCRIPTIONS_URL = ""
-SUBSCRIPTIONS_NEW_URL = "new/"
-SUBSCRIPTIONS_BY_ID_URL = "<int:pk>/"
 
-SUBSCRIPTIONS_ROUTE_NAME = "subscriptions"
-SUBSCRIPTION_NEW_ROUTE_NAME = "subscription_new"
-SUBSCRIPTION_ID_ROUTE_NAME = "subscription_id"
-
-# context related
-SUBSCRIPTION_FORM_CTX = 'subscription_form'
-SUBSCRIPTION_LIST_CTX = 'subscription_list'
+@register.simple_tag
+def form_cancel_btn_id(identifier: str, index: str = None):
+    return f'id--{identifier}{index or ""}-cancel-btn'

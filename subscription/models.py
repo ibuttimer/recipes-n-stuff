@@ -22,7 +22,7 @@
 from collections import namedtuple
 from dataclasses import dataclass
 from enum import Enum
-from typing import TypeVar, List, Tuple
+from typing import TypeVar, List, Tuple, Optional
 from decimal import Decimal
 from datetime import timedelta, datetime, MINYEAR, timezone
 
@@ -43,6 +43,7 @@ from .constants import (
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
 TypeMeasure = TypeVar("TypeMeasure", bound="Measure")
+TypeFrequencyType = TypeVar("FrequencyType", bound="FrequencyType")
 
 
 Frequency = namedtuple('Frequency', ['name', 'choice'])
@@ -50,10 +51,21 @@ Frequency = namedtuple('Frequency', ['name', 'choice'])
 
 class FrequencyType(Enum):
     """ Enum representing subscription frequency types """
-    WEEKLY = Frequency('Weekly', 'mt')
+    WEEKLY = Frequency('Weekly', 'wk')
     MONTHLY = Frequency('Monthly', 'mt')
     YEARLY = Frequency('Yearly', 'yr')
 
+    @staticmethod
+    def from_choice(choice: str) -> Optional[TypeFrequencyType]:
+        """
+        Get the FrequencyType corresponding to `choice`
+        :param choice: choice to find
+        :return: frequency type or None of not found
+        """
+        result = list(
+            filter(lambda t: t.value.choice == choice, FrequencyType)
+        )
+        return result[0] if len(result) == 1 else None
 
 def get_frequency_choices() -> List[Tuple]:
     """
@@ -98,7 +110,7 @@ class Subscription(ModelMixin, models.Model):
         _('frequency'), default=SUBSCRIPTION_FREQUENCY_DEFAULT)
 
     amount = models.DecimalField(
-        _('amount'), default=Decimal.from_float(0), decimal_places=6,
+        _('amount'), default=Decimal.from_float(0), decimal_places=2,
         max_digits=19)
 
     base_currency = models.CharField(
@@ -107,7 +119,8 @@ class Subscription(ModelMixin, models.Model):
         default=ccy.currency(DEFAULT_CURRENCY).code)
 
     description = models.CharField(
-        _('name'), max_length=SUBSCRIPTION_ATTRIB_NAME_MAX_LEN, blank=False)
+        _('description'), max_length=SUBSCRIPTION_ATTRIB_DESCRIPTION_MAX_LEN,
+        blank=False)
 
     is_active = models.BooleanField(
         _('is active'), default=False, blank=False, help_text=_(

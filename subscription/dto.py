@@ -22,21 +22,22 @@
 from dataclasses import dataclass
 
 from base.dto import BaseDto
-from profiles.models import Address
+from .forms import SubscriptionForm
+from .models import Subscription, FrequencyType
 
 
 @dataclass
-class AddressDto(BaseDto):
-    """ Address data transfer object """
+class SubscriptionDto(BaseDto):
+    """ Subscription data transfer object """
 
     @staticmethod
-    def from_model(address: Address):
+    def from_model(address: Subscription):
         """
         Generate a DTO from the specified `model`
         :param address: model instance to populate DTO from
         :return: DTO instance
         """
-        dto = BaseDto.from_model_to_obj(address, AddressDto())
+        dto = BaseDto.from_model_to_obj(address, SubscriptionDto())
         # custom handling for specific attributes
         return dto
 
@@ -46,22 +47,24 @@ class AddressDto(BaseDto):
         Generate add new placeholder a DTO
         :return: DTO instance
         """
-        return BaseDto.to_add_new_obj(AddressDto())
-
-    @property
-    def display_order_ex_country(self):
-        """ Field values in display order (excluding country) """
-        return [
-            getattr(self, key) for key in [
-                Address.STREET_FIELD, Address.STREET2_FIELD,
-                Address.CITY_FIELD, Address.STATE_FIELD,
-                Address.POSTCODE_FIELD
-            ]
-        ]
+        return BaseDto.to_add_new_obj(SubscriptionDto())
 
     @property
     def display_order(self):
         """ Field values in display order """
-        fields = self.display_order_ex_country
-        fields.append(getattr(self, Address.COUNTRY_FIELD))
-        return fields
+        order = [
+            getattr(self, key) for key in [
+                Subscription.NAME_FIELD, Subscription.DESCRIPTION_FIELD,
+            ]
+        ]
+        amt = SubscriptionForm.quantise_amount(
+            getattr(self, Subscription.AMOUNT_FIELD))
+        code = getattr(self, Subscription.BASE_CURRENCY_FIELD)
+        freq_type =  FrequencyType.from_choice(
+            getattr(self, Subscription.FREQUENCY_TYPE_FIELD)
+        )
+        freq = getattr(self, Subscription.FREQUENCY_FIELD)
+        assert freq_type is not None
+        order.append(f'{amt} {code} per {freq} {freq_type.value.name}')
+
+        return order

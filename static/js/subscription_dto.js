@@ -20,18 +20,17 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
+ *
  */
 
+// Add subscription card is named 'id--subscription-new'
+const ADD_ADDRESS_SELECTOR = "#id--subscription-new";
 
-.card--new-subscription {
-    border-style: dashed;
-    cursor: pointer;
-}
-
-.a--sub-edit {
-
-}
-
-.a--sub-del {
-
-}
+$(document).ready(function () {
+    /* Handler for new address */
+    $(ADD_ADDRESS_SELECTOR).on('click', function (event) {
+        document.location.href = ADD_SUBSCRIPTION_URL;
+        event.preventDefault();
+        event.stopPropagation();
+    });
+});

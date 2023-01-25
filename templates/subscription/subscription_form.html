@@ -2,7 +2,7 @@
 
 <!-- subscription_form.html start -->
 {# --- template variable defines for includes --- #}
-{# address form template expects: 'form' as SubscriptionForm #}
+{# address form template expects: 'subscription_form' as SubscriptionForm #}
 {#                                'submit_url' as url to submit new/updated subscription #}
 
 {% load i18n %}
@@ -35,11 +35,13 @@
             {% endif %}
 
             <div id="id--subscription-form-errors-container">
-                {% include "snippet/form_errors.html" %}
+                {% with form=subscription_form %}
+                    {% include "snippet/form_errors.html" %}
+                {% endwith %}
             </div>
 
             <fieldset {% if read_only %} disabled {% endif %}>
-                {% for field in form %}
+                {% for field in subscription_form %}
                 <div class="row mb-3">
                     <div class="col-sm-4 text-start">
                         <label for="id_{{ field.name }}" class="col-form-label">{{ field.label }}</label>
@@ -51,11 +53,17 @@
                 {% endfor %}
             </fieldset>
 
-            <div class="row mb-3">
-                <div class="col-12 text-center">
-                    <button id="id--subscription-form-submit-btn" type="submit" class="btn btn-primary btn__text">{{ submit_btn_text }}</button>
-                </div>
-            </div>
+            {# --- form_ok_cancel.html template variable defines for includes --- #}
+            {# form ok cancel template expects: 'cancel_url' as url for cancel action #}
+            {#                                  'cancel_text' as text for cancel button #}
+            {#                                  'submit_text' as text for submit button #}
+            {#                                  'identifier' as form identifier #}
+            {#                                  'index' as form index #}
+            {#                                  'large' as large button flag #}
+            {% url 'subscription:subscriptions' as cancel_url %}
+            {% with identifier='subscription' submit_text=submit_btn_text %}
+                {% include 'snippet/form_ok_cancel.html' %}
+            {% endwith %}
         </form>
     </row>
 </article>

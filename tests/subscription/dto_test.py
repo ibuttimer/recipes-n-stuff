@@ -24,27 +24,24 @@ import unittest
 import pytest
 from mixer.backend.django import mixer
 
-from profiles.dto import AddressDto
-from profiles.constants import (
-    COUNTRY_FIELD, STREET_FIELD, STREET2_FIELD, CITY_FIELD, STATE_FIELD,
-    POSTCODE_FIELD, IS_DEFAULT_FIELD
+from recipesnstuff.constants import SUBSCRIPTION_APP_NAME
+from subscription.dto import SubscriptionDto
+from subscription.constants import (
+    NAME_FIELD, DESCRIPTION_FIELD, FREQUENCY_TYPE_FIELD, FREQUENCY_FIELD,
+    BASE_CURRENCY_FIELD, AMOUNT_FIELD, IS_ACTIVE_FIELD
 )
-from recipesnstuff import PROFILES_APP_NAME
 
 # excluding country order
-EX_COUNTRY_ORDER = [
-    STREET_FIELD, STREET2_FIELD, CITY_FIELD,
-    STATE_FIELD, POSTCODE_FIELD
+DISPLAY_ORDER = [
+    NAME_FIELD, DESCRIPTION_FIELD, FREQUENCY_TYPE_FIELD, FREQUENCY_FIELD,
+    BASE_CURRENCY_FIELD, AMOUNT_FIELD, IS_ACTIVE_FIELD
 ]
-# including country order
-INC_COUNTRY_ORDER = EX_COUNTRY_ORDER.copy()
-INC_COUNTRY_ORDER.append(COUNTRY_FIELD)
 
 
 @pytest.mark.django_db
-class TestAddressDto(unittest.TestCase):
+class TestSubscriptionDto(unittest.TestCase):
     """
-    Test AddressDto class
+    Test SubscriptionDto class
     https://docs.pytest.org/
     https://pypi.org/project/mixer/
     """
@@ -52,25 +49,18 @@ class TestAddressDto(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """ Setup test """
-        cls.dto_new = AddressDto.add_new_obj()
+        cls.dto_new = SubscriptionDto.add_new_obj()
 
     def setUp(self):
         """ Setup test """
-        self.address = mixer.blend(f'{PROFILES_APP_NAME}.Address')
-        self.dto = AddressDto.from_model(self.address)
-
-    def test_display_order_ex_country(self):
-        """ Test display order excluding country """
-        self.assertEqual(
-            self.dto.display_order_ex_country, [
-                getattr(self.address, key) for key in EX_COUNTRY_ORDER
-            ])
+        self.subscription = mixer.blend(f'{SUBSCRIPTION_APP_NAME}.Subscription')
+        self.dto = SubscriptionDto.from_model(self.subscription)
 
     def test_display_order(self):
-        """ Test display order including country """
+        """ Test display order """
         self.assertEqual(
             self.dto.display_order, [
-                getattr(self.address, key) for key in INC_COUNTRY_ORDER
+                getattr(self.subscription, key) for key in DISPLAY_ORDER
             ])
 
     def test_add_new(self):
