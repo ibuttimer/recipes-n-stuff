@@ -110,6 +110,34 @@ The Addresses page will have the following features:
 |----------------------------------------------|----------------------------------------------|
 | ![](img/recipes-n-stuff-addresses-large.png) | ![](img/recipes-n-stuff-addresses-small.png) |
 
+## Subscription page
+
+The Subscription page will have the following features:
+- Allow users to select a subscription option
+
+| Large screen                                    | Small screen                                    |
+|-------------------------------------------------|-------------------------------------------------|
+| ![](img/recipes-n-stuff-subscription-large.png) | ![](img/recipes-n-stuff-subscription-small.png) |
+
+## Main page
+
+The main page will have the following features:
+- Allow users to select recipes to view
+
+| Large screen                            | Small screen                            |
+|-----------------------------------------|-----------------------------------------|
+| ![](img/recipes-n-stuff-main-large.png) | ![](img/recipes-n-stuff-main-small.png) |
+
+## Recipe page
+
+The recipe page will have the following features:
+- Allow users to view a recipe and ingredients
+- Add recipe ingredients to shopping basket
+
+| Large screen                              | Small screen                              |
+|-------------------------------------------|-------------------------------------------|
+| ![](img/recipes-n-stuff-recipe-large.png) | ![](img/recipes-n-stuff-recipe-small.png) |
+
 
 
 # UX Surface
