@@ -6,7 +6,8 @@
 {% block head_title %}{% trans "Register" %}{% endblock %}
 
 {% block extra_css %}
-<link href="{% static 'css/styles-social.css' %}" rel="stylesheet" type="text/css">
+  {{ block.super }}
+  <link href="{% static 'css/styles-social.css' %}" rel="stylesheet" type="text/css">
 {% endblock extra_css %}
 
 {% block content %}

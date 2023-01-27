@@ -37,6 +37,7 @@
 {% endblock address_list_content %}
 
 {% block extra_js_body %}
+    {{ block.super }}
     <script>
         const ADD_ADDRESS_URL = "{% url 'profiles:address_new' %}";
     </script>
