@@ -22,7 +22,7 @@
 
 from django.contrib import admin
 
-from .models import Subscription, UserSubscription
+from .models import Subscription, UserSubscription, SubscriptionFeature
 
 
 @admin.register(Subscription)
@@ -49,3 +49,20 @@ class UserSubscriptionAdmin(admin.ModelAdmin):
         UserSubscription.IS_ACTIVE_FIELD,
     )
     ordering = (UserSubscription.USER_FIELD, UserSubscription.IS_ACTIVE_FIELD)
+
+
+@admin.register(SubscriptionFeature)
+class SubscriptionFeatureAdmin(admin.ModelAdmin):
+    """
+    Class representing the SubscriptionFeature model in the admin interface
+    """
+    list_display = (
+        SubscriptionFeature.DESCRIPTION_FIELD,
+        SubscriptionFeature.FEATURE_TYPE_FIELD,
+        SubscriptionFeature.AMOUNT_FIELD,
+        SubscriptionFeature.COUNT_FIELD,
+        SubscriptionFeature.IS_ACTIVE_FIELD,
+    )
+    ordering = (SubscriptionFeature.FEATURE_TYPE_FIELD,
+                SubscriptionFeature.DESCRIPTION_FIELD,
+                SubscriptionFeature.IS_ACTIVE_FIELD)

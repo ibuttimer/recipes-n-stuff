@@ -44,6 +44,7 @@ from .utils import subscription_permission_check
 
 TITLE_NEW = 'New Subscription'
 
+
 class SubscriptionCreate(LoginRequiredMixin, View):
     """
     Class-based view for subscription creation

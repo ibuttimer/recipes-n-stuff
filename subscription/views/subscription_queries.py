@@ -20,25 +20,25 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 #
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum, auto
-from typing import Any, Type
+from typing import Any, Type, Optional, Tuple, List
 from zoneinfo import ZoneInfo
 
 from django.db.models import Q, QuerySet
 
-from subscription.models import Subscription
+from subscription.constants import IS_ACTIVE_QUERY
+from subscription.models import (
+    Subscription, UserSubscription, SubscriptionFeature
+)
 from user.models import User
 from utils import (
-    ensure_list, SEARCH_QUERY, DATE_QUERIES,
+    SEARCH_QUERY, DATE_QUERIES,
     regex_matchers, regex_date_matchers, QuerySetParams,
     TERM_GROUP, KEY_TERM_GROUP, DATE_QUERY_GROUP, DATE_KEY_TERM_GROUP,
     DATE_QUERY_YR_GROUP, DATE_QUERY_MTH_GROUP,
-    DATE_QUERY_DAY_GROUP, ChoiceArg, USER_QUERY
+    DATE_QUERY_DAY_GROUP, USER_QUERY, YesNo
 )
-
-# context-related
-DEFAULT_ADDRESS_QUERY: str = 'dflt-addr'    # display default address modal
 
 # query terms which only appear in a search
 SEARCH_ONLY_QUERIES = [SEARCH_QUERY]
@@ -53,7 +53,7 @@ REGEX_MATCHERS.update(regex_date_matchers())
 FIELD_LOOKUPS = {
     # query param: filter lookup
     SEARCH_QUERY: '',
-    # USER_QUERY: f'{Subscription.USER_FIELD}__{User.USERNAME_FIELD}',
+    IS_ACTIVE_QUERY: f'{Subscription.IS_ACTIVE_FIELD}',
     # STATUS_QUERY: f'{Opinion.STATUS_FIELD}__{Status.NAME_FIELD}',
     # TITLE_QUERY: f'{Opinion.TITLE_FIELD}__icontains',
     # CONTENT_QUERY: f'{Opinion.CONTENT_FIELD}__icontains',
@@ -80,7 +80,6 @@ FILTERS_ORDER.extend(
 )
 # complex queries which require more than a simple lookup or context-related
 NON_LOOKUP_ARGS = [
-    DEFAULT_ADDRESS_QUERY,
     # FILTER_QUERY, REVIEW_QUERY
 ]
 
@@ -122,6 +121,8 @@ def get_lookup(
     if query in SEARCH_ONLY_QUERIES:
         query_set_params = get_search_term(
             value, user, query_set_params=query_set_params)
+    elif query == IS_ACTIVE_QUERY:
+        get_active_query(query_set_params, value)
     elif query not in NON_LOOKUP_ARGS and value:
         query_set_params.add_and_lookup(query, FIELD_LOOKUPS[query], value)
     # else no value or complex query term handled elsewhere
@@ -227,56 +228,6 @@ def get_search_term(
     return query_set_params
 
 
-def get_yes_no_ignore_query(
-            query_set_params: QuerySetParams, query: str,
-            yes_choice: [ChoiceArg, list[ChoiceArg]],
-            no_choice: [ChoiceArg, list[ChoiceArg]],
-            ignore: [ChoiceArg, list[ChoiceArg]],
-            choice: ChoiceArg, clazz: Type[ChoiceArg],
-            chosen_qs: QuerySet
-        ) -> bool:
-    """
-    Get a query with yes/no/ignore optins
-    :param query_set_params: query params to update
-    :param query: query term from request
-    :param yes_choice: yes_choice choice in ChoiceArg
-    :param no_choice: no choice in ChoiceArg
-    :param ignore: ignore choice in ChoiceArg
-    :param choice: choice from request
-    :param clazz: ChoiceArg class
-    :param chosen_qs: query to get chosen item from db
-    :return: True if successfully added
-    """
-    success = True
-    if choice in ensure_list(ignore):
-        query_set_params.add_all_inclusive(query)
-    elif isinstance(choice, clazz):
-        # get ids of entities chosen by the user
-        query_params = {
-            f'{Subscription.id_field()}__in': chosen_qs
-        }
-
-        if choice in ensure_list(no_choice):
-            # exclude chosen entities
-            def qs_exclude(qry_set: QuerySet) -> QuerySet:
-                return qry_set.exclude(**query_params)
-            query_set = qs_exclude
-        elif choice in ensure_list(yes_choice):
-            # only chosen entities
-            def qs_filter(qry_set: QuerySet) -> QuerySet:
-                return qry_set.filter(**query_params)
-            query_set = qs_filter
-        else:
-            query_set = None
-
-        if query_set:
-            query_set_params.add_qs_func(query, query_set)
-        else:
-            success = False
-
-    return success
-
-
 # def get_category_query(query_set_params: QuerySetParams,
 #                        name: str) -> None:
 #     """
@@ -321,39 +272,18 @@ def get_date_query(query_set_params: QuerySetParams,
     return success
 
 
-# def get_hidden_query(query_set_params: QuerySetParams,
-#                      hidden: Hidden, user: User) -> bool:
-#     """
-#     Get the hidden status query
-#     :param query_set_params: query params to update
-#     :param hidden: hidden status
-#     :param user: current user
-#     :return: True if successfully added
-#     """
-#     return get_yes_no_ignore_query(
-#         query_set_params, HIDDEN_QUERY, Hidden.YES, Hidden.NO, Hidden.IGNORE,
-#         hidden, Hidden, HideStatus.objects.filter(**{
-#             HideStatus.USER_FIELD: user,
-#             f'{HideStatus.OPINION_FIELD}__isnull': False
-#         }).values(HideStatus.OPINION_FIELD)
-#     )
-#
-#
-# def get_pinned_query(query_set_params: QuerySetParams,
-#                      pinned: Pinned, user: User) -> bool:
-#     """
-#     Get the pinned status query
-#     :param query_set_params: query params to update
-#     :param pinned: pinned status
-#     :param user: current user
-#     :return: True if successfully added
-#     """
-#     return get_yes_no_ignore_query(
-#         query_set_params, PINNED_QUERY, Pinned.YES, Pinned.NO, Pinned.IGNORE,
-#         pinned, Pinned, PinStatus.objects.filter(**{
-#             PinStatus.USER_FIELD: user,
-#         }).values(PinStatus.OPINION_FIELD)
-#     )
+def get_active_query(query_set_params: QuerySetParams, active: YesNo) -> bool:
+    """
+    Add an active status query to the query params
+    :param query_set_params: params to update
+    :param active: active status
+    :return: True if successfully added
+    """
+    if active == YesNo.IGNORE:
+        query_set_params.add_all_inclusive(IS_ACTIVE_QUERY)
+    else:
+        query_set_params.add_and_lookup(
+            Subscription.IS_ACTIVE_FIELD, active.boolean)
 
 
 def subscription_query(action: QueryParam = QueryParam.FILTER) -> QuerySet:
@@ -371,3 +301,94 @@ def subscription_query(action: QueryParam = QueryParam.FILTER) -> QuerySet:
     else:
         raise ValueError(f'Unknown param {action}')
     return query_set
+
+
+def user_subscription_query(
+    user: User, active: bool = True,
+    last_expired: bool = False
+) -> Tuple[Optional[UserSubscription], Optional[UserSubscription]]:
+    """
+    Get the specified user's currently active subscription
+    :param user: user to search for
+    :param active: get active user subscription flag; default True
+    :param last_expired: get last expired user subscription flag;
+                     default False
+    :return: tuple of active/expired subscription
+    """
+    assert active or last_expired
+
+    # all subscriptions count
+    query = UserSubscription.objects.filter(**{
+        f'{UserSubscription.USER_FIELD}': user,
+    }).order_by(
+        UserSubscription.date_lookup(UserSubscription.END_DATE_FIELD)
+    )
+    count = query.count()
+
+    # precursor to subscription query is check for expired subscriptions
+    query.filter(**{
+        f'{UserSubscription.END_DATE_FIELD}__lt':
+            datetime.now(tz=timezone.utc)
+    }).update(**{
+        f'{UserSubscription.IS_ACTIVE_FIELD}': False
+    })
+
+    active_sub = None
+    if active:
+        active_user_subs = list(
+            query.filter(**{
+                UserSubscription.IS_ACTIVE_FIELD: True
+            }).all()
+        )
+        assert len(active_user_subs) <= 1
+        if len(active_user_subs) == 1:
+            active_sub = active_user_subs[0]
+
+    expired_sub = None
+    if last_expired:
+        expired_user_subs = list(
+            query.filter(**{
+                UserSubscription.IS_ACTIVE_FIELD: False
+            }).all()
+        )
+        if len(expired_user_subs) > 0:
+            expired_sub = expired_user_subs[-1]
+
+    return active_sub, expired_sub
+
+
+def user_has_subscription(
+    user: User, last_expired: bool = False
+) -> Tuple[bool, Optional[UserSubscription], Optional[UserSubscription]]:
+    """
+    Check if the specified user's has an active user subscription
+    :param user: user to search for
+    :param last_expired: get last expired user subscription flag;
+                     default False
+    :return: tuple of active subscription True/False and user subscription
+    """
+    user_sub, expired_sub = user_subscription_query(
+        user, active=True, last_expired=last_expired)
+    return (user_sub is not None, user_sub, expired_sub) \
+        if not user.is_superuser else (True, None, None)
+
+
+def get_subscription_features(
+        subscription_id: int) -> Optional[List[SubscriptionFeature]]:
+    """
+    Get the list of subscription features
+    :param subscription_id: id of subscription
+    :return: list of features or None if subscription not found
+    """
+    subscription = Subscription.objects.prefetch_related(
+        Subscription.FEATURES_FIELD).get(**{
+            f'{Subscription.id_field()}': subscription_id
+        })
+    if subscription:
+        features = list(
+            filter(lambda f: f.is_active, list(subscription.features.all()))
+        )
+    else:
+        features = None
+
+    return features

@@ -27,9 +27,9 @@ from string import capwords
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpRequest
 from django.template.loader import render_to_string
+from django.contrib import messages
 
 from base.utils import raise_permission_denied
-from profiles.views.address_queries import get_lookup, DEFAULT_ADDRESS_QUERY
 # from opinions.constants import (
 #     STATUS_QUERY, AUTHOR_QUERY, SEARCH_QUERY, PINNED_QUERY,
 #     TEMPLATE_OPINION_REACTIONS, TEMPLATE_REACTION_CTRLS, CONTENT_STATUS_CTX,
@@ -45,7 +45,8 @@ from utils import (
     TITLE_CTX, LIST_HEADING_CTX, PAGE_HEADING_CTX, NO_CONTENT_MSG_CTX,
     NO_CONTENT_HELP_CTX,
     Crud, app_template_path, ORDER_QUERY, PAGE_QUERY, PER_PAGE_QUERY, PerPage,
-    REORDER_QUERY, REORDER_REQ_QUERY_ARGS, USER_QUERY, SNIPPETS_CTX
+    REORDER_QUERY, REORDER_REQ_QUERY_ARGS, USER_QUERY, SNIPPETS_CTX, YesNo,
+    READ_ONLY_CTX
 )
 # from opinions.views.opinion_queries import (
 #     FILTERS_ORDER, ALWAYS_FILTERS, get_lookup
@@ -61,7 +62,8 @@ from utils import (
 from .utils import (
     subscription_permission_check
 )
-from ..constants import THIS_APP, SUBSCRIPTION_LIST_CTX
+from .subscription_queries import get_lookup, user_has_subscription
+from ..constants import THIS_APP, SUBSCRIPTION_LIST_CTX, IS_ACTIVE_QUERY
 from ..dto import SubscriptionDto
 from ..enums import SubscriptionSortOrder, SubscriptionQueryType
 from ..models import Subscription
@@ -69,7 +71,8 @@ from ..models import Subscription
 
 # args for an address reorder/next page/etc. request
 REORDER_QUERY_ARGS = [
-    QueryOption(ORDER_QUERY, SubscriptionSortOrder, SubscriptionSortOrder.DEFAULT),
+    QueryOption(
+        ORDER_QUERY, SubscriptionSortOrder, SubscriptionSortOrder.DEFAULT),
     QueryOption.of_no_cls(PAGE_QUERY, 1),
     QueryOption(PER_PAGE_QUERY, PerPage, PerPage.DEFAULT),
     QueryOption.of_no_cls(REORDER_QUERY, 0),
@@ -82,8 +85,12 @@ assert REORDER_REQ_QUERY_ARGS == list(
 LIST_QUERY_ARGS = REORDER_QUERY_ARGS.copy()
 LIST_QUERY_ARGS.extend([
     # non-reorder query args
+    QueryOption(IS_ACTIVE_QUERY, YesNo, YesNo.DEFAULT)
 ])
 # LIST_QUERY_ARGS.extend(OPINION_APPLIED_DEFAULTS_QUERY_ARGS)
+
+
+ADD_NEW = 'add_new'
 
 
 class ListTemplate(Enum):
@@ -93,6 +100,8 @@ class ListTemplate(Enum):
     CONTENT_TEMPLATE = app_template_path(
         THIS_APP, 'subscription_list_content.html')
     """ List-only template for requery """
+    CHOICE_TEMPLATE = app_template_path(THIS_APP, 'select_subscription.html')
+    """ Choose subscription page template """
 
 
 class SubscriptionList(LoginRequiredMixin, ContentListMixin):
@@ -135,9 +144,8 @@ class SubscriptionList(LoginRequiredMixin, ContentListMixin):
         :param kwargs: additional keyword arguments
         """
         active = request.user.is_active
-        super_or_own = request.user.is_superuser or \
-            self.is_query_own(query_params)
-        if not (active and super_or_own):
+        is_super = request.user.is_superuser
+        if not (active or is_super):
             raise_permission_denied(request, Subscription, plural='s')
 
     def validate_queryset(self, query_params: dict[str, QueryArg]):
@@ -178,7 +186,9 @@ class SubscriptionList(LoginRequiredMixin, ContentListMixin):
 
         return {
             TITLE_CTX: title,
-            LIST_HEADING_CTX: capwords(title)
+            PAGE_HEADING_CTX: title,
+            LIST_HEADING_CTX: capwords(title),
+            READ_ONLY_CTX: False
         }
 
     def set_queryset(
@@ -255,7 +265,8 @@ class SubscriptionList(LoginRequiredMixin, ContentListMixin):
         """
         Get template context
         :param object_list:
-        :param kwargs: additional keyword arguments
+        :param kwargs: additional keyword arguments;
+                add_new: add new entity placeholder flag
         :return: context
         """
         context = super().get_context_data(object_list=object_list, **kwargs)
@@ -270,10 +281,11 @@ class SubscriptionList(LoginRequiredMixin, ContentListMixin):
             context[PAGE_HEADING_CTX] = context[LIST_HEADING_CTX]
             del context[LIST_HEADING_CTX]
 
-        dto_list = [SubscriptionDto.add_new_obj()]
+        dto_list = [SubscriptionDto.add_new_obj()] \
+            if kwargs.get(ADD_NEW, True) else []
         dto_list.extend([
-            SubscriptionDto.from_model(address)
-            for address in context[SUBSCRIPTION_LIST_CTX]
+            SubscriptionDto.from_model(subscription)
+            for subscription in context[SUBSCRIPTION_LIST_CTX]
         ])
         context[SUBSCRIPTION_LIST_CTX] = dto_list
 
@@ -286,7 +298,7 @@ class SubscriptionList(LoginRequiredMixin, ContentListMixin):
         :return: context
         """
         if len(context[SUBSCRIPTION_LIST_CTX]) == 0:
-            context[NO_CONTENT_MSG_CTX] = 'No addresses found.'
+            context[NO_CONTENT_MSG_CTX] = 'No subscriptions found.'
 
             # template = None
             # template_ctx = None
@@ -332,3 +344,77 @@ class SubscriptionList(LoginRequiredMixin, ContentListMixin):
         :return: True if the list only template
         """
         return self.response_template == ListTemplate.CONTENT_TEMPLATE
+
+
+class SubscriptionChoice(SubscriptionList):
+    """
+    Subscription choices list response
+    """
+
+    def __init__(self):
+        super().__init__()
+
+        self.has_subscription = False
+
+    def additional_check_func(
+            self, request: HttpRequest, query_params: dict[str, QueryArg],
+            *args, **kwargs):
+        """
+        Perform additional access checks.
+        :param request: http request
+        :param query_params: request query
+        :param args: additional arbitrary arguments
+        :param kwargs: additional keyword arguments
+        """
+        super().additional_check_func(request, query_params, *args, **kwargs)
+
+        has_sub, user_sub, _ = user_has_subscription(request.user)
+        if has_sub:
+            msg = f'Your current subscription is ' \
+                  f'{user_sub.subscription.name}, ' \
+                  f'expiring {user_sub.end_date.strftime("%c")}'
+            messages.add_message(request, messages.INFO, msg)
+        self.has_subscription = has_sub
+
+    def select_template(self, query_params: dict[str, QueryArg]):
+        """
+        Select the template for the response
+        :param query_params: request query
+        """
+        self.response_template = ListTemplate.CHOICE_TEMPLATE
+        self.template_name = self.response_template.value
+
+    def get_title_heading(self, query_params: dict[str, QueryArg]) -> dict:
+        """
+        Get the title and page heading for context
+        :param query_params: request query
+        """
+        title = 'Subscription Choice'
+
+        return {
+            TITLE_CTX: title,
+            PAGE_HEADING_CTX: title,
+            LIST_HEADING_CTX: capwords(title),
+            READ_ONLY_CTX: self.has_subscription
+        }
+
+    def get_context_data(self, *, object_list=None, **kwargs) -> dict:
+        """
+        Get template context
+        :param object_list:
+        :param kwargs: additional keyword arguments;
+                add_new: add new entity placeholder flag
+        :return: context
+        """
+        ctx_kwargs = kwargs.copy()
+        ctx_kwargs[ADD_NEW] = False
+        return super().get_context_data(
+            object_list=object_list, **ctx_kwargs)
+
+    def set_ordering(self, query_params: dict[str, QueryArg]):
+        """
+        Set the ordering for the response
+        :param query_params: request query
+        """
+        # set ordering
+        self.ordering = SubscriptionSortOrder.COST_LH.order,

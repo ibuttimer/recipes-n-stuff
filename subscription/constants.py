@@ -21,15 +21,21 @@
 #  DEALINGS IN THE SOFTWARE.
 from pathlib import Path
 
+from utils import append_slash, url_path
+
 # name of this app
 THIS_APP = Path(__file__).resolve().parent.name
 
 NAME_FIELD = "name"
 FREQUENCY_FIELD = "frequency"
 FREQUENCY_TYPE_FIELD = "frequency_type"
+FEATURE_TYPE_FIELD = "feature_type"
 AMOUNT_FIELD = "amount"
 BASE_CURRENCY_FIELD = "base_currency"
 DESCRIPTION_FIELD = "description"
+CALL_TO_PICK_FIELD = "call_to_pick"
+FEATURES_FIELD = "features"
+COUNT_FIELD = "count"
 IS_ACTIVE_FIELD = "is_active"
 
 USER_FIELD = "user"
@@ -39,13 +45,20 @@ END_DATE_FIELD = "end_date"
 
 # urls/routes related
 SUBSCRIPTIONS_URL = ""
-SUBSCRIPTIONS_NEW_URL = "new/"
-SUBSCRIPTIONS_BY_ID_URL = "<int:pk>/"
+SUBSCRIPTION_NEW_URL = append_slash("new")
+SUBSCRIPTION_BY_ID_URL = append_slash("<int:pk>")
+SUBSCRIPTION_CHOICE_URL = append_slash("choice")
+SUBSCRIPTION_PICK_URL = url_path("pick", "<int:pk>")
 
 SUBSCRIPTIONS_ROUTE_NAME = "subscriptions"
 SUBSCRIPTION_NEW_ROUTE_NAME = "subscription_new"
 SUBSCRIPTION_ID_ROUTE_NAME = "subscription_id"
+SUBSCRIPTION_CHOICE_ROUTE_NAME = "subscription_choice"
+SUBSCRIPTION_PICK_ROUTE_NAME = "subscription_pick"
 
 # context related
 SUBSCRIPTION_FORM_CTX = 'subscription_form'
 SUBSCRIPTION_LIST_CTX = 'subscription_list'
+
+# query related
+IS_ACTIVE_QUERY: str = 'active'

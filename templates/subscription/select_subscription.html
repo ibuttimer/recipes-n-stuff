@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+<!-- select_subscription.html start -->
+{# --- select_subscription.html template variable defines for includes --- #}
+{# select subscription template expects: 'subscription_list' as a list of SubscriptionDto #}
+{#                                       'snippets' as list of extra html code blocks to include #}
+
+
+{% load i18n %}
+{% load static %}
+{% load humanize %}
+{% load tz %}
+{% load form_field %}
+{% load dict_value %}
+
+{% block extra_js_head %}
+{% include "snippet/jquery.html" %}
+{% endblock extra_js_head %}
+
+{% block head_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/styles-subscription.css' %}" rel="stylesheet" type="text/css">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="row mt-2">
+  {% if page_heading %}
+  <div class="col-12 text-center">
+    <h3>{{ page_heading | safe }}</h3>
+  </div>
+  {% endif %}
+</div>
+
+<div class="row flex-grow-1 overflow-auto d-flex justify-content-center">
+  <article id="article-content" class="row d-flex justify-content-center">
+    <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
+      {% for sub_dto in subscription_list %}
+      <div class="col mb-4">
+        <div class="card mb-2 rounded-3 shadow-sm h-100">
+          <div class="card-header py-3">
+            <h4 class="my-0 fw-normal">{{ sub_dto.name }}</h4>
+          </div>
+          <div class="card-body">
+            <div class="flex-shrink-0">
+              <div class="container">
+                <h1 class="card-title pricing-card-title">
+                  {{ sub_dto.amount }} {{ sub_dto.base_currency }}
+                  <small class="text-muted fw-light">
+                    &sol;   {# forward slash, using html entity to make sure it doesn't get lost #}
+                    {% if sub_dto.frequency > 1 %}{{ sub_dto.frequency }}{% endif %} {{ sub_dto.frequency_type.period_abbrev }}{{ sub_dto.frequency|pluralize }}
+                  </small>
+                </h1>
+                <h6 class="card-subtitle mb-2 text-muted">{{ sub_dto.description }}</h6>
+                <ul class="card-text list-unstyled mt-3 mb-4">
+                  {% for feature in sub_dto.features %}
+                  <li>{{ feature.display_text }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+            {% if not read_only %}
+            <div class="mt-auto">
+              <div class="container">
+                <a class="w-100 btn btn-lg btn-outline-primary" href="{% url 'subscription:subscription_pick' sub_dto.id %}">{% trans sub_dto.call_to_pick %}</a>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  </article>
+</div>
+
+{% for snippet in snippets %}
+  {{ snippet | safe }}
+{% endfor %}
+
+{% endblock content %}
+
+<!-- select_subscription.html end -->

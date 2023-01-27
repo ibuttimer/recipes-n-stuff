@@ -59,6 +59,7 @@ class InfoModalLevel(Enum):
     INFO = (3, InfoModalCfg(name='info', title_class='text-info'))
     QUESTION = (4, InfoModalCfg(name='question'))
 
+
 SUBMIT_BTN_TEXT = {
     Crud.CREATE: 'Save',
     Crud.UPDATE: 'Update',

@@ -19,6 +19,7 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from datetime import datetime, timezone
 from http import HTTPStatus
 from typing import Tuple
 
@@ -26,7 +27,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.views import View
 from django.views.decorators.http import require_http_methods
@@ -35,12 +36,12 @@ from base import (
     InfoModalLevel, InfoModalTemplate, level_info_modal_payload,
 )
 from subscription.constants import (
-    THIS_APP, SUBSCRIPTION_FORM_CTX,
-    SUBSCRIPTION_ID_ROUTE_NAME, SUBSCRIPTIONS_ROUTE_NAME,
+    THIS_APP, SUBSCRIPTION_FORM_CTX, SUBSCRIPTION_ID_ROUTE_NAME,
+    SUBSCRIPTIONS_ROUTE_NAME,
 )
 from subscription.forms import SubscriptionForm
-from subscription.models import Subscription
-from recipesnstuff.constants import PROFILES_APP_NAME
+from subscription.models import Subscription, UserSubscription, FrequencyType
+from recipesnstuff.constants import HOME_ROUTE_NAME
 from utils import (
     Crud, SUBMIT_URL_CTX, app_template_path, reverse_q,
     namespaced_url, redirect_on_success_or_render,
@@ -50,8 +51,8 @@ from utils import (
 from .subscription_create import (
     for_subscription_form_render, SubscriptionCreate
 )
-from .subscription_queries import subscription_query, DEFAULT_ADDRESS_QUERY
 from .utils import subscription_permission_check
+from ..middleware import update_session_subscription, SubscriptionStatus
 
 TITLE_UPDATE = 'Update Subscription'
 
@@ -115,7 +116,8 @@ class SubscriptionDetail(LoginRequiredMixin, View):
             template_path=template_path, context=context)
 
     def render_info(self, form: SubscriptionForm) -> tuple[
-            str, dict[str, Subscription | list[str] | SubscriptionForm | bool]]:
+            str, dict[str, Subscription | list[str] | SubscriptionForm | bool]
+    ]:
         """
         Get info to render a subscription entry
         :param form: form to use
@@ -184,3 +186,39 @@ def get_subscription(pk: int) -> Tuple[Subscription, dict]:
     }
     entity = get_object_or_404(Subscription, **query_param)
     return entity, query_param
+
+
+@login_required
+@require_http_methods([GET])
+def subscription_pick(request: HttpRequest, pk: int) -> HttpResponse:
+    """
+    Pick a subscription
+    :param request: http request
+    :param pk: id of subscription to pick
+    :return: response
+    """
+    subscription_permission_check(request, Crud.READ)
+
+    subscription = get_object_or_404(Subscription, **{
+        f'{Subscription.id_field()}': pk
+    })
+
+    start_date = datetime.now(tz=timezone.utc)
+    freq_type = FrequencyType.from_choice(subscription.frequency_type)
+    assert freq_type is not None
+    end_date = start_date + freq_type.timedelta(subscription.frequency)
+
+    user_sub = UserSubscription.objects.create(**{
+        f'{UserSubscription.USER_FIELD}': request.user,
+        f'{UserSubscription.SUBSCRIPTION_FIELD}': subscription,
+        f'{UserSubscription.START_DATE_FIELD}': start_date,
+        f'{UserSubscription.END_DATE_FIELD}': end_date,
+        f'{UserSubscription.IS_ACTIVE_FIELD}': True
+    })
+    assert user_sub is not None
+
+    # update session
+    update_session_subscription(
+        request, SubscriptionStatus.VALID, end_date)
+
+    return redirect(HOME_ROUTE_NAME)

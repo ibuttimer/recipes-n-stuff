@@ -41,7 +41,8 @@ from django.contrib.messages import constants as messages
 from .constants import (
     BASE_APP_NAME, MIN_PASSWORD_LEN, USER_APP_NAME, PROFILES_APP_NAME,
     RECIPES_APP_NAME, SUBSCRIPTION_APP_NAME,
-    LOGIN_URL as USER_LOGIN_URL, LOGIN_ROUTE_NAME, HOME_ROUTE_NAME
+    LOGIN_URL as USER_LOGIN_URL, LOGIN_ROUTE_NAME, HOME_ROUTE_NAME,
+    LANDING_ROUTE_NAME
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -183,6 +184,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    f'{SUBSCRIPTION_APP_NAME}.middleware.SubscriptionMiddleware',
 ]
 
 # https://docs.djangoproject.com/en/4.1/ref/settings/#root-urlconf
@@ -298,9 +300,9 @@ AUTH_PASSWORD_VALIDATORS = [{
 # https://docs.djangoproject.com/en/4.1/ref/settings/#login-url
 LOGIN_URL = USER_LOGIN_URL
 # https://docs.djangoproject.com/en/4.1/ref/settings/#login-redirect-url
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = HOME_ROUTE_NAME
 # https://docs.djangoproject.com/en/4.1/ref/settings/#logout-redirect-url
-LOGOUT_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = LANDING_ROUTE_NAME
 
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'

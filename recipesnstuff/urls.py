@@ -23,6 +23,7 @@ from .constants import (
     USERS_URL, USER_APP_NAME, PROFILES_APP_NAME, PROFILES_URL,
     SUBSCRIPTION_APP_NAME, SUBSCRIPTIONS_URL
 )
+from .settings import STATIC_URL
 
 urlpatterns = [
     path(ADMIN_URL, admin.site.urls),
@@ -39,6 +40,8 @@ urlpatterns = [
     path('', include(f'{BASE_APP_NAME}.root_urls')),
 ]
 
-if settings.DEBUG:
+if settings.DEBUG or settings.DEVELOPMENT:
     urlpatterns += static(settings.MEDIA_URL,
                           document_root=settings.MEDIA_ROOT)
+    # serve the site.webmanifest images
+    urlpatterns += static('/', document_root=STATIC_URL)

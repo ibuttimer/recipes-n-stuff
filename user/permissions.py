@@ -22,16 +22,20 @@
 #  DEALINGS IN THE SOFTWARE.
 
 from collections import namedtuple
+from typing import Union, List
 
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.contrib.auth.management import create_permissions
+from django.db.models import Model
 
 from profiles.models import Address
 from recipesnstuff import PROFILES_APP_NAME
-from utils import permission_name, Crud
+from recipesnstuff.constants import SUBSCRIPTION_APP_NAME
+from subscription.models import Subscription
+from utils import permission_name, Crud, ensure_list
 from .constants import REGISTERED_GROUP
 from .models import User
 
@@ -229,3 +233,64 @@ def reverse_migrate_permissions(
         apps: StateApps = None,
         schema_editor: BaseDatabaseSchemaEditor = None):
     """ Dummy reverse for migrate_permissions """
+
+
+def set_group_permissions(
+        assignees: Union[str, List[str]],
+        model: Model, ops: List[Crud], app_name: str,
+        action: str, apps: StateApps = None,
+        schema_editor: BaseDatabaseSchemaEditor = None):
+    """
+    Set group permissions
+    :param assignees: name(s) of group(s) to set permissions for
+    :param model: model whose permissions to apply
+    :param ops: list of Crud operations
+    :param app_name: app name
+    :param action: action to perform; ADD or REMOVE
+    :param apps: apps registry, default None
+    :param schema_editor:
+        editor generating statements to change database schema, default None
+    """
+    to_assign = ensure_list(assignees)
+    if not apps:    # called from the app
+        to_assign = list(
+            map(lambda grp: Group.objects.get_or_create(name=grp), to_assign)
+        )
+    # else called from a migration
+
+    permissions = [
+        permission_name(model, cmt) for cmt in ensure_list(ops)
+    ]
+    for group in to_assign:
+        set_basic_permissions(group, [
+            PermSetting(model=model, perms=permissions,
+                        app=app_name, action=action)
+        ], apps=apps, schema_editor=schema_editor)
+
+
+def add_subs_permissions_for_registered(
+        apps: StateApps = None,
+        schema_editor: BaseDatabaseSchemaEditor = None):
+    """
+    Add subscription permissions for registered group
+    :param apps: apps registry, default None
+    :param schema_editor:
+        editor generating statements to change database schema, default None
+    """
+    set_group_permissions(
+        REGISTERED_GROUP, Subscription, Crud.READ, SUBSCRIPTION_APP_NAME,
+        ADD, apps=apps, schema_editor=schema_editor)
+
+
+def remove_subs_permissions_for_registered(
+        apps: StateApps = None,
+        schema_editor: BaseDatabaseSchemaEditor = None):
+    """
+    Remove subscription permissions for registered group
+    :param apps: apps registry, default None
+    :param schema_editor:
+        editor generating statements to change database schema, default None
+    """
+    set_group_permissions(
+        REGISTERED_GROUP, Subscription, Crud.READ, SUBSCRIPTION_APP_NAME,
+        REMOVE, apps=apps, schema_editor=schema_editor)

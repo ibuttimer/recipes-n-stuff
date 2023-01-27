@@ -20,13 +20,14 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 from .subscription_create import SubscriptionCreate
-from .subscription_list import SubscriptionList
-from .subscription_by import SubscriptionDetail
-
+from .subscription_list import SubscriptionList, SubscriptionChoice
+from .subscription_by import SubscriptionDetail, subscription_pick
 
 
 __all__ = [
     'SubscriptionCreate',
     'SubscriptionList',
+    'SubscriptionChoice',
     'SubscriptionDetail',
+    'subscription_pick',
 ]

@@ -23,7 +23,10 @@ from dataclasses import dataclass
 
 from base.dto import BaseDto
 from .forms import SubscriptionForm
-from .models import Subscription, FrequencyType
+from .models import (
+    Subscription, FrequencyType, FeatureType, SubscriptionFeature
+)
+from .views.subscription_queries import get_subscription_features
 
 
 @dataclass
@@ -31,14 +34,24 @@ class SubscriptionDto(BaseDto):
     """ Subscription data transfer object """
 
     @staticmethod
-    def from_model(address: Subscription):
+    def from_model(subscription: Subscription, with_features: bool = True):
         """
         Generate a DTO from the specified `model`
-        :param address: model instance to populate DTO from
+        :param subscription: model instance to populate DTO from
+        :param with_features: include features flag
         :return: DTO instance
         """
-        dto = BaseDto.from_model_to_obj(address, SubscriptionDto())
+        dto = BaseDto.from_model_to_obj(subscription, SubscriptionDto())
         # custom handling for specific attributes
+        dto.frequency_type = \
+            FrequencyType.from_choice(subscription.frequency_type)
+
+        if with_features:
+            features = get_subscription_features(dto.id)
+            dto.features = list(
+                map(SubscriptionFeatureDto.from_model, features)
+            )
+
         return dto
 
     @staticmethod
@@ -60,7 +73,7 @@ class SubscriptionDto(BaseDto):
         amt = SubscriptionForm.quantise_amount(
             getattr(self, Subscription.AMOUNT_FIELD))
         code = getattr(self, Subscription.BASE_CURRENCY_FIELD)
-        freq_type =  FrequencyType.from_choice(
+        freq_type = FrequencyType.from_choice(
             getattr(self, Subscription.FREQUENCY_TYPE_FIELD)
         )
         freq = getattr(self, Subscription.FREQUENCY_FIELD)
@@ -68,3 +81,53 @@ class SubscriptionDto(BaseDto):
         order.append(f'{amt} {code} per {freq} {freq_type.value.name}')
 
         return order
+
+
+FEATURE_DESC_AS_TEXT = [
+    FeatureType.BASIC.value.choice, FeatureType.FREE_DELIVERY.value.choice,
+    FeatureType.FREE_CLASSES.value.choice
+]
+FEATURE_TEXT_WITH_AMOUNT = [
+    FeatureType.FREE_DELIVERY_OVER.value.choice,
+    FeatureType.FREE_DELIVERY_AFTER.value.choice,
+    FeatureType.FREE_AFTER_SPEND.value.choice
+]
+FEATURE_TEXT_WITH_COUNT = [
+    FeatureType.FIRST_X_FREE.value.choice
+]
+
+
+@dataclass
+class SubscriptionFeatureDto(BaseDto):
+    """ SubscriptionFeature data transfer object """
+
+    @staticmethod
+    def from_model(feature: SubscriptionFeature):
+        """
+        Generate a DTO from the specified `model`
+        :param feature: model instance to populate DTO from
+        :return: DTO instance
+        """
+        return BaseDto.from_model_to_obj(feature, SubscriptionFeatureDto())
+
+    @property
+    def display_text(self) -> str:
+        """
+        Get display text for feature
+        :return: display text
+        """
+        text = self.description
+        # default is sufficient for FEATURE_DESC_AS_TEXT
+
+        if self.feature_type in FEATURE_TEXT_WITH_AMOUNT:
+            text = text.replace(
+                SubscriptionFeature.FEATURE_AMOUNT_TEMPLATE_MARK,
+                f'{str(SubscriptionForm.quantise_amount(self.amount))} '
+                f'{self.base_currency}'
+            )
+        if self.feature_type in FEATURE_TEXT_WITH_COUNT:
+            text = text.replace(
+                SubscriptionFeature.FEATURE_COUNT_TEMPLATE_MARK,
+                f'{self.count}'
+            )
+        return text

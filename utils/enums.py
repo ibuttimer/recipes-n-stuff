@@ -233,3 +233,19 @@ class PerPage(ChoiceArg):
 
 
 PerPage.DEFAULT = PerPage.SIX
+
+
+class YesNo(ChoiceArg):
+    """ Enum representing a truthy choice """
+    NO = ('No', 'no')
+    YES = ('Yes', 'yes')
+    IGNORE = ('Ignore', 'na')
+
+    @property
+    def boolean(self) -> Optional[bool]:
+        """ Boolean representation of choice """
+        return True if self == YesNo.YES else \
+            False if self == YesNo.NO else None
+
+
+YesNo.DEFAULT = YesNo.IGNORE
