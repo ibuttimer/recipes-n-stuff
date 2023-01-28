@@ -40,30 +40,22 @@ from .constants import (
     NAME_FIELD, FREQUENCY_FIELD, FREQUENCY_TYPE_FIELD, AMOUNT_FIELD,
     DESCRIPTION_FIELD, IS_ACTIVE_FIELD, USER_FIELD, SUBSCRIPTION_FIELD,
     START_DATE_FIELD, END_DATE_FIELD, BASE_CURRENCY_FIELD, FEATURE_TYPE_FIELD,
-    CALL_TO_PICK_FIELD, FEATURES_FIELD, COUNT_FIELD
+    CALL_TO_PICK_FIELD, FEATURES_FIELD, COUNT_FIELD, STATUS_FIELD
 )
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
 TypeMeasure = TypeVar("TypeMeasure", bound="Measure")
 TypeFrequencyType = TypeVar("FrequencyType", bound="FrequencyType")
+TypeNameChoiceMixin = TypeVar("NameChoiceMixin", bound="NameChoiceMixin")
 TypeFeatureType = TypeVar("FeatureType", bound="FeatureType")
+TypeSubscriptionStatus = \
+    TypeVar("SubscriptionStatus", bound="SubscriptionStatus")
 
 
-Frequency = namedtuple(
-    'Frequency', [                                  # relativedelta keyword
-        'name', 'choice', 'period', 'period_abbrev', 'rel_delta'
-    ])
-Feature = namedtuple('Feature', ['name', 'choice'])
+class NameChoiceMixin:
 
-
-class FrequencyType(Enum):
-    """ Enum representing subscription frequency types """
-    BY_MIN = Frequency('By the minute', 'mn', 'minute', 'min', 'minutes')
-    HOURLY = Frequency('Hourly', 'hr', 'hour', 'hr', 'hours')
-    DAILY = Frequency('Daily', 'dy', 'day', 'dy', 'days')
-    WEEKLY = Frequency('Weekly', 'wk', 'week', 'wk', 'weeks')
-    MONTHLY = Frequency('Monthly', 'mt', 'month', 'mth', 'months')
-    YEARLY = Frequency('Yearly', 'yr', 'year', 'yr', 'years')
+    NAME = 'name'
+    CHOICE = 'choice'
 
     def is_from_choice(self, choice: str) -> bool:
         """
@@ -72,6 +64,62 @@ class FrequencyType(Enum):
         :return: True if choice matches
         """
         return self.value.choice == choice
+
+    @property
+    def display_name(self):
+        """ Name value for this object """
+        return self.value.name
+
+    @property
+    def choice(self):
+        """ Choice value for this object """
+        return self.value.choice
+
+    @staticmethod
+    def obj_from_choice(
+            obj_type: TypeNameChoiceMixin, choice: str
+    ) -> Optional[TypeNameChoiceMixin]:
+        """
+        Get the object corresponding to `choice`
+        :param obj_type: NameChoice enum
+        :param choice: choice to find
+        :return: feature type or None of not found
+        """
+        result = list(
+            filter(lambda t: t.value.choice == choice, obj_type)
+        )
+        return result[0] if len(result) == 1 else None
+
+    @staticmethod
+    def get_model_choices(obj_type: TypeNameChoiceMixin) -> List[Tuple]:
+        """
+        Get the model choices for this object
+        :return: list of choices
+        """
+        return [
+            (sub.value.choice, sub.value.name) for sub in obj_type
+        ]
+
+
+Frequency = namedtuple(
+    'Frequency', [
+        NameChoiceMixin.NAME, NameChoiceMixin.CHOICE,
+        'period', 'period_abbrev', 'rel_delta'  # relativedelta keyword
+    ])
+Feature = namedtuple(
+    'Feature', [NameChoiceMixin.NAME, NameChoiceMixin.CHOICE])
+SubStatus = namedtuple(
+    'SubStatus', [NameChoiceMixin.NAME, NameChoiceMixin.CHOICE])
+
+
+class FrequencyType(NameChoiceMixin, Enum):
+    """ Enum representing subscription frequency types """
+    BY_MIN = Frequency('By the minute', 'mn', 'minute', 'min', 'minutes')
+    HOURLY = Frequency('Hourly', 'hr', 'hour', 'hr', 'hours')
+    DAILY = Frequency('Daily', 'dy', 'day', 'dy', 'days')
+    WEEKLY = Frequency('Weekly', 'wk', 'week', 'wk', 'weeks')
+    MONTHLY = Frequency('Monthly', 'mt', 'month', 'mth', 'months')
+    YEARLY = Frequency('Yearly', 'yr', 'year', 'yr', 'years')
 
     def timedelta(self, count: int) -> timedelta:
         """
@@ -96,16 +144,6 @@ class FrequencyType(Enum):
         return result[0] if len(result) == 1 else None
 
     @property
-    def namely(self):
-        """ Namely value for this object """
-        return self.value.name
-
-    @property
-    def choice(self):
-        """ Choice value for this object """
-        return self.value.choice
-
-    @property
     def period(self):
         """ Period value for this object """
         return self.value.period
@@ -115,18 +153,16 @@ class FrequencyType(Enum):
         """ Abbreviated period value for this object """
         return self.value.period_abbrev
 
-
-def get_frequency_choices() -> List[Tuple]:
-    """
-    Get the frequency type choices
-    :return: list of choices
-    """
-    return [
-        (sub.value.choice, sub.value.name) for sub in FrequencyType
-    ]
+    @staticmethod
+    def get_frequency_choices() -> List[Tuple]:
+        """
+        Get the frequency type choices
+        :return: list of choices
+        """
+        return NameChoiceMixin.get_model_choices(FrequencyType)
 
 
-class FeatureType(Enum):
+class FeatureType(NameChoiceMixin, Enum):
     """ Enum representing subscription feature types """
     BASIC = Feature('Basic', 'ba')
     FREE_DELIVERY = Feature('Free delivery', 'fd')
@@ -143,30 +179,15 @@ class FeatureType(Enum):
         :param choice: choice to find
         :return: feature type or None of not found
         """
-        result = list(
-            filter(lambda t: t.value.choice == choice, FeatureType)
-        )
-        return result[0] if len(result) == 1 else None
+        return NameChoiceMixin.obj_from_choice(FeatureType, choice)
 
-    @property
-    def feature_name(self):
-        """ Name value for this object """
-        return self.value.choice
-
-    @property
-    def choice(self):
-        """ Choice value for this object """
-        return self.value.choice
-
-
-def get_feature_choices() -> List[Tuple]:
-    """
-    Get the feature type choices
-    :return: list of choices
-    """
-    return [
-        (sub.value.choice, sub.value.name) for sub in FeatureType
-    ]
+    @staticmethod
+    def get_feature_choices() -> List[Tuple]:
+        """
+        Get the feature type choices
+        :return: list of choices
+        """
+        return NameChoiceMixin.get_model_choices(FeatureType)
 
 
 class SubscriptionFeature(ModelMixin, models.Model):
@@ -194,8 +215,8 @@ class SubscriptionFeature(ModelMixin, models.Model):
 
     feature_type = models.CharField(
         _('feature type'), max_length=FEATURE_ATTRIB_FEAT_TYPE_MAX_LEN,
-        choices=get_feature_choices(),
-        default=FeatureType.BASIC.value.choice,
+        choices=FeatureType.get_feature_choices(),
+        default=FeatureType.BASIC.choice,
     )
 
     amount = models.DecimalField(
@@ -228,6 +249,31 @@ class SubscriptionFeature(ModelMixin, models.Model):
                f'{self.base_currency}/{self.count}'
 
 
+class SubscriptionStatus(NameChoiceMixin, Enum):
+    """ Enum representing user subscription statuses """
+    NONE = SubStatus('None', 'no')
+    EXPIRED = SubStatus('Expired', 'ex')
+    PAYMENT_PENDING = SubStatus('Payment pending', 'pp')
+    ACTIVE = SubStatus('Active', 'a')
+
+    @staticmethod
+    def from_choice(choice: str) -> Optional[TypeSubscriptionStatus]:
+        """
+        Get the SubStatus corresponding to `choice`
+        :param choice: choice to find
+        :return: SubStatus type or None of not found
+        """
+        return NameChoiceMixin.obj_from_choice(SubscriptionStatus, choice)
+
+    @staticmethod
+    def get_status_choices() -> List[Tuple]:
+        """
+        Get the status type choices
+        :return: list of choices
+        """
+        return NameChoiceMixin.get_model_choices(SubscriptionStatus)
+
+
 class Subscription(ModelMixin, models.Model):
     """
     Subscription model
@@ -258,8 +304,8 @@ class Subscription(ModelMixin, models.Model):
 
     frequency_type = models.CharField(
         _('frequency type'), max_length=SUBSCRIPTION_ATTRIB_FREQ_TYPE_MAX_LEN,
-        choices=get_frequency_choices(),
-        default=FrequencyType.MONTHLY.value.choice,
+        choices=FrequencyType.get_frequency_choices(),
+        default=FrequencyType.MONTHLY.choice,
     )
 
     frequency = models.IntegerField(
@@ -312,7 +358,9 @@ class UserSubscription(ModelMixin, models.Model):
     SUBSCRIPTION_FIELD = SUBSCRIPTION_FIELD
     START_DATE_FIELD = START_DATE_FIELD
     END_DATE_FIELD = END_DATE_FIELD
-    IS_ACTIVE_FIELD = IS_ACTIVE_FIELD
+    STATUS_FIELD = STATUS_FIELD
+
+    USER_SUBSCRIPTION_ATTRIB_STATUS_MAX_LEN: int = 2
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -323,10 +371,11 @@ class UserSubscription(ModelMixin, models.Model):
     end_date = models.DateTimeField(
         _('End date'), default=datetime(MINYEAR, 1, 1, tzinfo=timezone.utc))
 
-    is_active = models.BooleanField(
-        _('is active'), default=False, blank=False, help_text=_(
-            "Designates that this record is active."
-        ))
+    status = models.CharField(
+        _('status'), max_length=USER_SUBSCRIPTION_ATTRIB_STATUS_MAX_LEN,
+        choices=SubscriptionStatus.get_status_choices(),
+        default=SubscriptionStatus.NONE.choice,
+    )
 
     @dataclass
     class Meta:

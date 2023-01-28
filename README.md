@@ -217,6 +217,8 @@ There are two requirements files:
 | HEROKU_HOSTNAME          | [Hostname](https://docs.djangoproject.com/en/4.1/ref/settings/#allowed-hosts) of application on Heroku.<br>__Note:__ To specify multiple hosts, use a comma-separated list with no spaces.<br>__Note:__ Set to `localhost,127.0.0.1` in local development mode                                                                                                                                                                                                                          |
 | REMOTE_DATABASE_URL      | Url of remote PostgreSQL database resource.<br>For a Heroku app with a [Heroku Postgres](https://elements.heroku.com/addons/heroku-postgresql) addon this is available from `DATABASE_URL` in the app `Settings -> Config Vars`.<br>For an [ElephantSQL](https://www.elephantsql.com/) database this is available from `URL` in the instance details.<br>__Note:__ Only required for admin purposes, see database configuration under [Cloud-based Deployment](#cloud-based-deployment) |
 | GOOGLE_SITE_VERIFICATION | [Google Search Console](https://search.google.com/search-console) meta tag verification value for [site ownership verification](https://support.google.com/webmasters/answer/9008080?hl=en)                                                                                                                                                                                                                                                                                             |
+| STRIPE_PUBLISHABLE_KEY   | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) publishable key value for payments processing.                                                                                                                                                                                                                                                                                                                                                                   |
+| STRIPE_SECRET_KEY        | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) secret key value for payments processing.                                                                                                                                                                                                                                                                                                                                                                        |
 
 
 #### Environment variables
@@ -279,6 +281,14 @@ and a Google app is needed to obtain a key and secret through the [Google Develo
 * Select `Done`
 * It is necessary to [apply for Elevated access](https://developer.twitter.com/en/portal/products/elevated) to the Twitter API, in order to access to private resources.
   Without Elevated access it is not possible to use Twitter as a sign in provider
+
+#### Stripe
+In order to configure Stripe payments, the following actions must be performed.
+
+* Login to [Stripe](https://stripe.com/)
+* Create a new application, and go to the [Developers Dashboard](https://dashboard.stripe.com/test/developers)
+* Ensure the application is selected in the application list dropdown
+* Select [API keys](https://dashboard.stripe.com/test/apikeys) and copy the `Publishable key` and `Secret key`, and store securely.
 
 
 ### Before first run
@@ -384,20 +394,29 @@ The application structure is as follows:
 │  ├─ agile             - project management
 │  ├─ design            - design related documentation
 │  └─ test              - test reports
+├─ data                 - sample data
 ├─ manage.py            - application entry point
 ├─ recipesnstuff        - main Django application
 ├─ base                 - base Django application
+│  └─ static            - base application-specific static files
+│     ├─ css            - base application-specific custom CSS
+│     ├─ img            - base application-specific images
+│     └─ js             - base application-specific custom JavaScript
+├─ checkout             - checkout Django application
+│  └─ static            - checkout application-specific static files
+│     ┇
 ├─ recipes              - recipes Django application
-├─ django_tests         - Django Test Tools test scripts
-├─ jest_tests           - Jest javascript tests
 ├─ profiles             - shopping profiles Django application
+├─ subscription         - subscriptions Django application
 ├─ user                 - user Django application
 ├─ static               - static files
 │  ├─ css               - custom CSS
 │  ├─ img               - images
 │  └─ js                - custom JavaScript
 ├─ templates            - application templates
-└─ tests                - unittest test scripts
+├─ django_tests         - Django Test Tools test scripts
+├─ jest_tests           - Jest javascript tests
+└─ tests                - pytest/unittest test scripts
 ```
 
 ## Cloud-based Deployment
@@ -443,9 +462,11 @@ The following steps were followed to deploy the website:
       | SECRET_KEY               | [Secret key](https://docs.djangoproject.com/en/4.1/ref/settings/#std-setting-SECRET_KEY) for a particular Django installation                                                     |
       | HEROKU_HOSTNAME          | [Hostname](https://docs.djangoproject.com/en/4.1/ref/settings/#allowed-hosts) of application on Heroku                                                                            |
       | SITE_ID                  | Id (primary key) of site in the `django_site` table of the database. See [Configure authentication](#configure-authentication).                                                   |
+      | GOOGLE_SITE_VERIFICATION | [Google Search Console](https://search.google.com/search-console) meta tag verification value for [site ownership verification](https://support.google.com/webmasters/answer/9008080?hl=en) |
+      | STRIPE_PUBLISHABLE_KEY   | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) publishable key value for payments processing.                                                             |
+      | STRIPE_SECRET_KEY        | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) secret key value for payments processing.                                                                  |
       |                          | _The following keys are automatically added when `Resources` are provisioned:_                                                                                                   |
       | CLOUDINARY_URL           | [Cloudinary url](https://pypi.org/project/dj3-cloudinary-storage/)                                                                                                                |
-      | GOOGLE_SITE_VERIFICATION | [Google Search Console](https://search.google.com/search-console) meta tag verification value for [site ownership verification](https://support.google.com/webmasters/answer/9008080?hl=en) |
 
     - Add the `DATABASE_URL` environment variable under `Config Vars`, if required
 

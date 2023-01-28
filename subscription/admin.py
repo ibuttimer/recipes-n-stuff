@@ -46,9 +46,9 @@ class UserSubscriptionAdmin(admin.ModelAdmin):
         UserSubscription.SUBSCRIPTION_FIELD,
         UserSubscription.START_DATE_FIELD,
         UserSubscription.END_DATE_FIELD,
-        UserSubscription.IS_ACTIVE_FIELD,
+        UserSubscription.STATUS_FIELD,
     )
-    ordering = (UserSubscription.USER_FIELD, UserSubscription.IS_ACTIVE_FIELD)
+    ordering = (UserSubscription.USER_FIELD, UserSubscription.STATUS_FIELD)
 
 
 @admin.register(SubscriptionFeature)

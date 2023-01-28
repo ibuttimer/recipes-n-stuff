@@ -30,7 +30,7 @@ from django import forms
 import ccy
 
 from utils import FormMixin
-from .models import Subscription, get_frequency_choices
+from .models import Subscription, FrequencyType
 
 
 def get_currency_choices() -> List[Tuple]:
@@ -52,7 +52,7 @@ class SubscriptionForm(FormMixin, forms.ModelForm):
     AMOUNT_EXP = Decimal(10) ** -2
 
     CURRENCY_CHOICES = get_currency_choices()
-    FREQUENCY_CHOICES = get_frequency_choices()
+    FREQUENCY_CHOICES = FrequencyType.get_frequency_choices()
 
     name = forms.CharField(
         label=_("Name"),

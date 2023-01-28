@@ -28,7 +28,8 @@ from django.shortcuts import redirect
 from django.contrib import messages
 import json_fix
 
-from recipesnstuff.constants import LOGOUT_ROUTE_NAME
+from checkout.constants import CHECKOUT_CREATE_PAYMENT_ROUTE_NAME
+from recipesnstuff.constants import LOGOUT_ROUTE_NAME, CHECKOUT_APP_NAME
 from recipesnstuff.settings import STATIC_URL
 from subscription.views.subscription_queries import user_has_subscription
 from utils import namespaced_url, resolve_req
@@ -42,11 +43,11 @@ SUB_STATUS = 'sub_status'   # subscription status
 
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
-TypeSubscriptionStatus = \
-    TypeVar("TypeSubscriptionStatus", bound="SubscriptionStatus")
+TypeSessionSubStatus = \
+    TypeVar("TypeSessionSubStatus", bound="SessionSubStatus")
 
 
-class SubscriptionStatus(Enum):
+class SessionSubStatus(Enum):
     """ Enum represent subscription status """
     NOT_FOUND = auto()
     EXPIRED = auto()
@@ -55,17 +56,17 @@ class SubscriptionStatus(Enum):
     IGNORE = auto()     # anonymous user
 
     @staticmethod
-    def from_jsonable(jsonable: dict) -> TypeSubscriptionStatus:
+    def from_jsonable(jsonable: dict) -> TypeSessionSubStatus:
         """
         Convert json representation to enum
         :param jsonable: json representation
-        :return: SubscriptionStatus if found otherwise original argument
+        :return: SessionSubStatus if found otherwise original argument
         """
         status = jsonable
         if isinstance(jsonable, dict):
-            if jsonable.get('type', None) == SubscriptionStatus.__name__:
+            if jsonable.get('type', None) == SessionSubStatus.__name__:
                 value = jsonable.get('value', None)
-                for sub_status in SubscriptionStatus:
+                for sub_status in SessionSubStatus:
                     if sub_status.value == value:
                         status = sub_status
                         break
@@ -74,20 +75,21 @@ class SubscriptionStatus(Enum):
     def __json__(self):
         # return a built-in object that is naturally jsonable
         return {
-            'type': SubscriptionStatus.__name__,
+            'type': SessionSubStatus.__name__,
             'value': self.value
         }
 
 
 PROCESS_NORMALLY = [
-    SubscriptionStatus.VALID, SubscriptionStatus.WIP,
-    SubscriptionStatus.IGNORE
+    SessionSubStatus.VALID, SessionSubStatus.WIP,
+    SessionSubStatus.IGNORE
 ]
 SUB_CHOICE_ROUTE = namespaced_url(THIS_APP, SUBSCRIPTION_CHOICE_ROUTE_NAME)
 NO_SUB_SANDBOX = [
-    # no subscription restricted to choose subscription or logout
+    # no subscription restricted to choose subscription, payment or logout
     SUB_CHOICE_ROUTE, LOGOUT_ROUTE_NAME,
-    namespaced_url(THIS_APP, SUBSCRIPTION_PICK_ROUTE_NAME)
+    namespaced_url(THIS_APP, SUBSCRIPTION_PICK_ROUTE_NAME),
+    namespaced_url(CHECKOUT_APP_NAME, CHECKOUT_CREATE_PAYMENT_ROUTE_NAME)
 ]
 
 
@@ -111,19 +113,19 @@ class SubscriptionMiddleware:
         msg = None
         expiry = None       # subscription expiry date
         sandbox = False     # stay in subscription sandbox flag
-        status = SubscriptionStatus.IGNORE if request.user.is_superuser else \
-            request.session.get(SUB_STATUS, SubscriptionStatus.NOT_FOUND) \
-            if request.user.is_authenticated else SubscriptionStatus.IGNORE
-        status = SubscriptionStatus.from_jsonable(status)
+        status = SessionSubStatus.IGNORE if request.user.is_superuser else \
+            request.session.get(SUB_STATUS, SessionSubStatus.NOT_FOUND) \
+            if request.user.is_authenticated else SessionSubStatus.IGNORE
+        status = SessionSubStatus.from_jsonable(status)
 
-        if status == SubscriptionStatus.VALID:
+        if status == SessionSubStatus.VALID:
             # check expiry date
             expiry = datetime.fromtimestamp(
                 request.session[SUB_EXPIRY], tz=timezone.utc)
             if expiry < datetime.now(tz=timezone.utc):
-                status = SubscriptionStatus.EXPIRED
+                status = SessionSubStatus.EXPIRED
                 msg = self.sub_expired_msg(expiry)
-        elif status in [SubscriptionStatus.WIP, SubscriptionStatus.EXPIRED]:
+        elif status in [SessionSubStatus.WIP, SessionSubStatus.EXPIRED]:
             # check request url ok
             called_by = resolve_req(request)
             req_route = None if not called_by else \
@@ -135,21 +137,21 @@ class SubscriptionMiddleware:
                 doc_root = called_by.kwargs.get('document_root', None)
                 sandbox = doc_root != STATIC_URL
 
-            status = SubscriptionStatus.WIP
-        elif status == SubscriptionStatus.NOT_FOUND:
+            status = SessionSubStatus.WIP
+        elif status == SessionSubStatus.NOT_FOUND:
             # check database (check will invalidate any out of date
             # subscriptions)
             has_sub, user_sub, expired_sub = \
                 user_has_subscription(request.user, last_expired=True)
             if has_sub:
-                status = SubscriptionStatus.VALID
+                status = SessionSubStatus.VALID
                 expiry = user_sub.end_date
             else:
-                status = SubscriptionStatus.EXPIRED
+                status = SessionSubStatus.EXPIRED
                 msg = 'Subscription not found' if expired_sub is None else \
                     self.sub_expired_msg(expired_sub.end_date)
 
-        if status != SubscriptionStatus.IGNORE:
+        if status != SessionSubStatus.IGNORE:
             update_session_subscription(request, status, expiry=expiry)
         if msg:
             messages.add_message(request, messages.INFO, msg)
@@ -170,7 +172,7 @@ class SubscriptionMiddleware:
 
 
 def update_session_subscription(
-        request: HttpRequest, status: SubscriptionStatus,
+        request: HttpRequest, status: SessionSubStatus,
         expiry: datetime = None):
     """
     Update the subscription info in a request session

@@ -21,7 +21,7 @@ from recipesnstuff import settings
 from .constants import (
     BASE_APP_NAME, ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL,
     USERS_URL, USER_APP_NAME, PROFILES_APP_NAME, PROFILES_URL,
-    SUBSCRIPTION_APP_NAME, SUBSCRIPTIONS_URL
+    SUBSCRIPTION_APP_NAME, SUBSCRIPTIONS_URL, CHECKOUT_URL, CHECKOUT_APP_NAME
 )
 from .settings import STATIC_URL
 
@@ -36,6 +36,7 @@ urlpatterns = [
 
     path(PROFILES_URL, include(f'{PROFILES_APP_NAME}.urls')),
     path(SUBSCRIPTIONS_URL, include(f'{SUBSCRIPTION_APP_NAME}.urls')),
+    path(CHECKOUT_URL, include(f'{CHECKOUT_APP_NAME}.urls')),
 
     path('', include(f'{BASE_APP_NAME}.root_urls')),
 ]

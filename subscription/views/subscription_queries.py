@@ -29,7 +29,7 @@ from django.db.models import Q, QuerySet
 
 from subscription.constants import IS_ACTIVE_QUERY
 from subscription.models import (
-    Subscription, UserSubscription, SubscriptionFeature
+    Subscription, UserSubscription, SubscriptionFeature, SubscriptionStatus
 )
 from user.models import User
 from utils import (
@@ -326,19 +326,21 @@ def user_subscription_query(
     count = query.count()
 
     # precursor to subscription query is check for expired subscriptions
-    query.filter(**{
-        f'{UserSubscription.END_DATE_FIELD}__lt':
-            datetime.now(tz=timezone.utc)
-    }).update(**{
-        f'{UserSubscription.IS_ACTIVE_FIELD}': False
-    })
+    expired_val = {
+        f'{UserSubscription.STATUS_FIELD}': SubscriptionStatus.EXPIRED.choice
+    }
+    active_val = {
+        f'{UserSubscription.STATUS_FIELD}': SubscriptionStatus.ACTIVE.choice
+    }
+    eol_val = active_val.copy()
+    eol_val[f'{UserSubscription.END_DATE_FIELD}__lt'] = \
+        datetime.now(tz=timezone.utc)
+    query.filter(**eol_val).update(**expired_val)
 
     active_sub = None
     if active:
         active_user_subs = list(
-            query.filter(**{
-                UserSubscription.IS_ACTIVE_FIELD: True
-            }).all()
+            query.filter(**active_val).all()
         )
         assert len(active_user_subs) <= 1
         if len(active_user_subs) == 1:
@@ -347,9 +349,7 @@ def user_subscription_query(
     expired_sub = None
     if last_expired:
         expired_user_subs = list(
-            query.filter(**{
-                UserSubscription.IS_ACTIVE_FIELD: False
-            }).all()
+            query.filter(**expired_val).all()
         )
         if len(expired_user_subs) > 0:
             expired_sub = expired_user_subs[-1]

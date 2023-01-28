@@ -35,13 +35,16 @@ from django.views.decorators.http import require_http_methods
 from base import (
     InfoModalLevel, InfoModalTemplate, level_info_modal_payload,
 )
+from checkout.constants import (
+    CHECKOUT_PAY_ROUTE_NAME, PAYMENT_AMOUNT_SES, PAYMENT_CURRENCY_SES
+)
 from subscription.constants import (
     THIS_APP, SUBSCRIPTION_FORM_CTX, SUBSCRIPTION_ID_ROUTE_NAME,
-    SUBSCRIPTIONS_ROUTE_NAME,
+    SUBSCRIPTIONS_ROUTE_NAME, USER_SUB_ID_SES,
 )
 from subscription.forms import SubscriptionForm
 from subscription.models import Subscription, UserSubscription, FrequencyType
-from recipesnstuff.constants import HOME_ROUTE_NAME
+from recipesnstuff.constants import CHECKOUT_APP_NAME
 from utils import (
     Crud, SUBMIT_URL_CTX, app_template_path, reverse_q,
     namespaced_url, redirect_on_success_or_render,
@@ -52,7 +55,8 @@ from .subscription_create import (
     for_subscription_form_render, SubscriptionCreate
 )
 from .utils import subscription_permission_check
-from ..middleware import update_session_subscription, SubscriptionStatus
+from ..middleware import update_session_subscription, SessionSubStatus
+from ..models import SubscriptionStatus
 
 TITLE_UPDATE = 'Update Subscription'
 
@@ -213,12 +217,19 @@ def subscription_pick(request: HttpRequest, pk: int) -> HttpResponse:
         f'{UserSubscription.SUBSCRIPTION_FIELD}': subscription,
         f'{UserSubscription.START_DATE_FIELD}': start_date,
         f'{UserSubscription.END_DATE_FIELD}': end_date,
-        f'{UserSubscription.IS_ACTIVE_FIELD}': True
+        f'{UserSubscription.STATUS_FIELD}':
+            SubscriptionStatus.PAYMENT_PENDING.choice
     })
     assert user_sub is not None
 
     # update session
     update_session_subscription(
-        request, SubscriptionStatus.VALID, end_date)
+        request, SessionSubStatus.VALID, end_date)
 
-    return redirect(HOME_ROUTE_NAME)
+    request.session[USER_SUB_ID_SES] = user_sub.id
+    request.session[PAYMENT_AMOUNT_SES] = float(subscription.amount)
+    request.session[PAYMENT_CURRENCY_SES] = subscription.base_currency
+
+    return redirect(
+        namespaced_url(CHECKOUT_APP_NAME, CHECKOUT_PAY_ROUTE_NAME)
+    )

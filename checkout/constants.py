@@ -19,50 +19,40 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+
 from pathlib import Path
 
-from utils import append_slash, url_path
+from utils import append_slash
 
 # name of this app
 THIS_APP = Path(__file__).resolve().parent.name
 
-NAME_FIELD = "name"
-FREQUENCY_FIELD = "frequency"
-FREQUENCY_TYPE_FIELD = "frequency_type"
-FEATURE_TYPE_FIELD = "feature_type"
-AMOUNT_FIELD = "amount"
-BASE_CURRENCY_FIELD = "base_currency"
-DESCRIPTION_FIELD = "description"
-CALL_TO_PICK_FIELD = "call_to_pick"
-FEATURES_FIELD = "features"
-COUNT_FIELD = "count"
-IS_ACTIVE_FIELD = "is_active"
-STATUS_FIELD = "status"
-
-USER_FIELD = "user"
-SUBSCRIPTION_FIELD = "subscription"
-START_DATE_FIELD = "start_date"
-END_DATE_FIELD = "end_date"
-
 # urls/routes related
-SUBSCRIPTIONS_URL = ""
-SUBSCRIPTION_NEW_URL = append_slash("new")
-SUBSCRIPTION_BY_ID_URL = append_slash("<int:pk>")
-SUBSCRIPTION_CHOICE_URL = append_slash("choice")
-SUBSCRIPTION_PICK_URL = url_path("pick", "<int:pk>")
+CHECKOUT_PAY_URL = append_slash("pay")
+CHECKOUT_CREATE_PAYMENT_URL = append_slash("payment-intent")
+CHECKOUT_PAID_URL = append_slash("paid")
 
-SUBSCRIPTIONS_ROUTE_NAME = "subscriptions"
-SUBSCRIPTION_NEW_ROUTE_NAME = "subscription_new"
-SUBSCRIPTION_ID_ROUTE_NAME = "subscription_id"
-SUBSCRIPTION_CHOICE_ROUTE_NAME = "subscription_choice"
-SUBSCRIPTION_PICK_ROUTE_NAME = "subscription_pick"
+CHECKOUT_CREATE_PAYMENT_ROUTE_NAME = "payment_intent"
+CHECKOUT_PAY_ROUTE_NAME = "pay"
+CHECKOUT_PAID_ROUTE_NAME = "paid"
 
 # context related
-SUBSCRIPTION_FORM_CTX = 'subscription_form'
-SUBSCRIPTION_LIST_CTX = 'subscription_list'
+STRIPE_PUBLISHABLE_KEY_CTX = 'stripe_publishable_key'
+STRIPE_RETURN_URL_CTX = 'stripe_return_url'
 
 # session related
-USER_SUB_ID_SES = 'user_sub_id'
+PAYMENT_AMOUNT_SES = 'payment_amount'
+PAYMENT_CURRENCY_SES = 'payment_currency'
 
-# query related
-IS_ACTIVE_QUERY: str = 'active'
+
+# zero decimal currencies; https://stripe.com/docs/currencies#zero-decimal
+ZERO_DECIMAL_CURRENCIES = [
+    'BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW', 'MGA', 'PYG', 'RWF',
+    'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF'
+]
+# three decimal currencies; https://stripe.com/docs/currencies#three-decimal
+# must round amounts to the nearest ten. E.g., 5.124 KWD must be rounded to
+# 5120 or 5130
+THREE_DECIMAL_CURRENCIES = [
+    'BHD', 'JOD', 'KWD', 'OMR', 'TND'
+]
