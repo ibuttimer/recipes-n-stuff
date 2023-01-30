@@ -217,6 +217,8 @@ There are two requirements files:
 | HEROKU_HOSTNAME          | [Hostname](https://docs.djangoproject.com/en/4.1/ref/settings/#allowed-hosts) of application on Heroku.<br>__Note:__ To specify multiple hosts, use a comma-separated list with no spaces.<br>__Note:__ Set to `localhost,127.0.0.1` in local development mode                                                                                                                                                                                                                          |
 | REMOTE_DATABASE_URL      | Url of remote PostgreSQL database resource.<br>For a Heroku app with a [Heroku Postgres](https://elements.heroku.com/addons/heroku-postgresql) addon this is available from `DATABASE_URL` in the app `Settings -> Config Vars`.<br>For an [ElephantSQL](https://www.elephantsql.com/) database this is available from `URL` in the instance details.<br>__Note:__ Only required for admin purposes, see database configuration under [Cloud-based Deployment](#cloud-based-deployment) |
 | GOOGLE_SITE_VERIFICATION | [Google Search Console](https://search.google.com/search-console) meta tag verification value for [site ownership verification](https://support.google.com/webmasters/answer/9008080?hl=en)                                                                                                                                                                                                                                                                                             |
+| STRIPE_PUBLISHABLE_KEY   | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) publishable key value for payments processing.                                                                                                                                                                                                                                                                                                                                                                   |
+| STRIPE_SECRET_KEY        | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) secret key value for payments processing.                                                                                                                                                                                                                                                                                                                                                                        |
 
 
 #### Environment variables
@@ -280,6 +282,14 @@ and a Google app is needed to obtain a key and secret through the [Google Develo
 * It is necessary to [apply for Elevated access](https://developer.twitter.com/en/portal/products/elevated) to the Twitter API, in order to access to private resources.
   Without Elevated access it is not possible to use Twitter as a sign in provider
 
+#### Stripe
+In order to configure Stripe payments, the following actions must be performed.
+
+* Login to [Stripe](https://stripe.com/)
+* Create a new application, and go to the [Developers Dashboard](https://dashboard.stripe.com/test/developers)
+* Ensure the application is selected in the application list dropdown
+* Select [API keys](https://dashboard.stripe.com/test/apikeys) and copy the `Publishable key` and `Secret key`, and store securely.
+
 
 ### Before first run
 Before running the application for the first time following cloning from the repository and setting up a new database,
@@ -297,12 +307,58 @@ Populate the database with predefined data via the [populate.py](data/populate.p
 When run using [run_populate.py](run_populate.py) it will load the data from [subdivisions.txt](data/subdivisions.txt).
 
 From the project root folder run the following
-```bash
-# Help listing
-python run_populate.py -h
 
+##### Measures table
+```bash
+# E.g. populate the remote database 
+python -m manage loaddata measure.json --database remote
+```
+<details>
+<summary><em>Dump data:</em></summary>
+
+```bash
+python -m manage dumpdata recipes.Measure --indent 4 -o data/fixtures/measure.json
+```
+</details>
+
+##### Currencies table
+```bash
+# populate the remote database via loaddata 
+python -m manage loaddata currencies.json --database remote
+# or alternatively via run_populate.py
+python run_populate.py -cc -f data -dv REMOTE_DATABASE_URL
+```
+<details>
+<summary><em>Dump data:</em></summary>
+
+The data dump needs to be performed in [UTF8 mode](https://docs.python.org/3/using/cmdline.html#cmdoption-X) to
+preserve character encodings: 
+```bash
+python -Xutf8 -m manage dumpdata checkout.Currency --indent 4 -o data/fixtures/currencies.json
+```
+</details>
+
+##### Countryinfo table
+```bash
+# populate the remote database via loaddata 
+python -m manage loaddata countryinfo.json --database remote
+# or alternatively via run_populate.py
+python run_populate.py -c -f data -dv REMOTE_DATABASE_URL
+```
+<details>
+<summary><em>Dump data:</em></summary>
+
+```bash
+python -m manage dumpdata profiles.CountryInfo --indent 4 -o data/fixtures/countryinfo.json
+```
+</details>
+
+##### Recipe tables
+> **Note:** Due to the large size of the dataset, this operation takes a long time to complete.
+
+```bash
 # E.g. populated the remote database 
-python run_populate.py -f data -dv REMOTE_DATABASE_URL
+python run_populate.py -r -f data -dv REMOTE_DATABASE_URL
 ```
 #### Create a superuser
 Enter `Username`, `Password` and optionally `Email address`.
@@ -335,9 +391,9 @@ From [django-allauth Post-Installation](https://django-allauth.readthedocs.io/en
     - Google
       [django-allauth Google provider info](https://django-allauth.readthedocs.io/en/latest/providers.html#google)
 
-      | Provider | Name   | Client id                                        | Secret key                                        | 
-      |----------|--------|---------------------------------------------------|--------------------------------------------------| 
-      | google   | Google | `client_id` from the OAuth 2.0 Client credentials | `client_secret` from the OAuth 2.0 Client credentials | 
+      | Provider | Name   | Client id                                          | Secret key                                            | 
+      |----------|--------|----------------------------------------------------|-------------------------------------------------------| 
+      | google   | Google | `client_id` from the OAuth 2.0 Client credentials  | `client_secret` from the OAuth 2.0 Client credentials | 
 
       And add the Site for your domain to the `Chosen sites` list
 
@@ -370,19 +426,29 @@ The application structure is as follows:
 │  ├─ agile             - project management
 │  ├─ design            - design related documentation
 │  └─ test              - test reports
+├─ data                 - sample data
 ├─ manage.py            - application entry point
 ├─ recipesnstuff        - main Django application
 ├─ base                 - base Django application
-├─ django_tests         - Django Test Tools test scripts
-├─ jest_tests           - Jest javascript tests
+│  └─ static            - base application-specific static files
+│     ├─ css            - base application-specific custom CSS
+│     ├─ img            - base application-specific images
+│     └─ js             - base application-specific custom JavaScript
+├─ checkout             - checkout Django application
+│  └─ static            - checkout application-specific static files
+│     ┇
+├─ recipes              - recipes Django application
 ├─ profiles             - shopping profiles Django application
+├─ subscription         - subscriptions Django application
 ├─ user                 - user Django application
 ├─ static               - static files
 │  ├─ css               - custom CSS
 │  ├─ img               - images
 │  └─ js                - custom JavaScript
 ├─ templates            - application templates
-└─ tests                - unittest test scripts
+├─ django_tests         - Django Test Tools test scripts
+├─ jest_tests           - Jest javascript tests
+└─ tests                - pytest/unittest test scripts
 ```
 
 ## Cloud-based Deployment
@@ -428,14 +494,16 @@ The following steps were followed to deploy the website:
       | SECRET_KEY               | [Secret key](https://docs.djangoproject.com/en/4.1/ref/settings/#std-setting-SECRET_KEY) for a particular Django installation                                                     |
       | HEROKU_HOSTNAME          | [Hostname](https://docs.djangoproject.com/en/4.1/ref/settings/#allowed-hosts) of application on Heroku                                                                            |
       | SITE_ID                  | Id (primary key) of site in the `django_site` table of the database. See [Configure authentication](#configure-authentication).                                                   |
+      | GOOGLE_SITE_VERIFICATION | [Google Search Console](https://search.google.com/search-console) meta tag verification value for [site ownership verification](https://support.google.com/webmasters/answer/9008080?hl=en) |
+      | STRIPE_PUBLISHABLE_KEY   | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) publishable key value for payments processing.                                                             |
+      | STRIPE_SECRET_KEY        | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) secret key value for payments processing.                                                                  |
       |                          | _The following keys are automatically added when `Resources` are provisioned:_                                                                                                   |
       | CLOUDINARY_URL           | [Cloudinary url](https://pypi.org/project/dj3-cloudinary-storage/)                                                                                                                |
-      | GOOGLE_SITE_VERIFICATION | [Google Search Console](https://search.google.com/search-console) meta tag verification value for [site ownership verification](https://support.google.com/webmasters/answer/9008080?hl=en) |
 
     - Add the `DATABASE_URL` environment variable under `Config Vars`, if required
 
       | Key               | Value                                                                                                                                                                                                                                                                                 |
-            |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------|
+      |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------|
       | DATABASE_URL      | [Database url](https://docs.djangoproject.com/en/4.1/ref/settings/#databases)<br>- [Heroku Postgres](https://elements.heroku.com/addons/heroku-postgresql) database, automatically added when `Resources` are provisioned<br>- [ElephantSQL](https://www.elephantsql.com/) database, copy the `URL` from the instance details page |
 
 
@@ -533,6 +601,7 @@ The following resources were used to build the website.
 - [Barbeque skewers image](static/img/meat-skewer-1440105_1920.jpg) by [-Rita-👩‍🍳 und 📷 mit ❤](https://pixabay.com/users/ritae-19628/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1440105) from [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1440105)
 - [Baked goods image](static/img/baked-goods-1846460_1920.jpg) by [Pexels](https://pixabay.com/users/pexels-2286921/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1846460) from [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1846460), cropped
 - Country [subdivision data](data/subdivisions.txt) courtesy of https://en.wikipedia.org/wiki/ISO_3166-2
+- [Currency data](data/currency.csv) courtesy of https://en.wikipedia.org/wiki/ISO_4217
 - Standard measures data courtesy of [Cooking weights and measures](https://en.wikipedia.org/wiki/Cooking_weights_and_measures) and [United States customary units](https://en.wikipedia.org/wiki/United_States_customary_units)
 - Recipe data courtesy of [Food.com - Recipes and Reviews](https://www.kaggle.com/datasets/irkaal/foodcom-recipes-and-reviews) by [Alvin](https://www.kaggle.com/irkaal)
 

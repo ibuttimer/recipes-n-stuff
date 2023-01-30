@@ -52,7 +52,7 @@ def namespaced_url(*args: str) -> str:
     :param args: elements of url
     :return: concatenated url string
     """
-    return ":".join(args)
+    return ":".join([arg for arg in args if arg])
 
 
 def app_template_path(app: str, *args: str) -> str:

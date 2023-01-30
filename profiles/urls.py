@@ -23,10 +23,8 @@
 
 from django.urls import path
 
-from recipesnstuff import PROFILES_APP_NAME
-
 from .constants import (
-    ADDRESSES_URL, ADDRESSES_ROUTE_NAME,
+    THIS_APP, ADDRESSES_URL, ADDRESSES_ROUTE_NAME,
     ADDRESS_NEW_URL, ADDRESS_NEW_ROUTE_NAME,
     ADDRESS_ID_URL, ADDRESS_ID_ROUTE_NAME,
     ADDRESSES_ID_DEFAULT_URL, ADDRESSES_ID_DEFAULT_ROUTE_NAME,
@@ -38,7 +36,7 @@ from .views import (
 )
 
 # https://docs.djangoproject.com/en/4.1/topics/http/urls/#url-namespaces-and-included-urlconfs
-app_name = PROFILES_APP_NAME
+app_name = THIS_APP
 
 urlpatterns = [
     path(ADDRESSES_URL, AddressList.as_view(), name=ADDRESSES_ROUTE_NAME),

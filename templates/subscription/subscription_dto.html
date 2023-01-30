@@ -1,0 +1,46 @@
+<!-- subscription_dto.html start -->
+{# --- template variable defines for includes --- #}
+{# subscription dto template expects: 'subscription_dto' as SubscriptionDto #}
+{#                                    'identifier' as individual identifier #}
+
+{% load i18n %}
+{% load static %}
+{% load attr_append %}
+{% load countries %}
+
+<div class="col-lg-6">
+    {% attr_append 'class="card rounded-3 mb-4"' 'card--new-subscription' subscription_dto.add_new as card_class %}
+    <div {{card_class | safe}}>
+        <div {% if subscription_dto.add_new %} id="id--subscription-new" {% else %} id="id--subscription-{{identifier}}" {% endif %} class="card-body">
+            {% if subscription_dto.add_new %}
+                <div class="row mb-3">
+                    <div class="col-12 text-center">
+                        <p>Add subscription</p>
+                        <p><i class="fa-solid fa-plus"></i></p>
+                    </div>
+                </div>
+            {% else %}
+                <div class="row mb-3">
+                    <div class="col-12 text-center">
+                        {% for field in subscription_dto.display_order %}
+                            {% if field %}
+                                <p class="mb-0">{{ field }}</p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="row mb-0">
+                    <div class="col-sm-9">
+                        <a class="a--sub-edit" href="{% url 'subscription:subscription_id' subscription_dto.id %}">{% trans "Edit" %}</a>&ensp;&ensp;&VerticalLine;&ensp;&ensp;<a class="a--sub-del" href="{% url 'subscription:subscription_id' subscription_dto.id %}">{% trans "Delete" %}</a>
+                    </div>
+                    {% if subscription_dto.is_active %}
+                    <div class="col-sm-3 text-end">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<!-- subscription_dto.html end -->

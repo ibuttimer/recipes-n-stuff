@@ -1,0 +1,1994 @@
+[
+{
+    "model": "profiles.countryinfo",
+    "pk": 1,
+    "fields": {
+        "country": "AD",
+        "subdivision": "Parish"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 2,
+    "fields": {
+        "country": "AE",
+        "subdivision": "Emirate"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 3,
+    "fields": {
+        "country": "AF",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 4,
+    "fields": {
+        "country": "AG",
+        "subdivision": "Parish"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 5,
+    "fields": {
+        "country": "AI",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 6,
+    "fields": {
+        "country": "AL",
+        "subdivision": "County"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 7,
+    "fields": {
+        "country": "AM",
+        "subdivision": "City/Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 8,
+    "fields": {
+        "country": "AO",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 9,
+    "fields": {
+        "country": "AQ",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 10,
+    "fields": {
+        "country": "AR",
+        "subdivision": "City/Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 11,
+    "fields": {
+        "country": "AS",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 12,
+    "fields": {
+        "country": "AT",
+        "subdivision": "State"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 13,
+    "fields": {
+        "country": "AU",
+        "subdivision": "State/Territory"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 14,
+    "fields": {
+        "country": "AW",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 15,
+    "fields": {
+        "country": "AX",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 16,
+    "fields": {
+        "country": "AZ",
+        "subdivision": "Municipality/Rayons"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 17,
+    "fields": {
+        "country": "BA",
+        "subdivision": "Entity"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 18,
+    "fields": {
+        "country": "BB",
+        "subdivision": "Parish"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 19,
+    "fields": {
+        "country": "BD",
+        "subdivision": "Division/District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 20,
+    "fields": {
+        "country": "BE",
+        "subdivision": "Region/Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 21,
+    "fields": {
+        "country": "BF",
+        "subdivision": "Region/Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 22,
+    "fields": {
+        "country": "BG",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 23,
+    "fields": {
+        "country": "BH",
+        "subdivision": "Governorate"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 24,
+    "fields": {
+        "country": "BI",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 25,
+    "fields": {
+        "country": "BJ",
+        "subdivision": "Department"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 26,
+    "fields": {
+        "country": "BL",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 27,
+    "fields": {
+        "country": "BM",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 28,
+    "fields": {
+        "country": "BN",
+        "subdivision": "District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 29,
+    "fields": {
+        "country": "BO",
+        "subdivision": "Department"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 30,
+    "fields": {
+        "country": "BQ",
+        "subdivision": "Municipality"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 31,
+    "fields": {
+        "country": "BR",
+        "subdivision": "District/State"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 32,
+    "fields": {
+        "country": "BS",
+        "subdivision": "District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 33,
+    "fields": {
+        "country": "BT",
+        "subdivision": "District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 34,
+    "fields": {
+        "country": "BV",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 35,
+    "fields": {
+        "country": "BW",
+        "subdivision": "District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 36,
+    "fields": {
+        "country": "BY",
+        "subdivision": "Oblast"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 37,
+    "fields": {
+        "country": "BZ",
+        "subdivision": "District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 38,
+    "fields": {
+        "country": "CA",
+        "subdivision": "Province/Territory"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 39,
+    "fields": {
+        "country": "CC",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 40,
+    "fields": {
+        "country": "CD",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 41,
+    "fields": {
+        "country": "CF",
+        "subdivision": "Prefecture"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 42,
+    "fields": {
+        "country": "CG",
+        "subdivision": "Department"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 43,
+    "fields": {
+        "country": "CH",
+        "subdivision": "Canton"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 44,
+    "fields": {
+        "country": "CI",
+        "subdivision": "District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 45,
+    "fields": {
+        "country": "CK",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 46,
+    "fields": {
+        "country": "CL",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 47,
+    "fields": {
+        "country": "CM",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 48,
+    "fields": {
+        "country": "CN",
+        "subdivision": "Municipality/Province/Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 49,
+    "fields": {
+        "country": "CO",
+        "subdivision": "Department"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 50,
+    "fields": {
+        "country": "CR",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 51,
+    "fields": {
+        "country": "CU",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 52,
+    "fields": {
+        "country": "CV",
+        "subdivision": "Region/Municipality"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 53,
+    "fields": {
+        "country": "CW",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 54,
+    "fields": {
+        "country": "CX",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 55,
+    "fields": {
+        "country": "CY",
+        "subdivision": "District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 56,
+    "fields": {
+        "country": "CZ",
+        "subdivision": "Region/District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 57,
+    "fields": {
+        "country": "DE",
+        "subdivision": "State"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 58,
+    "fields": {
+        "country": "DJ",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 59,
+    "fields": {
+        "country": "DK",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 60,
+    "fields": {
+        "country": "DM",
+        "subdivision": "Parish"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 61,
+    "fields": {
+        "country": "DO",
+        "subdivision": "Region/Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 62,
+    "fields": {
+        "country": "DZ",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 63,
+    "fields": {
+        "country": "EC",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 64,
+    "fields": {
+        "country": "EE",
+        "subdivision": "County/Municipality"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 65,
+    "fields": {
+        "country": "EG",
+        "subdivision": "Governorate"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 66,
+    "fields": {
+        "country": "EH",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 67,
+    "fields": {
+        "country": "ER",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 68,
+    "fields": {
+        "country": "ES",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 69,
+    "fields": {
+        "country": "ET",
+        "subdivision": "State"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 70,
+    "fields": {
+        "country": "FI",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 71,
+    "fields": {
+        "country": "FJ",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 72,
+    "fields": {
+        "country": "FK",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 73,
+    "fields": {
+        "country": "FM",
+        "subdivision": "State"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 74,
+    "fields": {
+        "country": "FO",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 75,
+    "fields": {
+        "country": "FR",
+        "subdivision": "Region/Department"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 76,
+    "fields": {
+        "country": "GA",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 77,
+    "fields": {
+        "country": "GB",
+        "subdivision": "County"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 78,
+    "fields": {
+        "country": "GD",
+        "subdivision": "Parish"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 79,
+    "fields": {
+        "country": "GE",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 80,
+    "fields": {
+        "country": "GF",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 81,
+    "fields": {
+        "country": "GG",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 82,
+    "fields": {
+        "country": "GH",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 83,
+    "fields": {
+        "country": "GI",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 84,
+    "fields": {
+        "country": "GL",
+        "subdivision": "Municipality"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 85,
+    "fields": {
+        "country": "GM",
+        "subdivision": "City/Division"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 86,
+    "fields": {
+        "country": "GN",
+        "subdivision": "Prefecture"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 87,
+    "fields": {
+        "country": "GP",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 88,
+    "fields": {
+        "country": "GQ",
+        "subdivision": "Region/Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 89,
+    "fields": {
+        "country": "GR",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 90,
+    "fields": {
+        "country": "GS",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 91,
+    "fields": {
+        "country": "GT",
+        "subdivision": "Department"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 92,
+    "fields": {
+        "country": "GU",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 93,
+    "fields": {
+        "country": "GW",
+        "subdivision": "Province/Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 94,
+    "fields": {
+        "country": "GY",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 95,
+    "fields": {
+        "country": "HK",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 96,
+    "fields": {
+        "country": "HM",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 97,
+    "fields": {
+        "country": "HN",
+        "subdivision": "Department"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 98,
+    "fields": {
+        "country": "HR",
+        "subdivision": "County"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 99,
+    "fields": {
+        "country": "HT",
+        "subdivision": "Department"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 100,
+    "fields": {
+        "country": "HU",
+        "subdivision": "County"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 101,
+    "fields": {
+        "country": "ID",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 102,
+    "fields": {
+        "country": "IE",
+        "subdivision": "County"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 103,
+    "fields": {
+        "country": "IL",
+        "subdivision": "District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 104,
+    "fields": {
+        "country": "IM",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 105,
+    "fields": {
+        "country": "IN",
+        "subdivision": "State"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 106,
+    "fields": {
+        "country": "IO",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 107,
+    "fields": {
+        "country": "IQ",
+        "subdivision": "Governorate"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 108,
+    "fields": {
+        "country": "IR",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 109,
+    "fields": {
+        "country": "IS",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 110,
+    "fields": {
+        "country": "IT",
+        "subdivision": "Region/Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 111,
+    "fields": {
+        "country": "JE",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 112,
+    "fields": {
+        "country": "JM",
+        "subdivision": "Parish"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 113,
+    "fields": {
+        "country": "JO",
+        "subdivision": "Governorate"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 114,
+    "fields": {
+        "country": "JP",
+        "subdivision": "Prefecture"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 115,
+    "fields": {
+        "country": "KE",
+        "subdivision": "County"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 116,
+    "fields": {
+        "country": "KG",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 117,
+    "fields": {
+        "country": "KH",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 118,
+    "fields": {
+        "country": "KI",
+        "subdivision": "Islands"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 119,
+    "fields": {
+        "country": "KM",
+        "subdivision": "Islands"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 120,
+    "fields": {
+        "country": "KN",
+        "subdivision": "State/Parish"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 121,
+    "fields": {
+        "country": "KP",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 122,
+    "fields": {
+        "country": "KR",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 123,
+    "fields": {
+        "country": "KW",
+        "subdivision": "Governorate"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 124,
+    "fields": {
+        "country": "KY",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 125,
+    "fields": {
+        "country": "KZ",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 126,
+    "fields": {
+        "country": "LA",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 127,
+    "fields": {
+        "country": "LB",
+        "subdivision": "Governorate"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 128,
+    "fields": {
+        "country": "LC",
+        "subdivision": "District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 129,
+    "fields": {
+        "country": "LI",
+        "subdivision": "Commune"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 130,
+    "fields": {
+        "country": "LK",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 131,
+    "fields": {
+        "country": "LR",
+        "subdivision": "County"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 132,
+    "fields": {
+        "country": "LS",
+        "subdivision": "District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 133,
+    "fields": {
+        "country": "LT",
+        "subdivision": "County"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 134,
+    "fields": {
+        "country": "LU",
+        "subdivision": "Canton"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 135,
+    "fields": {
+        "country": "LV",
+        "subdivision": "Municipality"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 136,
+    "fields": {
+        "country": "LY",
+        "subdivision": "Popularate"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 137,
+    "fields": {
+        "country": "MA",
+        "subdivision": "Region/Province/Prefecture"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 138,
+    "fields": {
+        "country": "MC",
+        "subdivision": "Quarters"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 139,
+    "fields": {
+        "country": "MD",
+        "subdivision": "District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 140,
+    "fields": {
+        "country": "ME",
+        "subdivision": "Municipality"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 141,
+    "fields": {
+        "country": "MF",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 142,
+    "fields": {
+        "country": "MG",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 143,
+    "fields": {
+        "country": "MH",
+        "subdivision": "Islands"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 144,
+    "fields": {
+        "country": "MK",
+        "subdivision": "Municipality"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 145,
+    "fields": {
+        "country": "ML",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 146,
+    "fields": {
+        "country": "MM",
+        "subdivision": "State"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 147,
+    "fields": {
+        "country": "MN",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 148,
+    "fields": {
+        "country": "MO",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 149,
+    "fields": {
+        "country": "MP",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 150,
+    "fields": {
+        "country": "MQ",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 151,
+    "fields": {
+        "country": "MR",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 152,
+    "fields": {
+        "country": "MS",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 153,
+    "fields": {
+        "country": "MT",
+        "subdivision": "Council"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 154,
+    "fields": {
+        "country": "MU",
+        "subdivision": "District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 155,
+    "fields": {
+        "country": "MV",
+        "subdivision": "Atoll"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 156,
+    "fields": {
+        "country": "MW",
+        "subdivision": "Region/District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 157,
+    "fields": {
+        "country": "MX",
+        "subdivision": "State"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 158,
+    "fields": {
+        "country": "MY",
+        "subdivision": "State"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 159,
+    "fields": {
+        "country": "MZ",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 160,
+    "fields": {
+        "country": "NA",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 161,
+    "fields": {
+        "country": "NC",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 162,
+    "fields": {
+        "country": "NE",
+        "subdivision": "Department"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 163,
+    "fields": {
+        "country": "NF",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 164,
+    "fields": {
+        "country": "NG",
+        "subdivision": "State"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 165,
+    "fields": {
+        "country": "NI",
+        "subdivision": "Department"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 166,
+    "fields": {
+        "country": "NL",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 167,
+    "fields": {
+        "country": "NO",
+        "subdivision": "County"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 168,
+    "fields": {
+        "country": "NP",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 169,
+    "fields": {
+        "country": "NR",
+        "subdivision": "District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 170,
+    "fields": {
+        "country": "NU",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 171,
+    "fields": {
+        "country": "NZ",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 172,
+    "fields": {
+        "country": "OM",
+        "subdivision": "Governorate"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 173,
+    "fields": {
+        "country": "PA",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 174,
+    "fields": {
+        "country": "PE",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 175,
+    "fields": {
+        "country": "PF",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 176,
+    "fields": {
+        "country": "PG",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 177,
+    "fields": {
+        "country": "PH",
+        "subdivision": "Region/Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 178,
+    "fields": {
+        "country": "PK",
+        "subdivision": "Province/Territory"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 179,
+    "fields": {
+        "country": "PL",
+        "subdivision": "Voivodship"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 180,
+    "fields": {
+        "country": "PM",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 181,
+    "fields": {
+        "country": "PN",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 182,
+    "fields": {
+        "country": "PR",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 183,
+    "fields": {
+        "country": "PS",
+        "subdivision": "Governorate"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 184,
+    "fields": {
+        "country": "PT",
+        "subdivision": "District/Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 185,
+    "fields": {
+        "country": "PW",
+        "subdivision": "State"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 186,
+    "fields": {
+        "country": "PY",
+        "subdivision": "Department"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 187,
+    "fields": {
+        "country": "QA",
+        "subdivision": "Municipality"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 188,
+    "fields": {
+        "country": "RE",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 189,
+    "fields": {
+        "country": "RO",
+        "subdivision": "Department"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 190,
+    "fields": {
+        "country": "RS",
+        "subdivision": "Province/District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 191,
+    "fields": {
+        "country": "RU",
+        "subdivision": "Republic"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 192,
+    "fields": {
+        "country": "RW",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 193,
+    "fields": {
+        "country": "SA",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 194,
+    "fields": {
+        "country": "SB",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 195,
+    "fields": {
+        "country": "SC",
+        "subdivision": "District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 196,
+    "fields": {
+        "country": "SD",
+        "subdivision": "State"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 197,
+    "fields": {
+        "country": "SE",
+        "subdivision": "County"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 198,
+    "fields": {
+        "country": "SG",
+        "subdivision": "District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 199,
+    "fields": {
+        "country": "SH",
+        "subdivision": "Entity"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 200,
+    "fields": {
+        "country": "SI",
+        "subdivision": "Municipality"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 201,
+    "fields": {
+        "country": "SJ",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 202,
+    "fields": {
+        "country": "SK",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 203,
+    "fields": {
+        "country": "SL",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 204,
+    "fields": {
+        "country": "SM",
+        "subdivision": "Municipality"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 205,
+    "fields": {
+        "country": "SN",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 206,
+    "fields": {
+        "country": "SO",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 207,
+    "fields": {
+        "country": "SR",
+        "subdivision": "District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 208,
+    "fields": {
+        "country": "SS",
+        "subdivision": "State"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 209,
+    "fields": {
+        "country": "ST",
+        "subdivision": "Region/District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 210,
+    "fields": {
+        "country": "SV",
+        "subdivision": "Department"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 211,
+    "fields": {
+        "country": "SX",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 212,
+    "fields": {
+        "country": "SY",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 213,
+    "fields": {
+        "country": "SZ",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 214,
+    "fields": {
+        "country": "TC",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 215,
+    "fields": {
+        "country": "TD",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 216,
+    "fields": {
+        "country": "TF",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 217,
+    "fields": {
+        "country": "TG",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 218,
+    "fields": {
+        "country": "TH",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 219,
+    "fields": {
+        "country": "TJ",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 220,
+    "fields": {
+        "country": "TK",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 221,
+    "fields": {
+        "country": "TL",
+        "subdivision": "Municipality"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 222,
+    "fields": {
+        "country": "TM",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 223,
+    "fields": {
+        "country": "TN",
+        "subdivision": "Governorate"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 224,
+    "fields": {
+        "country": "TO",
+        "subdivision": "Division"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 225,
+    "fields": {
+        "country": "TR",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 226,
+    "fields": {
+        "country": "TT",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 227,
+    "fields": {
+        "country": "TV",
+        "subdivision": "Council"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 228,
+    "fields": {
+        "country": "TW",
+        "subdivision": "County"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 229,
+    "fields": {
+        "country": "TZ",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 230,
+    "fields": {
+        "country": "UA",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 231,
+    "fields": {
+        "country": "UG",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 232,
+    "fields": {
+        "country": "UM",
+        "subdivision": "Island"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 233,
+    "fields": {
+        "country": "US",
+        "subdivision": "State"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 234,
+    "fields": {
+        "country": "UY",
+        "subdivision": "Department"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 235,
+    "fields": {
+        "country": "UZ",
+        "subdivision": "Region"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 236,
+    "fields": {
+        "country": "VA",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 237,
+    "fields": {
+        "country": "VC",
+        "subdivision": "Parish"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 238,
+    "fields": {
+        "country": "VE",
+        "subdivision": "State"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 239,
+    "fields": {
+        "country": "VG",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 240,
+    "fields": {
+        "country": "VI",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 241,
+    "fields": {
+        "country": "VN",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 242,
+    "fields": {
+        "country": "VU",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 243,
+    "fields": {
+        "country": "WF",
+        "subdivision": "Precincts"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 244,
+    "fields": {
+        "country": "WS",
+        "subdivision": "District"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 245,
+    "fields": {
+        "country": "YE",
+        "subdivision": "Governorate"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 246,
+    "fields": {
+        "country": "YT",
+        "subdivision": ""
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 247,
+    "fields": {
+        "country": "ZA",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 248,
+    "fields": {
+        "country": "ZM",
+        "subdivision": "Province"
+    }
+},
+{
+    "model": "profiles.countryinfo",
+    "pk": 249,
+    "fields": {
+        "country": "ZW",
+        "subdivision": "Province"
+    }
+}
+]

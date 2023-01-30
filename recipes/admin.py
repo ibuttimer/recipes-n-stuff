@@ -22,7 +22,7 @@
 
 from django.contrib import admin
 
-from .models import Category, Keyword, Measure
+from .models import Category, Keyword, Measure, Ingredient
 
 
 @admin.register(Category)
@@ -42,3 +42,13 @@ class MeasureAdmin(admin.ModelAdmin):
         Measure.NAME_FIELD,
         Measure.TYPE_FIELD,
     )
+
+
+@admin.register(Ingredient)
+class IngredientAdmin(admin.ModelAdmin):
+    """ Class representing the Ingredient model in the admin interface """
+    list_display = (
+        Ingredient.NAME_FIELD,
+        Ingredient.MEASURE_FIELD,
+    )
+    ordering = (Ingredient.NAME_FIELD,)

@@ -40,8 +40,9 @@ from django.contrib.messages import constants as messages
 
 from .constants import (
     BASE_APP_NAME, MIN_PASSWORD_LEN, USER_APP_NAME, PROFILES_APP_NAME,
-    RECIPES_APP_NAME,
-    LOGIN_URL as USER_LOGIN_URL, LOGIN_ROUTE_NAME, HOME_ROUTE_NAME
+    RECIPES_APP_NAME, SUBSCRIPTION_APP_NAME, CHECKOUT_APP_NAME,
+    LOGIN_URL as USER_LOGIN_URL, LOGIN_ROUTE_NAME, HOME_ROUTE_NAME,
+    LANDING_ROUTE_NAME
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -161,6 +162,8 @@ INSTALLED_APPS = [
     USER_APP_NAME,
     PROFILES_APP_NAME,
     RECIPES_APP_NAME,
+    SUBSCRIPTION_APP_NAME,
+    CHECKOUT_APP_NAME,
 
     # needs to be after app with django template overrides
     'django.forms',
@@ -182,6 +185,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    f'{SUBSCRIPTION_APP_NAME}.middleware.SubscriptionMiddleware',
 ]
 
 # https://docs.djangoproject.com/en/4.1/ref/settings/#root-urlconf
@@ -297,9 +301,9 @@ AUTH_PASSWORD_VALIDATORS = [{
 # https://docs.djangoproject.com/en/4.1/ref/settings/#login-url
 LOGIN_URL = USER_LOGIN_URL
 # https://docs.djangoproject.com/en/4.1/ref/settings/#login-redirect-url
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = HOME_ROUTE_NAME
 # https://docs.djangoproject.com/en/4.1/ref/settings/#logout-redirect-url
-LOGOUT_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = LANDING_ROUTE_NAME
 
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
@@ -427,3 +431,10 @@ LOGGING = {
 # Google site verification
 # https://support.google.com/webmasters/answer/9008080#meta_tag_verification&zippy=%2Chtml-tag
 GOOGLE_SITE_VERIFICATION = env('GOOGLE_SITE_VERIFICATION', default='')
+
+# Stripe configuration
+STRIPE_PUBLISHABLE_KEY = env('STRIPE_PUBLISHABLE_KEY', default='')
+STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='')
+
+# ISO 4217 code of the default currency
+DEFAULT_CURRENCY = 'eur'

@@ -1,0 +1,29 @@
+<!-- form_ok_cancel.html start -->
+{# --- form_ok_cancel.html template variable defines for includes --- #}
+{# form ok cancel template expects: 'cancel_url' as url for cancel action #}
+{#                                  'cancel_text' as text for cancel button #}
+{#                                  'submit_text' as text for submit button #}
+{#                                  'identifier' as form identifier #}
+{#                                  'index' as form index #}
+{#                                  'large' as large button flag #}
+
+{% load i18n form_submit_btn_id form_cancel_btn_id %}
+
+<div class="row mb-3">
+    <div class="col-lg-5 offset-lg-2 col-sm-6 mt-2">
+        <a id="{% form_cancel_btn_id identifier index %}"
+           {% if large %} class="btn btn-secondary btn__dbl-text-lg" {% else %} class="btn btn-secondary btn__text" {% endif %}
+           href="{{ cancel_url }}">
+            {% if cancel_text %}{{ cancel_text }}{% else %}{% trans "Cancel" %}{% endif %}
+        </a>
+    </div>
+    <div class="col-lg-3 col-sm-6 mt-2">
+        <button id="{% form_submit_btn_id identifier index %}"
+                {% if large %} class="btn btn-primary primaryAction btn__dbl-text-lg" {% else %} class="btn btn-primary primaryAction btn__text" {% endif %}
+                type="submit">
+            {% if submit_text %}{{ submit_text }}{% else %}{% trans "Submit" %}{% endif %}
+        </button>
+    </div>
+</div>
+
+<!-- form_ok_cancel.html end -->

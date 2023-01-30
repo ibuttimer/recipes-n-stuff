@@ -104,15 +104,16 @@ def permission_check(
     :raises PermissionDenied if user does not have permission and `raise_ex`
         is True
     """
-    has_perm = False
-    for chk_perm in ensure_list(perm_op):
-        has_perm = request.user.has_perm(
-            permission_name(model, chk_perm, app_label=app_label))
-        if not has_perm:
-            break
+    has_perm = request.user.is_superuser
+    if not has_perm:
+        for chk_perm in ensure_list(perm_op):
+            has_perm = request.user.has_perm(
+                permission_name(model, chk_perm, app_label=app_label))
+            if not has_perm:
+                break
 
-    if not has_perm and raise_ex:
-        raise PermissionDenied("Insufficient permissions")
+        if not has_perm and raise_ex:
+            raise PermissionDenied("Insufficient permissions")
     return has_perm
 
 

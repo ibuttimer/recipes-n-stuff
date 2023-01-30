@@ -21,41 +21,8 @@
 #  DEALINGS IN THE SOFTWARE.
 from dataclasses import dataclass
 
-from django.db.models import Model
-
+from base.dto import BaseDto
 from profiles.models import Address
-
-
-@dataclass
-class BaseDto:
-    """ Base data transfer object """
-
-    add_new: bool = False
-    """ Add new placeholder flag"""
-
-    @staticmethod
-    def from_model_to_obj(model: Model, instance):
-        """
-        Generate a DTO from the specified `model`
-        :param model: model class
-        :param instance: DTO instance to populate
-        :return: updated instance
-        """
-        for key in list(model.__dict__.keys()):
-            if key.startswith('_'):
-                continue
-            setattr(instance, key, getattr(model, key))
-        return instance
-
-    @staticmethod
-    def to_add_new_obj(instance):
-        """
-        Generate add new placeholder a DTO from the specified `instance`
-        :param instance: DTO instance to update
-        :return: updated instance
-        """
-        instance.add_new = True
-        return instance
 
 
 @dataclass

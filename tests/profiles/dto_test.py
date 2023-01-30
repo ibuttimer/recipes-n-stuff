@@ -29,6 +29,7 @@ from profiles.constants import (
     COUNTRY_FIELD, STREET_FIELD, STREET2_FIELD, CITY_FIELD, STATE_FIELD,
     POSTCODE_FIELD, IS_DEFAULT_FIELD
 )
+from recipesnstuff import PROFILES_APP_NAME
 
 # excluding country order
 EX_COUNTRY_ORDER = [
@@ -55,7 +56,7 @@ class TestAddressDto(unittest.TestCase):
 
     def setUp(self):
         """ Setup test """
-        self.address = mixer.blend('profiles.Address')
+        self.address = mixer.blend(f'{PROFILES_APP_NAME}.Address')
         self.dto = AddressDto.from_model(self.address)
 
     def test_display_order_ex_country(self):

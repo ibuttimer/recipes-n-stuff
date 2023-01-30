@@ -195,6 +195,9 @@ cloudinary_python.txt
 # size exceed github max
 /data/recipes.parquet
 
+#
+/data/*.pickle
+
 # temp
 /doc/test/django_report/
 /doc/test/unittest_report/
@@ -214,3 +217,5 @@ cloudinary_python.txt
 /static/fontawesome/css/v4-shims.min.css
 /static/fontawesome/css/v5-font-face.css
 /static/fontawesome/css/v5-font-face.min.css
+
+/data/recipesx/

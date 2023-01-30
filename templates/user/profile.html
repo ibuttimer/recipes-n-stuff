@@ -7,11 +7,13 @@
 {% block head_title %}SoapBox - Profile{% endblock %}
 
 {% block extra_css %}
+    {{ block.super }}
     <!-- include summernote css - use bootstrap4 to match settings.SUMMERNOTE_THEME -->
     <link href="{% static 'summernote/summernote-bs4.min.css' %}" rel="stylesheet" type="text/css">
 {% endblock extra_css %}
 
 {% block extra_js_head %}
+    {{ block.super }}
     {% include "snippet/jquery.html" %}
 {% endblock extra_js_head %}
 
@@ -120,6 +122,7 @@
 {% endblock content %}
 
 {% block extra_js_body %}
+    {{ block.super }}
     <!-- include summernote js - use bootstrap4 to match settings.SUMMERNOTE_THEME -->
     <script src="{% static 'summernote/summernote-bs4.min.js' %}"></script>
     <!-- lazy loading summernote need to call initSummernote -->

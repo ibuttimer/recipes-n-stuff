@@ -35,11 +35,10 @@ from base import (
     InfoModalLevel, InfoModalTemplate, level_info_modal_payload,
 )
 from profiles.constants import (
-    ADDRESS_FORM_CTX, ADDRESS_ID_ROUTE_NAME, ADDRESSES_ROUTE_NAME, COUNT_CTX
+    ADDRESS_FORM_CTX, ADDRESS_ID_ROUTE_NAME, COUNT_CTX, THIS_APP
 )
 from profiles.forms import AddressForm
 from profiles.models import Address
-from recipesnstuff.constants import PROFILES_APP_NAME
 from utils import (
     Crud, SUBMIT_URL_CTX, app_template_path, reverse_q,
     namespaced_url, redirect_on_success_or_render,
@@ -50,7 +49,8 @@ from .address_create import (
     for_address_form_render, manage_default, get_user_addresses_url
 )
 from .address_queries import addresses_query, DEFAULT_ADDRESS_QUERY
-from .utils import address_permission_check, raise_permission_denied
+from .utils import address_permission_check
+from base.utils import raise_permission_denied
 
 TITLE_UPDATE = 'Update Address'
 
@@ -169,7 +169,7 @@ class AddressDetail(LoginRequiredMixin, View):
                 InfoModalLevel.WARN,
                 InfoModalTemplate(
                     app_template_path(
-                        PROFILES_APP_NAME, "snippet",
+                        THIS_APP, "snippet",
                         "default_address_undeletable.html"),
                     context={
                         COUNT_CTX: addresses_query(request.user).count(),
@@ -184,7 +184,7 @@ class AddressDetail(LoginRequiredMixin, View):
                 "#id--address-deleted-modal-body",
                 render_to_string(
                     app_template_path(
-                        PROFILES_APP_NAME, "snippet", "address_delete.html"),
+                        THIS_APP, "snippet", "address_delete.html"),
                     context={
                         STATUS_CTX: count > 0
                     },
@@ -202,8 +202,7 @@ class AddressDetail(LoginRequiredMixin, View):
         :return: url
         """
         return reverse_q(
-            namespaced_url(PROFILES_APP_NAME, ADDRESS_ID_ROUTE_NAME),
-            args=[pk]
+            namespaced_url(THIS_APP, ADDRESS_ID_ROUTE_NAME), args=[pk]
         )
 
 

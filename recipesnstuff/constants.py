@@ -30,6 +30,8 @@ BASE_APP_NAME = "base"
 USER_APP_NAME = "user"
 PROFILES_APP_NAME = "profiles"
 RECIPES_APP_NAME = "recipes"
+SUBSCRIPTION_APP_NAME = "subscription"
+CHECKOUT_APP_NAME = "checkout"
 
 # Base routes related
 HOME_URL = "/"
@@ -68,6 +70,12 @@ USERS_URL = append_slash("users")
 
 # Profiles routes related
 PROFILES_URL = append_slash("profiles")
+
+# Subscriptions routes related
+SUBSCRIPTIONS_URL = append_slash("subscriptions")
+
+# Checkout routes related
+CHECKOUT_URL = append_slash("checkout")
 
 # context related
 HOME_MENU_CTX = "home_menu"

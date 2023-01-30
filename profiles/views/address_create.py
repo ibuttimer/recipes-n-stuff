@@ -26,7 +26,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.views import View
 
-from recipesnstuff.constants import PROFILES_APP_NAME
+from base.constants import SUBMIT_BTN_TEXT
 from utils import (
     Crud, READ_ONLY_CTX, SUBMIT_URL_CTX, app_template_path, reverse_q,
     namespaced_url, TITLE_CTX, redirect_on_success_or_render,
@@ -34,7 +34,7 @@ from utils import (
 )
 
 from profiles.constants import (
-    ADDRESS_FORM_CTX, ADDRESS_NEW_ROUTE_NAME, ADDRESSES_ROUTE_NAME
+    THIS_APP, ADDRESS_FORM_CTX, ADDRESS_NEW_ROUTE_NAME, ADDRESSES_ROUTE_NAME
 )
 from profiles.forms import AddressForm
 from profiles.models import Address
@@ -115,16 +115,8 @@ class AddressCreate(LoginRequiredMixin, View):
         :return: url
         """
         return reverse_q(
-            namespaced_url(PROFILES_APP_NAME, ADDRESS_NEW_ROUTE_NAME)
+            namespaced_url(THIS_APP, ADDRESS_NEW_ROUTE_NAME)
         )
-
-
-SUBMIT_BTN_TEXT = {
-    Crud.CREATE: 'Save',
-    Crud.UPDATE: 'Update',
-    Crud.DELETE: 'Delete',
-    Crud.READ: 'Close',
-}
 
 
 def for_address_form_render(
@@ -149,7 +141,7 @@ def for_address_form_render(
         context[ADDRESS_FORM_CTX] = context_form
         context[SUBMIT_URL_CTX] = kwargs.get(SUBMIT_URL_CTX, None)
 
-    return app_template_path(PROFILES_APP_NAME, "address_form.html"), context
+    return app_template_path(THIS_APP, "address_form.html"), context
 
 
 def manage_default(
@@ -203,7 +195,6 @@ def get_user_addresses_url(
         query_kwargs = {}
     query_kwargs[USER_QUERY] = request.user.username
     return reverse_q(
-        namespaced_url(
-            PROFILES_APP_NAME, ADDRESSES_ROUTE_NAME),
+        namespaced_url(THIS_APP, ADDRESSES_ROUTE_NAME),
         query_kwargs=query_kwargs
     )

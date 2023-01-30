@@ -297,10 +297,8 @@ class ContentListMixin(generic.ListView):
             # https://docs.djangoproject.com/en/4.1/ref/models/querysets/#django.db.models.query.QuerySet.order_by
             def insensitive_order(order: str):
                 """ Make text orderings case-insensitive """
-                non_text = self.model.is_date_lookup(order) or \
-                    self.model.is_id_lookup(order)
                 return \
-                    order if non_text else \
+                    order if self.model.is_non_text_lookup(order) else \
                     Lower(order[1:]).desc() \
                     if order.startswith(DESC_LOOKUP) else Lower(order)
             ordering = tuple(

@@ -84,13 +84,27 @@ class ModelMixin:
         return []
 
     @classmethod
+    def numeric_fields(cls) -> list[str]:
+        """ Get the list of numeric fields """
+        return []
+
+    @classmethod
     def is_date_field(cls, field: str):
         """
-        Check if the specified `field` is a date field
+        Check if the specified `field` is a date
         :param field: field
-        :return: True if `field` contains a date field
+        :return: True if `field` is a date field
         """
         return field in cls.date_fields()
+
+    @classmethod
+    def is_numeric_field(cls, field: str):
+        """
+        Check if the specified `field` is numeric
+        :param field: field
+        :return: True if `field` is a numeric field
+        """
+        return field in cls.numeric_fields()
 
     @classmethod
     def is_date_lookup(cls, lookup: str):
@@ -104,6 +118,17 @@ class ModelMixin:
         )
 
     @classmethod
+    def is_numeric_lookup(cls, lookup: str):
+        """
+        Check if the specified `lookup` represents a numeric Lookup
+        :param lookup: lookup string
+        :return: True if lookup is a numeric Lookup
+        """
+        return any(
+            map(lambda fld: fld in lookup, cls.numeric_fields())
+        )
+
+    @classmethod
     def is_id_lookup(cls, lookup: str):
         """
         Check if the specified `lookup` represents an id Lookup
@@ -113,6 +138,28 @@ class ModelMixin:
         lookup = lookup.lower()
         return lookup == cls.id_field() or \
             lookup == f'{DESC_LOOKUP}{cls.id_field()}'
+
+    @classmethod
+    def is_non_text_lookup(cls, lookup: str):
+        """
+        Check if the specified `lookup` represents a non-text Lookup
+        :param lookup: lookup string
+        :return: True if lookup is not a text lookup
+        """
+        return cls.is_date_lookup(lookup) or \
+            cls.is_numeric_lookup(lookup) or cls.is_id_lookup(lookup)
+
+    @classmethod
+    def date_lookup(cls, field: str, oldest_first: bool = True) -> str:
+        """
+        Make a date lookup
+        :param field: name of date field
+        :param oldest_first: oldest first flag; default True
+        :return: lookup string
+        """
+        return \
+            f'{DATE_OLDEST_LOOKUP if oldest_first else DATE_NEWEST_LOOKUP}' \
+            f'{field}'
 
     def get_field(self, field: str, raise_ex: bool = True) -> Any:
         """

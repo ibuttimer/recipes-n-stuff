@@ -6,7 +6,8 @@
 {% block head_title %}{% trans "E-mail Addresses" %}{% endblock %}
 
 {% block extra_css %}
-<link href="{% static 'fontawesome/css/regular.min.css' %}" rel="stylesheet" type="text/css">
+    {{ block.super }}
+    <link href="{% static 'fontawesome/css/regular.min.css' %}" rel="stylesheet" type="text/css">
 {% endblock extra_css %}
 
 {% block content %}

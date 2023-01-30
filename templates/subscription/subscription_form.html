@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+<!-- subscription_form.html start -->
+{# --- template variable defines for includes --- #}
+{# address form template expects: 'subscription_form' as SubscriptionForm #}
+{#                                'submit_url' as url to submit new/updated subscription #}
+
+{% load i18n %}
+{% load static %}
+
+{% block head_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <link href="{% static 'css/styles-subscription.css' %}" rel="stylesheet" type="text/css">
+{% endblock extra_css %}
+
+{% block extra_js_head %}
+    {{ block.super }}
+    {% include "snippet/jquery.html" %}
+{% endblock extra_js_head %}
+
+{% block content %}
+<div class="row mt-2 mb-2">
+    {% if page_heading %}
+    <div class="col-12 text-center">
+        <h3>{{ page_heading | safe }}</h3>
+    </div>
+    {% endif %}
+</div>
+
+<article id="article-content" class="row d-flex justify-content-center">
+    <row class="col-lg-10 col-md-11 col-sm-12">
+        <form {% if not read_only %} method="post" action="{{ submit_url }}" enctype="multipart/x-www-form-urlencoded" {% endif %}>
+            {% if not read_only %}
+                {% csrf_token %}
+            {% endif %}
+
+            <div id="id--subscription-form-errors-container">
+                {% with form=subscription_form %}
+                    {% include "snippet/form_errors.html" %}
+                {% endwith %}
+            </div>
+
+            <fieldset {% if read_only %} disabled {% endif %}>
+                {% for field in subscription_form %}
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-start">
+                        <label for="id_{{ field.name }}" class="col-form-label">{{ field.label }}</label>
+                    </div>
+                    <div class="col-sm-8">
+                        {{ field }}
+                    </div>
+                </div>
+                {% endfor %}
+            </fieldset>
+
+            {# --- form_ok_cancel.html template variable defines for includes --- #}
+            {# form ok cancel template expects: 'cancel_url' as url for cancel action #}
+            {#                                  'cancel_text' as text for cancel button #}
+            {#                                  'submit_text' as text for submit button #}
+            {#                                  'identifier' as form identifier #}
+            {#                                  'index' as form index #}
+            {#                                  'large' as large button flag #}
+            {% url 'subscription:subscriptions' as cancel_url %}
+            {% with identifier='subscription' submit_text=submit_btn_text %}
+                {% include 'snippet/form_ok_cancel.html' %}
+            {% endwith %}
+        </form>
+    </row>
+</article>
+
+{% endblock content %}
+
+<!-- subscription_form.html end -->
