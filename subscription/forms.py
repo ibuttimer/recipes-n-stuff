@@ -27,20 +27,46 @@ from django.utils.translation import gettext_lazy as _
 
 from django import forms
 
-import ccy
-
+from checkout.currency import get_currencies
+from recipesnstuff.settings import DEFAULT_CURRENCY
 from utils import FormMixin
 from .models import Subscription, FrequencyType
 
 
-def get_currency_choices() -> List[Tuple]:
+# https://en.wikipedia.org/wiki/G10_currencies
+G10_CURRENCIES = sorted([
+    'AUD', 'CAD', 'EUR', 'JPY', 'NZD', 'NOK', 'GBP', 'SEK', 'CHF', 'USD'
+])
+
+
+def get_currency_choices() -> Tuple[Tuple[str, str]]:
     """
     Get list of currency choices
     :return:
     """
-    return tuple([
-        (code, ccy.currency(code).name) for code in list(ccy.all())
+    currencies = get_currencies()
+    default = DEFAULT_CURRENCY.upper()
+
+    def choice(code: str) -> tuple:
+        code = code.upper()
+        return currencies[code].code, currencies[code].name
+
+    # add default currency
+    choices = [
+        choice(default)
+    ]
+    # add g10 currencies
+    choices.extend([
+        choice(code) for code in G10_CURRENCIES if code != default
     ])
+    # add remaining currencies
+    non_g10 = sorted([
+        code for code in currencies.keys() if code not in G10_CURRENCIES
+    ])
+    choices.extend([
+        choice(code) for code in non_g10 if code != default
+    ])
+    return tuple(choices)
 
 
 class SubscriptionForm(FormMixin, forms.ModelForm):

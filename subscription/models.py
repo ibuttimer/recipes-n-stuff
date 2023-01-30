@@ -29,7 +29,6 @@ from datetime import datetime, MINYEAR, timezone, timedelta
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-import ccy
 from dateutil.relativedelta import *
 
 from recipesnstuff.settings import DEFAULT_CURRENCY
@@ -226,7 +225,7 @@ class SubscriptionFeature(ModelMixin, models.Model):
     base_currency = models.CharField(
         _('base currency'),
         max_length=FEATURE_ATTRIB_CURRENCY_CODE_MAX_LEN, blank=False,
-        default=ccy.currency(DEFAULT_CURRENCY).code)
+        default=DEFAULT_CURRENCY.upper())
 
     count = models.IntegerField(_('count'), default=0)
 
@@ -318,7 +317,7 @@ class Subscription(ModelMixin, models.Model):
     base_currency = models.CharField(
         _('base currency'),
         max_length=SUBSCRIPTION_ATTRIB_CURRENCY_CODE_MAX_LEN, blank=False,
-        default=ccy.currency(DEFAULT_CURRENCY).code)
+        default=DEFAULT_CURRENCY.upper())
 
     description = models.CharField(
         _('description'), max_length=SUBSCRIPTION_ATTRIB_DESCRIPTION_MAX_LEN,

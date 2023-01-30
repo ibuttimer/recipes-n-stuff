@@ -310,17 +310,49 @@ From the project root folder run the following
 
 ##### Measures table
 ```bash
-# E.g. populated the remote database 
+# E.g. populate the remote database 
 python -m manage loaddata measure.json --database remote
 ```
+<details>
+<summary><em>Dump data:</em></summary>
+
+```bash
+python -m manage dumpdata recipes.Measure --indent 4 -o data/fixtures/measure.json
+```
+</details>
+
+##### Currencies table
+```bash
+# populate the remote database via loaddata 
+python -m manage loaddata currencies.json --database remote
+# or alternatively via run_populate.py
+python run_populate.py -cc -f data -dv REMOTE_DATABASE_URL
+```
+<details>
+<summary><em>Dump data:</em></summary>
+
+The data dump needs to be performed in [UTF8 mode](https://docs.python.org/3/using/cmdline.html#cmdoption-X) to
+preserve character encodings: 
+```bash
+python -Xutf8 -m manage dumpdata checkout.Currency --indent 4 -o data/fixtures/currencies.json
+```
+</details>
+
 ##### Countryinfo table
 ```bash
-# Help listing
-python run_populate.py -h
-
-# E.g. populated the remote database 
+# populate the remote database via loaddata 
+python -m manage loaddata countryinfo.json --database remote
+# or alternatively via run_populate.py
 python run_populate.py -c -f data -dv REMOTE_DATABASE_URL
 ```
+<details>
+<summary><em>Dump data:</em></summary>
+
+```bash
+python -m manage dumpdata profiles.CountryInfo --indent 4 -o data/fixtures/countryinfo.json
+```
+</details>
+
 ##### Recipe tables
 > **Note:** Due to the large size of the dataset, this operation takes a long time to complete.
 
@@ -569,6 +601,7 @@ The following resources were used to build the website.
 - [Barbeque skewers image](static/img/meat-skewer-1440105_1920.jpg) by [-Rita-👩‍🍳 und 📷 mit ❤](https://pixabay.com/users/ritae-19628/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1440105) from [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1440105)
 - [Baked goods image](static/img/baked-goods-1846460_1920.jpg) by [Pexels](https://pixabay.com/users/pexels-2286921/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1846460) from [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1846460), cropped
 - Country [subdivision data](data/subdivisions.txt) courtesy of https://en.wikipedia.org/wiki/ISO_3166-2
+- [Currency data](data/currency.csv) courtesy of https://en.wikipedia.org/wiki/ISO_4217
 - Standard measures data courtesy of [Cooking weights and measures](https://en.wikipedia.org/wiki/Cooking_weights_and_measures) and [United States customary units](https://en.wikipedia.org/wiki/United_States_customary_units)
 - Recipe data courtesy of [Food.com - Recipes and Reviews](https://www.kaggle.com/datasets/irkaal/foodcom-recipes-and-reviews) by [Alvin](https://www.kaggle.com/irkaal)
 

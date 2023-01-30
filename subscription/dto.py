@@ -73,9 +73,7 @@ class SubscriptionDto(BaseDto):
         amt = SubscriptionForm.quantise_amount(
             getattr(self, Subscription.AMOUNT_FIELD))
         code = getattr(self, Subscription.BASE_CURRENCY_FIELD)
-        freq_type = FrequencyType.from_choice(
-            getattr(self, Subscription.FREQUENCY_TYPE_FIELD)
-        )
+        freq_type = getattr(self, Subscription.FREQUENCY_TYPE_FIELD)
         freq = getattr(self, Subscription.FREQUENCY_FIELD)
         assert freq_type is not None
         order.append(f'{amt} {code} per {freq} {freq_type.value.name}')

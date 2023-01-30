@@ -41,8 +41,7 @@ import pyarrow.compute as pc
 
 from recipesnstuff import settings as app_settings
 from data.recipes import load_recipe
-from data.data_utils import insert_content, get_content_id
-
+from data.data_utils import insert_content, get_content_id, Progress
 
 # project folder
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -66,6 +65,29 @@ COUNTRYINFO_NUM_COLS = 3
 MULTI_SUBDIV_SEP = '/'
 # char used to indicate no subdivisions
 NO_SUBDIV = '-'
+
+
+CURRENCY_TABLE = 'checkout_currency'
+CURRENCY_CODE_COL = 'code'              # currency code column
+CURRENCY_NUMERIC_COL = 'numeric_code'   # currency numeric code column
+CURRENCY_DIGITS_COL = 'digits'          # currency num of digits column
+CURRENCY_NAME_COL = 'name'              # currency name column
+CURRENCY_FIELDS = [
+    CURRENCY_CODE_COL, CURRENCY_NUMERIC_COL, CURRENCY_DIGITS_COL,
+    CURRENCY_NAME_COL
+]
+
+# currency csv
+CURRENCY_CSV = 'currency.csv'
+STRIPE_SUPPORT_TXT = 'stripe_support.txt'
+# currency csv columns
+CURRENCY_CODE = 0
+CURRENCY_NUMERIC_CODE = 1
+CURRENCY_DIGITS = 2
+CURRENCY_NAME = 3
+CURRENCY_NUM_COLS = 4
+# char used to indicate not supported by Amex
+NO_AMEX = '*'
 
 
 DEFAULT_HOST = 'http://127.0.0.1:8000/'
@@ -95,6 +117,9 @@ def parse_args():
                         default=False)
     parser.add_argument('-c', '--country', action='store_true',
                         help='Load country data',
+                        default=False)
+    parser.add_argument('-cc', '--currency', action='store_true',
+                        help='Load currency data',
                         default=False)
     parser.add_argument('-r', '--recipe', action='store_true',
                         help='Load recipe data',
@@ -170,13 +195,20 @@ def process():
             # load country
             if args.all or args.country:
                 load_country(args, curs)
+            # load currency
+            if args.all or args.currency:
+                load_currency(args, curs)
             # load recipes
             if args.all or args.recipe:
                 load_recipe(args, curs)
 
 
 def load_country(args: argparse.Namespace, curs):
-    # load country info
+    """
+    Load country data
+    :param args: program arguments
+    :param curs: cursor
+    """
     folder = Path(args.data_folder).resolve()
     filepath = os.path.join(folder, COUNTRYINFO_TSV)
 
@@ -184,9 +216,9 @@ def load_country(args: argparse.Namespace, curs):
         existing = 0
         added = 0
         # use | as quote char to avoid messing with " inside quotes
-        opinion_reader = csv.reader(
+        country_reader = csv.reader(
             csvfile, delimiter='\t', quotechar='|')
-        for row in opinion_reader:
+        for row in country_reader:
             if not row or row[0].startswith('#'):
                 # skip comments and empty lines
                 continue
@@ -217,7 +249,12 @@ def load_country(args: argparse.Namespace, curs):
 
 
 def save_countryinfo(curs, country: str, subdivision: str) -> int:
-
+    """
+    Save country info
+    :param curs: cursor
+    :param country: country code
+    :param subdivision: subdivision name
+    """
     values = (
         country,        # country code
         subdivision if subdivision != NO_SUBDIV else '',    # subdivision
@@ -229,6 +266,73 @@ def save_countryinfo(curs, country: str, subdivision: str) -> int:
     result = insert_content(curs, fields, values, COUNTRYINFO_TABLE)
 
     return result
+
+
+def load_currency(args: argparse.Namespace, curs):
+    """
+    Load currency data
+    :param args: program arguments
+    :param curs: cursor
+    """
+    folder = Path(args.data_folder).resolve()
+    currency_path = os.path.join(folder, CURRENCY_CSV)
+    stripe_path = os.path.join(folder, STRIPE_SUPPORT_TXT)
+
+    progress = Progress('Currency', args.progress, CURRENCY_TABLE)
+    progress.start()
+
+    # load stripe supported list
+    currency_set = set()
+    with open(stripe_path, encoding='utf-8') as stripe_file:
+        for row in stripe_file:
+            row = row.strip()
+            if row.startswith('#'):
+                # skip comments and empty lines
+                continue
+
+            code = row[:-1] if row.endswith(NO_AMEX) else row
+            currency_set.add(code.upper())
+
+    # load currency list
+    with open(currency_path, encoding='utf-8') as csvfile:
+        existing = 0
+        added = 0
+        # use | as quote char to avoid messing with " inside quotes
+        currency_reader = csv.reader(
+            csvfile, delimiter=',', quotechar='|')
+        for row in currency_reader:
+            if not row or row[0].startswith('#'):
+                # skip comments and empty lines
+                continue
+            if len(row) != CURRENCY_NUM_COLS:
+                raise ValueError(f'Unexpected length: {row}')
+
+            row[CURRENCY_CODE] = row[CURRENCY_CODE].upper()
+            if row[COUNTRYINFO_CODE] not in currency_set:
+                # skip unsupported currencies
+                continue
+            for idx in [CURRENCY_NUMERIC_CODE, CURRENCY_DIGITS]:
+                row[idx] = int(row[idx])
+
+            content = get_content_id(
+                curs, CURRENCY_TABLE, CURRENCY_NAME_COL,
+                row[CURRENCY_NAME])
+            if content:
+                existing += 1
+            else:
+                values = tuple([
+                    row[idx] for idx in range(CURRENCY_NUM_COLS)
+                ])
+
+                new_id = insert_content(
+                    curs, CURRENCY_FIELDS, values, CURRENCY_TABLE, unique=True
+                )
+                added += 1
+
+                progress.inc(new_id)
+
+
+    progress.end()
 
 
 if __name__ == "__main__":

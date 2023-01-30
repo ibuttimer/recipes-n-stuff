@@ -27,6 +27,13 @@ from utils import append_slash
 # name of this app
 THIS_APP = Path(__file__).resolve().parent.name
 
+# models related
+CURRENCY_CODE_MAX_LEN: int = 3
+CURRENCY_CODE_FIELD = 'code'
+NUMERIC_CODE_FIELD = 'numeric_code'
+DIGITS_CODE_FIELD = 'digits'
+NAME_FIELD = 'name'
+
 # urls/routes related
 CHECKOUT_PAY_URL = append_slash("pay")
 CHECKOUT_CREATE_PAYMENT_URL = append_slash("payment-intent")
