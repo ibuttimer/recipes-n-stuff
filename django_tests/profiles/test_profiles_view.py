@@ -28,19 +28,18 @@ from urllib.parse import urlencode
 from bs4 import BeautifulSoup, Tag
 from django.http import HttpResponse
 
-from profiles.dto import AddressDto
-from profiles.forms import AddressForm
-from user.models import User
-from .base_profiles_test_cls import BaseProfilesTest
-from recipesnstuff import PROFILES_APP_NAME
+from django_tests.soup_mixin import SoupMixin
 from profiles.constants import (
     ADDRESSES_ROUTE_NAME, ADDRESS_ID_ROUTE_NAME,
     ADDRESSES_ID_DEFAULT_ROUTE_NAME, ADDRESS_NEW_ROUTE_NAME
 )
-from utils import reverse_q, namespaced_url, USER_QUERY, Crud
+from profiles.dto import AddressDto
+from profiles.forms import AddressForm
 from profiles.models import Address
-from django_tests.soup_mixin import SoupMixin
-
+from recipesnstuff import PROFILES_APP_NAME
+from user.models import User
+from utils import reverse_q, namespaced_url, USER_QUERY, Crud
+from .base_profiles_test_cls import BaseProfilesTest
 
 ADDRESS_LIST_TEMPLATE = f'{PROFILES_APP_NAME}/address_list.html'
 ADDRESS_LIST_CONTENT_TEMPLATE = \
@@ -67,6 +66,8 @@ class TestProfilesView(SoupMixin, BaseProfilesTest):
         self.read_idx = 1
         self.update_idx = 2
         self.delete_idx = 3
+        # give all users a subscription
+        super().setUp()
 
     def login_user_by_key(self, name: str | None = None) -> User:
         """

@@ -12,6 +12,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('user', '0001_initial'),
+        ('profiles', '0002_address'),
     ]
 
     operations = [

@@ -33,6 +33,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -438,3 +439,7 @@ STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='')
 
 # ISO 4217 code of the default currency
 DEFAULT_CURRENCY = 'eur'
+
+# Exchange Rates Data API
+EXCHANGERATES_DATA_KEY = env('EXCHANGERATES_DATA_KEY', default='')
+DEFAULT_RATES_REQUEST_INTERVAL = timedelta(days=1)

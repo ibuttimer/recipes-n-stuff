@@ -51,20 +51,23 @@ def get_currency_choices() -> Tuple[Tuple[str, str]]:
         code = code.upper()
         return currencies[code].code, currencies[code].name
 
+    def add_choice(code: str) -> bool:
+        return code in currencies and code != default
+
     # add default currency
     choices = [
         choice(default)
-    ]
+    ] if default in currencies else []
     # add g10 currencies
     choices.extend([
-        choice(code) for code in G10_CURRENCIES if code != default
+        choice(code) for code in G10_CURRENCIES if add_choice(code)
     ])
     # add remaining currencies
     non_g10 = sorted([
         code for code in currencies.keys() if code not in G10_CURRENCIES
     ])
     choices.extend([
-        choice(code) for code in non_g10 if code != default
+        choice(code) for code in non_g10 if add_choice(code)
     ])
     return tuple(choices)
 

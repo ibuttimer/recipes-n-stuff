@@ -34,7 +34,7 @@ class TestMeasureModel(TestCase):
     https://docs.djangoproject.com/en/4.1/topics/testing/tools/
     """
 
-    def test_address_defaults(self):
+    def test_measure_defaults(self):
         """ Test measure model defaults """
 
         measure = Measure.objects.create()
@@ -64,7 +64,7 @@ class TestMeasureModelFixtures(TestCase):
     Test measure model
     https://docs.djangoproject.com/en/4.1/topics/testing/tools/
     """
-    fixtures = ['measure.json']
+    fixtures = ['currencies.json', 'measure.json']
 
     def test_default_instances(self):
         """ Test default instances """

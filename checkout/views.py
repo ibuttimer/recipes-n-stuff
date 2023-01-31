@@ -40,7 +40,6 @@ from .constants import (
     THREE_DECIMAL_CURRENCIES, CHECKOUT_PAID_ROUTE_NAME
 )
 
-
 # set Stripe API key
 stripe.api_key = STRIPE_SECRET_KEY
 

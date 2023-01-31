@@ -21,7 +21,7 @@
 #  DEALINGS IN THE SOFTWARE.
 #
 from enum import Enum
-from typing import Type, Callable, Tuple, Optional, Union, List
+from typing import Type, Callable, Tuple, Optional, List
 from string import capwords
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -45,7 +45,7 @@ from utils import (
     TITLE_CTX, LIST_HEADING_CTX, PAGE_HEADING_CTX, NO_CONTENT_MSG_CTX,
     NO_CONTENT_HELP_CTX,
     Crud, app_template_path, ORDER_QUERY, PAGE_QUERY, PER_PAGE_QUERY, PerPage,
-    REORDER_QUERY, REORDER_REQ_QUERY_ARGS, USER_QUERY, SNIPPETS_CTX, YesNo,
+    REORDER_QUERY, REORDER_REQ_QUERY_ARGS, YesNo,
     READ_ONLY_CTX
 )
 # from opinions.views.opinion_queries import (
@@ -63,8 +63,10 @@ from .utils import (
     subscription_permission_check
 )
 from .subscription_queries import get_lookup, user_has_subscription
-from ..constants import THIS_APP, SUBSCRIPTION_LIST_CTX, IS_ACTIVE_QUERY
-from ..dto import SubscriptionDto
+from subscription.constants import (
+    THIS_APP, SUBSCRIPTION_LIST_CTX, IS_ACTIVE_QUERY
+)
+from subscription.views.dto import SubscriptionDto
 from ..enums import SubscriptionSortOrder, SubscriptionQueryType
 from ..models import Subscription
 

@@ -219,6 +219,7 @@ There are two requirements files:
 | GOOGLE_SITE_VERIFICATION | [Google Search Console](https://search.google.com/search-console) meta tag verification value for [site ownership verification](https://support.google.com/webmasters/answer/9008080?hl=en)                                                                                                                                                                                                                                                                                             |
 | STRIPE_PUBLISHABLE_KEY   | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) publishable key value for payments processing.                                                                                                                                                                                                                                                                                                                                                                   |
 | STRIPE_SECRET_KEY        | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) secret key value for payments processing.                                                                                                                                                                                                                                                                                                                                                                        |
+| EXCHANGERATES_DATA_KEY   | [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api) key for exchange rates.                                                                                                                                                                                                                                                                                                                                                                              |
 
 
 #### Environment variables
@@ -290,6 +291,13 @@ In order to configure Stripe payments, the following actions must be performed.
 * Ensure the application is selected in the application list dropdown
 * Select [API keys](https://dashboard.stripe.com/test/apikeys) and copy the `Publishable key` and `Secret key`, and store securely.
 
+#### Exchange Rates
+In order to configure Exchange Rates, the following actions must be performed.
+
+* Login to [APILayer](https://apilayer.com/)
+* Subscribe to the [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api)
+* Copy the API key, and store securely
+
 
 ### Before first run
 Before running the application for the first time following cloning from the repository and setting up a new database,
@@ -357,7 +365,7 @@ python -m manage dumpdata profiles.CountryInfo --indent 4 -o data/fixtures/count
 > **Note:** Due to the large size of the dataset, this operation takes a long time to complete.
 
 ```bash
-# E.g. populated the remote database 
+# E.g. populate the remote database 
 python run_populate.py -r -f data -dv REMOTE_DATABASE_URL
 ```
 #### Create a superuser
@@ -497,6 +505,7 @@ The following steps were followed to deploy the website:
       | GOOGLE_SITE_VERIFICATION | [Google Search Console](https://search.google.com/search-console) meta tag verification value for [site ownership verification](https://support.google.com/webmasters/answer/9008080?hl=en) |
       | STRIPE_PUBLISHABLE_KEY   | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) publishable key value for payments processing.                                                             |
       | STRIPE_SECRET_KEY        | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) secret key value for payments processing.                                                                  |
+      | EXCHANGERATES_DATA_KEY   | [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api) key for exchange rates.                                                                        |
       |                          | _The following keys are automatically added when `Resources` are provisioned:_                                                                                                   |
       | CLOUDINARY_URL           | [Cloudinary url](https://pypi.org/project/dj3-cloudinary-storage/)                                                                                                                |
 

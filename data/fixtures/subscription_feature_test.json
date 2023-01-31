@@ -1,0 +1,86 @@
+[
+{
+    "model": "subscription.subscriptionfeature",
+    "pk": 1,
+    "fields": {
+        "description": "Access to all recipes",
+        "feature_type": "ba",
+        "amount": "0.00",
+        "base_currency": "EUR",
+        "count": 0,
+        "is_active": true
+    }
+},
+{
+    "model": "subscription.subscriptionfeature",
+    "pk": 2,
+    "fields": {
+        "description": "Free delivery",
+        "feature_type": "fd",
+        "amount": "0.00",
+        "base_currency": "EUR",
+        "count": 0,
+        "is_active": true
+    }
+},
+{
+    "model": "subscription.subscriptionfeature",
+    "pk": 3,
+    "fields": {
+        "description": "Free delivery over {amount}",
+        "feature_type": "fdo",
+        "amount": "40.00",
+        "base_currency": "EUR",
+        "count": 0,
+        "is_active": true
+    }
+},
+{
+    "model": "subscription.subscriptionfeature",
+    "pk": 4,
+    "fields": {
+        "description": "Free delivery after {amount}",
+        "feature_type": "fda",
+        "amount": "200.00",
+        "base_currency": "EUR",
+        "count": 0,
+        "is_active": true
+    }
+},
+{
+    "model": "subscription.subscriptionfeature",
+    "pk": 5,
+    "fields": {
+        "description": "Free classes",
+        "feature_type": "fc",
+        "amount": "0.00",
+        "base_currency": "EUR",
+        "count": 0,
+        "is_active": true
+    }
+},
+{
+    "model": "subscription.subscriptionfeature",
+    "pk": 6,
+    "fields": {
+        "description": "First {count} deliveries free",
+        "feature_type": "xif",
+        "amount": "0.00",
+        "base_currency": "EUR",
+        "count": 5,
+        "is_active": true
+    }
+},
+{
+    "model": "subscription.subscriptionfeature",
+    "pk": 7,
+    "fields": {
+        "description": "Free after spending {amount}",
+        "feature_type": "fas",
+        "amount": "400.00",
+        "base_currency": "EUR",
+        "count": 0,
+        "is_active": true
+    }
+}
+]

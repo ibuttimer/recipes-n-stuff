@@ -22,11 +22,11 @@
 from dataclasses import dataclass
 
 from base.dto import BaseDto
-from .forms import SubscriptionForm
-from .models import (
+from subscription.forms import SubscriptionForm
+from subscription.models import (
     Subscription, FrequencyType, FeatureType, SubscriptionFeature
 )
-from .views.subscription_queries import get_subscription_features
+from subscription.views.subscription_queries import get_subscription_features
 
 
 @dataclass

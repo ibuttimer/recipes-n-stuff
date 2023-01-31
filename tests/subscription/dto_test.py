@@ -26,10 +26,10 @@ from pytest_subtests import subtests
 from mixer.backend.django import mixer
 
 from recipesnstuff.constants import SUBSCRIPTION_APP_NAME
-from subscription.dto import SubscriptionDto
+from subscription.views.dto import SubscriptionDto
 from subscription.constants import (
     NAME_FIELD, DESCRIPTION_FIELD, FREQUENCY_TYPE_FIELD, FREQUENCY_FIELD,
-    BASE_CURRENCY_FIELD, AMOUNT_FIELD, IS_ACTIVE_FIELD
+    BASE_CURRENCY_FIELD, AMOUNT_FIELD
 )
 from subscription.forms import SubscriptionForm
 from subscription.models import FrequencyType

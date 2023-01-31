@@ -19,11 +19,18 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import Dict, Optional
 
+from django.db import connection
+
 from base.dto import BaseDto
-from checkout.models import Currency
+
+from .constants import (
+    ZERO_DECIMAL_CURRENCIES, THREE_DECIMAL_CURRENCIES, THIS_APP
+)
+from .models import Currency
 
 
 @dataclass
@@ -49,20 +56,44 @@ def build_currencies() -> Dict[str, CurrencyDto]:
     Build the currencies
     :return: dict of currencies
     """
+    # in some tests, currency table may not have been created yet
+    all_tables = connection.introspection.table_names()
+    currency_list = [] if f'{THIS_APP}_{Currency.model_name()}'.lower() \
+                          not in all_tables else list(Currency.objects.all())
+
     currencies = {
-        currency.code: CurrencyDto.from_model(currency) for currency in list(
-            Currency.objects.all()
-        )
+        currency.code: CurrencyDto.from_model(currency)
+        for currency in currency_list
     }
+
+    for code in ZERO_DECIMAL_CURRENCIES:
+        if code in currencies:
+            assert currencies[code].digits == 0
+
+    for code in THREE_DECIMAL_CURRENCIES:
+        if code in currencies:
+            assert currencies[code].digits == 3
+
     return currencies
 
 
-def get_currencies():
+def get_currencies(copy: bool = True):
     """
     Get the currencies dict
+    :param copy: return a copy flag; default True
     :return: dict of currencies
     """
     global _CURRENCIES
-    if _CURRENCIES is None:
+    if _CURRENCIES is None or len(_CURRENCIES) == 0:
         _CURRENCIES = build_currencies()
-    return _CURRENCIES.copy()
+    return deepcopy(_CURRENCIES) if copy else _CURRENCIES
+
+
+def get_currency(code: str) -> CurrencyDto:
+    """
+    Get a currency
+    :param code: currency code
+    :return: currency dto
+    """
+    currencies = get_currencies(copy=False)
+    return deepcopy(currencies[code])

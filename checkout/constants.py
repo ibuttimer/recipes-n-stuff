@@ -33,6 +33,9 @@ CURRENCY_CODE_FIELD = 'code'
 NUMERIC_CODE_FIELD = 'numeric_code'
 DIGITS_CODE_FIELD = 'digits'
 NAME_FIELD = 'name'
+TIMESTAMP_FIELD = 'timestamp'
+BASE_FIELD = 'base'
+RATES_FIELD = 'rates'
 
 # urls/routes related
 CHECKOUT_PAY_URL = append_slash("pay")
@@ -57,6 +60,10 @@ ZERO_DECIMAL_CURRENCIES = [
     'BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW', 'MGA', 'PYG', 'RWF',
     'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF'
 ]
+# The Malagasy ariary are technically divided into five subunits, but these
+# are not used in practice, hence Stripe treats it as a zero-decimal
+# currency.
+
 # three decimal currencies; https://stripe.com/docs/currencies#three-decimal
 # must round amounts to the nearest ten. E.g., 5.124 KWD must be rounded to
 # 5120 or 5130
