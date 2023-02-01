@@ -36,7 +36,8 @@ from recipesnstuff.settings import (
 from subscription.forms import get_currency_choices
 from utils import (
     GET, POST, PATCH, namespaced_url, app_template_path,
-    replace_inner_html_payload, TITLE_CTX, PAGE_HEADING_CTX
+    replace_inner_html_payload, TITLE_CTX, PAGE_HEADING_CTX, DELETE,
+    rewrite_payload, entity_delete_result_payload
 )
 from .basket import Basket
 
@@ -140,7 +141,7 @@ def create_payment_intent(request: HttpRequest) -> HttpResponse:
 
 
 @login_required
-@require_http_methods([PATCH])
+@require_http_methods([PATCH, DELETE])
 def update_basket(request: HttpRequest) -> HttpResponse:
     """
     Update the basket
@@ -150,31 +151,47 @@ def update_basket(request: HttpRequest) -> HttpResponse:
 
     basket = get_basket(request)
 
-    success = False
-    if BASKET_CCY_QUERY in request.GET:
+    redraw_basket = False
+    redraw_msg = False
+    if request.method == PATCH and BASKET_CCY_QUERY in request.GET:
         new_ccy = request.GET[BASKET_CCY_QUERY]
         if is_valid_code(new_ccy):
             basket.currency = new_ccy
-            success = True
-    elif ITEM_QUERY in request.GET and UNITS_QUERY in request.GET:
+            redraw_basket = True
+    elif ITEM_QUERY in request.GET:
         item = int(request.GET[ITEM_QUERY])
-        units = int(request.GET[UNITS_QUERY])
-        success = basket.update_item_units(item, units)
+        if request.method == DELETE:
+            # remove item
+            redraw_basket = basket.remove(item)
+            if redraw_basket:
+                redraw_msg = entity_delete_result_payload(
+                    "#id--item-deleted-modal-body", True, 'item')
 
-    if success:
+        elif request.method == PATCH and UNITS_QUERY in request.GET:
+            # change num of units of item
+            units = int(request.GET[UNITS_QUERY])
+            redraw_basket = basket.update_item_units(item, units)
+
+
+    if redraw_basket or redraw_msg:
         # need to update serialised basket in request
         set_basket(request, basket)
-        payload = replace_inner_html_payload(
-            "#id__basket-div", render_to_string(
-                app_template_path(
-                    THIS_APP, "snippet", "basket.html"),
-                context=basket_context(basket))
+
+        if redraw_basket:
+            redraw_basket = replace_inner_html_payload(
+                "#id__basket-div", render_to_string(
+                    app_template_path(
+                        THIS_APP, "snippet", "basket.html"),
+                    context=basket_context(basket))
+            )
+        payload = rewrite_payload(
+            redraw_basket or None, redraw_msg or None
         )
     else:
         payload = {}
 
     return JsonResponse(
-        payload, status=HTTPStatus.OK if success else HTTPStatus.BAD_REQUEST)
+        payload, status=HTTPStatus.OK if payload else HTTPStatus.BAD_REQUEST)
 
 
 @login_required

@@ -40,12 +40,10 @@ const replaceHtml = (data) => $(data[ELEMENT_SELECTOR_PROP]).replaceWith(data[HT
 const replaceInnerHtml = (data) => $(data[ELEMENT_SELECTOR_PROP]).html(data[INNER_HTML_PROP]);
 
 /**
- * Handle a redirect/rewrite response
+ * Handle a html/innerHtml replacement
  * :param data: json data
- * :return: true if modal was displayed
  */
-function redirectRewriteInfoResponseHandler(data) {
-    let modalDisplayed = false;
+function htmlUpdateHandler(data) {
     if (data !== undefined) {
         if (data.hasOwnProperty(ELEMENT_SELECTOR_PROP)) {
             if (data.hasOwnProperty(HTML_PROP)) {
@@ -56,10 +54,23 @@ function redirectRewriteInfoResponseHandler(data) {
                 replaceInnerHtml(data);
             }
         }
+    }
+}
+
+/**
+ * Handle a redirect/rewrite response
+ * :param data: json data
+ * :return: true if modal was displayed
+ */
+function redirectRewriteInfoResponseHandler(data) {
+    let modalDisplayed = false;
+    if (data !== undefined) {
+        // replace single element html
+        htmlUpdateHandler(data);
         if (data.hasOwnProperty(REWRITES_PROP)) {
             // replace multiple element's html
             for (let element of data[REWRITES_PROP]) {
-                replaceHtml(element);
+                htmlUpdateHandler(element);
             }
         }
         if (data.hasOwnProperty(REDIRECT_PROP)) {

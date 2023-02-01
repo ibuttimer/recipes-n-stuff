@@ -122,13 +122,7 @@ async function checkStatus() {
 }
 
 /** Set the payment currency change handler */
-const setPaymentCcyChangeHandler = () => $(paymentCurrencySelectSelector).on('change', processPaymentCcyChange);
-
-/**
- * Process a payment currency change
- * @param event - current event
- */
-function processPaymentCcyChange(event) {
+const setPaymentCcyChangeHandler = () => $(paymentCurrencySelectSelector).on('change', function (event) {
 
     $.ajax({
         url: `${UPDATE_BASKET_URL}?ccy=${event.currentTarget.value}`,
@@ -137,18 +131,12 @@ function processPaymentCcyChange(event) {
     }).done(function(data) {
         redirectRewriteInfoResponseHandler(data);
 
-        setPaymentCcyChangeHandler();
+        setBasketChangeHandler();
     });
-}
+});
 
 /** Set the basket items change handler */
-const setItemUnitsChangeHandler = () => $(basketItemUnitsSelector).on('change', processItemUnitsChange);
-
-/**
- * Process a basket items change
- * @param event - current event
- */
-function processItemUnitsChange(event) {
+const setItemUnitsChangeHandler = () => $(basketItemUnitsSelector).on('change', function (event) {
 
     if (parseInt(event.currentTarget.value) < 1) {
         // warn about invalid and reset to min
@@ -165,11 +153,18 @@ function processItemUnitsChange(event) {
         }).done(function (data) {
             redirectRewriteInfoResponseHandler(data);
 
-            setPaymentCcyChangeHandler();
+            setBasketChangeHandler();
         });
     }
-}
+});
 
+/** Set the basket change handlers */
+const setBasketChangeHandler = () => {
+    setPaymentCcyChangeHandler();
+    setItemUnitsChangeHandler();
+    setItemDeleteConfirmHandler();
+    setItemDeleteHandler();
+};
 
 
 

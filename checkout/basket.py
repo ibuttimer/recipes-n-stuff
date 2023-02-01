@@ -158,15 +158,19 @@ class Basket:
         self.subtotals.append(0)
         self._calc_total()
 
-    def remove(self, index: int):
+    def remove(self, index: int) -> bool:
         """
         Remove an item from the basket
         :param index: index of item
+        :return: True if basket updated
         """
-        if index < len(self.items):
+        success = False
+        if 0 <= index < self.num_items:
             del self.items[index]
             del self.subtotals[index]
             self._calc_total()
+            success = True
+        return success
 
     def clear(self):
         """
@@ -215,16 +219,16 @@ class Basket:
         else:
             raise ValueError(f'Unsupported currency: {currency}')
 
-    def update_item_units(self, item: int, units: int):
+    def update_item_units(self, index: int, units: int):
         """
         Update an item's unit count
-        :param item: zero-based index of item
+        :param index: zero-based index of item
         :param units: number of units
         :return: True if basket updated
         """
         success = False
-        if 0 <= item < self.num_items and units > 0:
-            self.items[item].count = units
+        if 0 <= index < self.num_items and units > 0:
+            self.items[index].count = units
             self._calc_total()
             success = True
 

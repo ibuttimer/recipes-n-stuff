@@ -24,13 +24,18 @@ from typing import Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
+from django.template.loader import render_to_string
 from django.urls import ResolverMatch, resolve, Resolver404
+
+from .content_list_mixin import STATUS_CTX
+from .url_path import app_template_path
 
 REDIRECT_CTX = "redirect"                   # redirect url
 REWRITES_PROP_CTX = 'rewrites'              # multiple html rewrites
 ELEMENT_SELECTOR_CTX = 'element_selector'   # element jquery selector
 HTML_CTX = 'html'                           # html for rewrite
 INNER_HTML_CTX = 'inner_html'               # inner html for rewrite
+ENTITY_CTX = 'entity'                       # entity name
 
 
 def redirect_on_success_or_render(request: HttpRequest, success: bool,
@@ -151,9 +156,32 @@ def rewrite_payload(*args, extra: Optional[dict] = None) -> dict:
     :return: response
     """
     payload = {
-        REWRITES_PROP_CTX: [*args]
+        REWRITES_PROP_CTX: [arg for arg in args if arg]
     }
     if isinstance(extra, dict):
         payload.update(extra)
 
     return payload
+
+
+def entity_delete_result_payload(
+        selector: str, status: bool, entity: str,
+        extra: Optional[dict] = None) -> dict:
+    """
+    Generate payload for an entity delete html response.
+    :param selector: element jquery selector
+    :param status: delete result
+    :param entity: entity name
+    :param extra: extra payload content; default None
+    :return: response
+    """
+    return replace_inner_html_payload(
+        selector, render_to_string(
+            app_template_path(
+                "snippet", "entity_delete_result.html"),
+            context={
+                STATUS_CTX: status,
+                ENTITY_CTX: entity
+            }
+        ), extra=extra
+    )

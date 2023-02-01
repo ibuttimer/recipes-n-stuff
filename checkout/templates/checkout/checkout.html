@@ -75,6 +75,8 @@
     {{ snippet | safe }}
 {% endfor %}
 
+{% include "checkout/snippet/basket_item_delete_modal.html" %}
+
 {% endblock content %}
 
 {% block extra_js_body %}
@@ -98,8 +100,7 @@
             checkStatus().then();
 
             // setup handlers
-            setPaymentCcyChangeHandler();
-            setItemUnitsChangeHandler();
+            setBasketChangeHandler();
 
             minUnitToast = document.getElementById('id__min-unit-toast');
         });

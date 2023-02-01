@@ -17,15 +17,19 @@
             <th scope="col"><em>Subtotal<br>{{ basket.currency }}</em></th>
         </tr>
     </thead>
-    <tbody>
+    <tbody class="table-group-divider">
         {% for item in basket.items %}
-            <tr>
+            <tr id="id__item-row-{{ forloop.counter0 }}">
                 <td>{{ item.description }}</td>
                 <td>{{ item.amt_str }}</td>
                 <td>
-                    <div class="d-flex justify-content-center">
+                    <div class="d-flex justify-content-center align-content-center">
                         <input type="number" class="form-control form-control-sm w-50 p-1 justify--center" id="id__units-item-{{ forloop.counter0 }}"
                                value="{{ item.count }}" min="1"  data-bs-href="{% url 'checkout:update_basket' %}?item={{forloop.counter0}}">
+                        <a class="text-reset text-decoration-none" href="{% url 'checkout:update_basket' %}?item={{forloop.counter0}}"
+                           id="id__item-delete-{{ forloop.counter0 }}">
+                            <i class="fa-solid fa-trash-can p-2"></i>
+                        </a>
                     </div>
                 </td>
                 <td>{{ item.item_total_str }}</td>
@@ -40,6 +44,8 @@
                 </tr>
             {% endif %}
         {% endfor %}
+    </tbody>
+    <tfoot class="table-group-divider">
         <tr>
             <!-- TODO bottom line of bottom row of basket not 100% even -->
             <td class="row">
@@ -61,6 +67,6 @@
             <td><b><em>Total&nbsp;{{ basket.currency }}</em></b></td>
             <td><em>{{ basket.total_str }}</em></td>
         </tr>
-    </tbody>
+    </tfoot>
 </table>
 <!-- basket.html end -->
