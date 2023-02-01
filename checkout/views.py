@@ -31,19 +31,19 @@ from django.template.loader import render_to_string
 from django.views.decorators.http import require_http_methods
 
 from recipesnstuff.settings import (
-    DEFAULT_CURRENCY, STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY
+    STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY
 )
 from subscription.forms import get_currency_choices
 from utils import (
     GET, POST, PATCH, namespaced_url, app_template_path,
-    replace_inner_html_payload
+    replace_inner_html_payload, TITLE_CTX, PAGE_HEADING_CTX
 )
 from .basket import Basket
 
 from .constants import (
     THIS_APP, STRIPE_PUBLISHABLE_KEY_CTX, STRIPE_RETURN_URL_CTX,
     CHECKOUT_PAID_ROUTE_NAME, BASKET_SES, BASKET_CTX, CURRENCIES_CTX,
-    BASKET_CCY_QUERY
+    BASKET_CCY_QUERY, ITEM_QUERY, UNITS_QUERY
 )
 from .currency import is_valid_code
 
@@ -64,6 +64,16 @@ def get_basket(request: HttpRequest) -> Basket:
         request.session[BASKET_SES])
 
 
+def set_basket(request: HttpRequest, basket: Basket) -> Basket:
+    """
+    Set the session basket.
+    :param request: http request
+    :param basket: current basket
+    :return: basket
+    """
+    request.session[BASKET_SES] = basket
+
+
 @login_required
 @require_http_methods([GET])
 def checkout(request: HttpRequest) -> HttpResponse:
@@ -74,7 +84,11 @@ def checkout(request: HttpRequest) -> HttpResponse:
     """
     basket = get_basket(request)
 
+    title = "Checkout"
+
     context = {
+        TITLE_CTX: title,
+        PAGE_HEADING_CTX: title,
         STRIPE_PUBLISHABLE_KEY_CTX: STRIPE_PUBLISHABLE_KEY,
         STRIPE_RETURN_URL_CTX: namespaced_url(
             THIS_APP, CHECKOUT_PAID_ROUTE_NAME
@@ -142,13 +156,22 @@ def update_basket(request: HttpRequest) -> HttpResponse:
         if is_valid_code(new_ccy):
             basket.currency = new_ccy
             success = True
+    elif ITEM_QUERY in request.GET and UNITS_QUERY in request.GET:
+        item = int(request.GET[ITEM_QUERY])
+        units = int(request.GET[UNITS_QUERY])
+        success = basket.update_item_units(item, units)
 
-    payload = None if not success else replace_inner_html_payload(
-        "#id__basket-div", render_to_string(
-            app_template_path(
-                THIS_APP, "snippet", "basket.html"),
-            context=basket_context(basket))
-    )
+    if success:
+        # need to update serialised basket in request
+        set_basket(request, basket)
+        payload = replace_inner_html_payload(
+            "#id__basket-div", render_to_string(
+                app_template_path(
+                    THIS_APP, "snippet", "basket.html"),
+                context=basket_context(basket))
+        )
+    else:
+        payload = {}
 
     return JsonResponse(
         payload, status=HTTPStatus.OK if success else HTTPStatus.BAD_REQUEST)

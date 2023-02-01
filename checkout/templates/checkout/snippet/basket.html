@@ -22,7 +22,12 @@
             <tr>
                 <td>{{ item.description }}</td>
                 <td>{{ item.amt_str }}</td>
-                <td>{{ item.count }}</td>
+                <td>
+                    <div class="d-flex justify-content-center">
+                        <input type="number" class="form-control form-control-sm w-50 p-1 justify--center" id="id__units-item-{{ forloop.counter0 }}"
+                               value="{{ item.count }}" min="1"  data-bs-href="{% url 'checkout:update_basket' %}?item={{forloop.counter0}}">
+                    </div>
+                </td>
                 <td>{{ item.item_total_str }}</td>
                 <td>{{ item.currency }}</td>
                 <td>{{ item.sku }}</td>
@@ -36,20 +41,24 @@
             {% endif %}
         {% endfor %}
         <tr>
+            <!-- TODO bottom line of bottom row of basket not 100% even -->
             <td class="row">
-                <div class="col-sm-6">
-                    <span>Pay in</span>
+                <div class="col-sm-6 d-flex justify-content-end align-content-center">
+                    <em>Pay in</em>
                 </div>
                 <div class="col-sm-6">
-                    <select id="id__pay-ccy-select" class="form-select" aria-label="payment currency selection">
-                        {% for currency in currencies %}
+                    <div class="d-flex justify-content-center">
+                        <select id="id__pay-ccy-select" class="form-select form-select-sm" aria-label="payment currency selection">
+                            {% for currency in currencies %}
                             <option value="{{ currency.0 }}" {% if currency.0 == basket.currency %} selected {% endif %}>{{ currency.1 }}</option>
-                        {% endfor %}
-                    </select>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
             </td>
-            <td colspan="4"></td>
-            <td><b><em>Total {{ basket.currency }}</em></b></td>
+            <td colspan="4">
+            </td>
+            <td><b><em>Total&nbsp;{{ basket.currency }}</em></b></td>
             <td><em>{{ basket.total_str }}</em></td>
         </tr>
     </tbody>

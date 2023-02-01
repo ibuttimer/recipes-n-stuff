@@ -121,9 +121,13 @@ async function checkStatus() {
     }
 }
 
-
+/** Set the payment currency change handler */
 const setPaymentCcyChangeHandler = () => $(paymentCurrencySelectSelector).on('change', processPaymentCcyChange);
 
+/**
+ * Process a payment currency change
+ * @param event - current event
+ */
 function processPaymentCcyChange(event) {
 
     $.ajax({
@@ -136,6 +140,37 @@ function processPaymentCcyChange(event) {
         setPaymentCcyChangeHandler();
     });
 }
+
+/** Set the basket items change handler */
+const setItemUnitsChangeHandler = () => $(basketItemUnitsSelector).on('change', processItemUnitsChange);
+
+/**
+ * Process a basket items change
+ * @param event - current event
+ */
+function processItemUnitsChange(event) {
+
+    if (parseInt(event.currentTarget.value) < 1) {
+        // warn about invalid and reset to min
+        $(`#${event.currentTarget.id}`).val("1");
+
+        const toast = new bootstrap.Toast(minUnitToast)
+        toast.show()
+    } else {
+        // update basket
+        $.ajax({
+            url: `${event.currentTarget.attributes['data-bs-href'].value}&units=${event.currentTarget.value}`,
+            method: 'patch',
+            headers: csrfHeader()
+        }).done(function (data) {
+            redirectRewriteInfoResponseHandler(data);
+
+            setPaymentCcyChangeHandler();
+        });
+    }
+}
+
+
 
 
 // ------- UI helpers -------

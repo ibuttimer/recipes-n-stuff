@@ -215,6 +215,21 @@ class Basket:
         else:
             raise ValueError(f'Unsupported currency: {currency}')
 
+    def update_item_units(self, item: int, units: int):
+        """
+        Update an item's unit count
+        :param item: zero-based index of item
+        :param units: number of units
+        :return: True if basket updated
+        """
+        success = False
+        if 0 <= item < self.num_items and units > 0:
+            self.items[item].count = units
+            self._calc_total()
+            success = True
+
+        return success
+
     @property
     def total(self) -> float:
         """

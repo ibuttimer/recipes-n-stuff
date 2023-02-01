@@ -50,6 +50,8 @@ CHECKOUT_PAID_ROUTE_NAME = "paid"
 
 # query related
 BASKET_CCY_QUERY = 'ccy'
+ITEM_QUERY = 'item'
+UNITS_QUERY = 'units'
 
 
 # context related

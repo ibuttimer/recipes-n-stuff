@@ -59,6 +59,18 @@
     </article>
 </div>
 
+<div class="toast-container position-absolute top-0 start-50 translate-middle-x p-3">
+    <div id="id__min-unit-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto"><i class="fa-solid fa-circle-info"></i> Information</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            Minimum unit count is 1.
+        </div>
+    </div>
+</div>
+
 {% for snippet in snippets %}
     {{ snippet | safe }}
 {% endfor %}
@@ -75,15 +87,21 @@
         const UPDATE_BASKET_URL = '{% url "checkout:update_basket" %}';
 
         const paymentCurrencySelectSelector = "#id__pay-ccy-select";
+        // Basket item units input are named 'id__units-item-....'
+        const basketItemUnitsSelector = "input[id^='id__units-item-']";
 
-
+        let minUnitToast = undefined;
 
 
         $(document).ready(function() {
             initialize().then();
             checkStatus().then();
 
+            // setup handlers
             setPaymentCcyChangeHandler();
+            setItemUnitsChangeHandler();
+
+            minUnitToast = document.getElementById('id__min-unit-toast');
         });
 
 
