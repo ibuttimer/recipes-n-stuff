@@ -28,13 +28,7 @@
 // This is your test publishable API key.
 const stripe = Stripe(stripePublishableKey());
 
-// The items the customer wants to buy
-const items = [{ id: "xl-tshirt" }];
-
 let elements;
-
-// initialize().then();
-// checkStatus().then();
 
 document
     .querySelector("#payment-form")
@@ -50,7 +44,6 @@ async function initialize() {
             "Content-Type": "application/json",
             'X-CSRFTOKEN': csrfToken()
         },
-        body: JSON.stringify({ items }),
     });
     const { clientSecret } = await response.json();
 

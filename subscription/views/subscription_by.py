@@ -35,9 +35,8 @@ from django.views.decorators.http import require_http_methods
 from base import (
     InfoModalLevel, InfoModalTemplate, level_info_modal_payload,
 )
-from checkout.constants import (
-    CHECKOUT_PAY_ROUTE_NAME, PAYMENT_AMOUNT_SES, PAYMENT_CURRENCY_SES
-)
+from checkout.basket import add_to_basket
+from checkout.constants import CHECKOUT_PAY_ROUTE_NAME
 from subscription.constants import (
     THIS_APP, SUBSCRIPTION_FORM_CTX, SUBSCRIPTION_ID_ROUTE_NAME,
     SUBSCRIPTIONS_ROUTE_NAME, USER_SUB_ID_SES,
@@ -227,8 +226,12 @@ def subscription_pick(request: HttpRequest, pk: int) -> HttpResponse:
         request, SessionSubStatus.VALID, end_date)
 
     request.session[USER_SUB_ID_SES] = user_sub.id
-    request.session[PAYMENT_AMOUNT_SES] = float(subscription.amount)
-    request.session[PAYMENT_CURRENCY_SES] = subscription.base_currency
+
+    add_to_basket(request, float(subscription.amount),
+                  f'{subscription.name} subscription',
+                  sku=f'sub{subscription.id}',
+                  currency=subscription.base_currency)
+
 
     return redirect(
         namespaced_url(CHECKOUT_APP_NAME, CHECKOUT_PAY_ROUTE_NAME)

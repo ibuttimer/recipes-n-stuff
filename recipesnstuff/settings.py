@@ -439,6 +439,8 @@ STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='')
 
 # ISO 4217 code of the default currency
 DEFAULT_CURRENCY = 'eur'
+# number of decimal places to use during financial calculations
+FINANCIAL_FACTOR = 6
 
 # Exchange Rates Data API
 EXCHANGERATES_DATA_KEY = env('EXCHANGERATES_DATA_KEY', default='')

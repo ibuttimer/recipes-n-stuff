@@ -34,6 +34,47 @@
 
 <div class="row flex-grow-1 overflow-auto d-flex justify-content-center">
 
+    <div class="row">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Description</th>
+                    <th scope="col">Unit cost</th>
+                    <th scope="col">Units</th>
+                    <th scope="col">Item total</th>
+                    <th scope="col">Currency</th>
+                    <th scope="col">SKU</th>
+                    <th scope="col">Subtotal<br>{{ basket.currency }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in basket.items %}
+                    <tr>
+                        <td>{{ item.description }}</td>
+                        <td>{{ item.amt_str }}</td>
+                        <td>{{ item.count }}</td>
+                        <td>{{ item.item_total_str }}</td>
+                        <td>{{ item.currency }}</td>
+                        <td>{{ item.sku }}</td>
+                        <td>{{ basket.subtotals.0 }}</td>
+                    </tr>
+                    {% if item.instructions %}
+                        <tr>
+                            <td><em>Instructions</em></td>
+                            <td colspan="5">{{ item.instructions }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                <tr>
+                    <td colspan="5"></td>
+                    <td><b>Total {{ basket.currency }}</b></td>
+                    <td>{{ basket.total_str }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+
     <article id="article-content" class="row d-flex justify-content-center">
 
         <!-- Display a payment form -->

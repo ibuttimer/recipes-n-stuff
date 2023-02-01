@@ -77,7 +77,7 @@ def build_currencies() -> Dict[str, CurrencyDto]:
     return currencies
 
 
-def get_currencies(copy: bool = True):
+def get_currencies(copy: bool = True) -> Dict[str, CurrencyDto]:
     """
     Get the currencies dict
     :param copy: return a copy flag; default True
@@ -96,4 +96,14 @@ def get_currency(code: str) -> CurrencyDto:
     :return: currency dto
     """
     currencies = get_currencies(copy=False)
-    return deepcopy(currencies[code])
+    return deepcopy(currencies[code.upper()])
+
+
+def is_valid_code(code: str) -> bool:
+    """
+    Check a currency code is supported
+    :param code: currency code
+    :return: True if supported
+    """
+    currencies = get_currencies(copy=False)
+    return code in currencies

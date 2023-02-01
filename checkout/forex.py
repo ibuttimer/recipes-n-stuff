@@ -109,7 +109,7 @@ class NumType(Enum):
 
 def convert_forex(
         amount: Union[int, float, Decimal], from_ccy: str, to_ccy: str,
-        count: int = 1, smallest_unit: bool = False,
+        count: int = 1, smallest_unit: bool = False, factor: int = -1,
         result_as: NumType = NumType.FLOAT) -> Union[int, float, Decimal]:
     """
     Convert `amount` from `from_ccy` to `to_ccy`
@@ -118,11 +118,16 @@ def convert_forex(
     :param to_ccy: code of currency to convert to
     :param count: unit count: default 1
     :param smallest_unit: smallest currency unit flag; default False
+    :param factor: number of digits to normalise result to;
+            default currency digits, ignored when smallest_unit is True and
+            set to None for max possible precision
     :param result_as: result type; default float,
             ignored when smallest_unit is True
     :return: converted amount
     """
     rates, _ = get_rates()
+    from_ccy = from_ccy.upper()
+    to_ccy = to_ccy.upper()
     if from_ccy not in rates or to_ccy not in rates:
         raise ValueError(f'Unknown currency codes; {from_ccy} or {to_ccy}')
 
@@ -135,17 +140,45 @@ def convert_forex(
                Decimal.from_float(rates[from_ccy])
         value *= rate
 
-    currency = get_currency(to_ccy)
-    factor = currency.digits
-    factor = Decimal(10) ** (factor if smallest_unit else -factor)
+    return normalise_amount(
+        value, to_ccy, smallest_unit=smallest_unit, factor=factor,
+        result_as=result_as)
+
+
+def normalise_amount(
+        amount: Union[int, float, Decimal], ccy: str,
+        smallest_unit: bool = False, factor: int = -1,
+        result_as: NumType = NumType.FLOAT) -> Union[int, float, Decimal]:
+    """
+    Convert `amount` from `from_ccy` to `to_ccy`
+    :param amount: amount to convert
+    :param ccy: code of currency
+    :param smallest_unit: smallest currency unit flag; default False
+    :param factor: number of digits to normalise result to;
+            default currency digits, ignored when smallest_unit is True and
+            set to None for max possible precision
+    :param result_as: result type; default float,
+            ignored when smallest_unit is True
+    :return: normalised amount
+    """
+    value = amount if isinstance(amount, Decimal) \
+        else Decimal.from_float(amount)
+
+    currency = get_currency(ccy)
+
     if smallest_unit:
         # smallest unit is always an int
+        factor = Decimal(10) ** currency.digits
         value = int(value * factor)
         if currency.digits == 3:
             # must round amounts to the nearest ten
             value = round(value/10, 1) * 10
     else:
-        value = value.quantize(factor)
+        if factor is not None:
+            factor = Decimal(10) ** (
+                -currency.digits if factor < 0 else -factor
+            )
+            value = value.quantize(factor)
         if result_as == NumType.FLOAT:
             value = float(value)
         elif result_as == NumType.INT:

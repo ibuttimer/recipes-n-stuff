@@ -32,16 +32,29 @@ from django.views.decorators.http import require_http_methods
 from recipesnstuff.settings import (
     DEFAULT_CURRENCY, STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY
 )
-from utils import GET, namespaced_url, app_template_path, POST
+from utils import GET, namespaced_url, app_template_path, POST, PATCH
+from .basket import Basket
 
 from .constants import (
     THIS_APP, STRIPE_PUBLISHABLE_KEY_CTX, STRIPE_RETURN_URL_CTX,
-    PAYMENT_AMOUNT_SES, PAYMENT_CURRENCY_SES, ZERO_DECIMAL_CURRENCIES,
-    THREE_DECIMAL_CURRENCIES, CHECKOUT_PAID_ROUTE_NAME
+    CHECKOUT_PAID_ROUTE_NAME, BASKET_SES, BASKET_CTX
 )
 
 # set Stripe API key
 stripe.api_key = STRIPE_SECRET_KEY
+
+
+def get_basket(request: HttpRequest) -> Basket:
+    """
+    Get the session basket.
+    :param request: http request
+    :return: basket
+    """
+    if BASKET_SES not in request.session:
+        raise BadRequest('Basket not found')
+
+    return Basket.from_jsonable(
+        request.session[BASKET_SES])
 
 
 @login_required
@@ -52,13 +65,16 @@ def checkout(request: HttpRequest) -> HttpResponse:
     :param request: http request
     :return: response
     """
+    basket = get_basket(request)
+
     return render(request, app_template_path(
         THIS_APP, 'checkout.html'
     ), context={
         STRIPE_PUBLISHABLE_KEY_CTX: STRIPE_PUBLISHABLE_KEY,
         STRIPE_RETURN_URL_CTX: namespaced_url(
             THIS_APP, CHECKOUT_PAID_ROUTE_NAME
-        )
+        ),
+        BASKET_CTX: basket,
     })
 
 
@@ -71,25 +87,14 @@ def create_payment_intent(request: HttpRequest) -> HttpResponse:
     :return: response
     """
 
-    if PAYMENT_AMOUNT_SES not in request.session or \
-            PAYMENT_CURRENCY_SES not in request.session:
-        raise BadRequest('Invalid payment amount')
-
-    # amount must be how much to charge in the smallest currency unit
-    currency = request.session[PAYMENT_CURRENCY_SES]
-    factor = 0 if currency in ZERO_DECIMAL_CURRENCIES else \
-        3 if currency in THREE_DECIMAL_CURRENCIES else 2
-    amount = int(request.session[PAYMENT_AMOUNT_SES] * 10**factor)
-    if factor == 3:
-        # must round amounts to the nearest ten
-        amount = round(amount/10, 1) * 10
+    basket = get_basket(request)
 
     # Create a PaymentIntent with the order amount and currency
     intent = stripe.PaymentIntent.create(
-        amount=amount,
-        currency=currency,
+        amount=basket.payment_total,
+        currency=basket.currency,
         automatic_payment_methods={
-            'enabled': True,
+            'enabled': False,
         },
     )
     return JsonResponse({

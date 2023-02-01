@@ -27,6 +27,7 @@ from django.http import HttpRequest
 from django.shortcuts import redirect
 from django.contrib import messages
 import json_fix
+import jsonpickle
 
 from checkout.constants import CHECKOUT_CREATE_PAYMENT_ROUTE_NAME
 from recipesnstuff.constants import LOGOUT_ROUTE_NAME, CHECKOUT_APP_NAME
@@ -60,24 +61,16 @@ class SessionSubStatus(Enum):
         """
         Convert json representation to enum
         :param jsonable: json representation
-        :return: SessionSubStatus if found otherwise original argument
+        :return: SessionSubStatus
         """
         status = jsonable
-        if isinstance(jsonable, dict):
-            if jsonable.get('type', None) == SessionSubStatus.__name__:
-                value = jsonable.get('value', None)
-                for sub_status in SessionSubStatus:
-                    if sub_status.value == value:
-                        status = sub_status
-                        break
+        if not isinstance(status, SessionSubStatus):
+            status = jsonpickle.decode(jsonable)
         return status
 
     def __json__(self):
-        # return a built-in object that is naturally jsonable
-        return {
-            'type': SessionSubStatus.__name__,
-            'value': self.value
-        }
+        """ Return a built-in object that is naturally jsonable """
+        return jsonpickle.encode(self)
 
 
 PROCESS_NORMALLY = [

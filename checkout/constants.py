@@ -49,10 +49,10 @@ CHECKOUT_PAID_ROUTE_NAME = "paid"
 # context related
 STRIPE_PUBLISHABLE_KEY_CTX = 'stripe_publishable_key'
 STRIPE_RETURN_URL_CTX = 'stripe_return_url'
+BASKET_CTX = 'basket'
 
 # session related
-PAYMENT_AMOUNT_SES = 'payment_amount'
-PAYMENT_CURRENCY_SES = 'payment_currency'
+BASKET_SES = 'basket'
 
 
 # zero decimal currencies; https://stripe.com/docs/currencies#zero-decimal
