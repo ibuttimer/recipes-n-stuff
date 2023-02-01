@@ -82,9 +82,7 @@
             $.ajax({
                 method: 'delete',
                 url: `${url}?ref=${window.location.pathname}`,
-                headers: {
-                    'X-CSRFTOKEN': csrfToken()
-                },
+                headers: csrfHeader(),
             }).done(function(data) {
                 const modalDisplayed = redirectRewriteInfoResponseHandler(data);
                 if (!modalDisplayed) {

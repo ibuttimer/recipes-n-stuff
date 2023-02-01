@@ -27,18 +27,25 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import BadRequest
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.template.loader import render_to_string
 from django.views.decorators.http import require_http_methods
 
 from recipesnstuff.settings import (
     DEFAULT_CURRENCY, STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY
 )
-from utils import GET, namespaced_url, app_template_path, POST, PATCH
+from subscription.forms import get_currency_choices
+from utils import (
+    GET, POST, PATCH, namespaced_url, app_template_path,
+    replace_inner_html_payload
+)
 from .basket import Basket
 
 from .constants import (
     THIS_APP, STRIPE_PUBLISHABLE_KEY_CTX, STRIPE_RETURN_URL_CTX,
-    CHECKOUT_PAID_ROUTE_NAME, BASKET_SES, BASKET_CTX
+    CHECKOUT_PAID_ROUTE_NAME, BASKET_SES, BASKET_CTX, CURRENCIES_CTX,
+    BASKET_CCY_QUERY
 )
+from .currency import is_valid_code
 
 # set Stripe API key
 stripe.api_key = STRIPE_SECRET_KEY
@@ -67,15 +74,31 @@ def checkout(request: HttpRequest) -> HttpResponse:
     """
     basket = get_basket(request)
 
-    return render(request, app_template_path(
-        THIS_APP, 'checkout.html'
-    ), context={
+    context = {
         STRIPE_PUBLISHABLE_KEY_CTX: STRIPE_PUBLISHABLE_KEY,
         STRIPE_RETURN_URL_CTX: namespaced_url(
             THIS_APP, CHECKOUT_PAID_ROUTE_NAME
-        ),
+        )
+    }
+    context.update(
+        basket_context(basket)
+    )
+
+    return render(request, app_template_path(
+        THIS_APP, 'checkout.html'
+    ), context=context)
+
+
+def basket_context(basket: Basket) -> dict:
+    """
+    Get context for basket template
+    :param basket: current basket
+    :return: context
+    """
+    return {
         BASKET_CTX: basket,
-    })
+        CURRENCIES_CTX: get_currency_choices()
+    }
 
 
 @login_required
@@ -100,6 +123,35 @@ def create_payment_intent(request: HttpRequest) -> HttpResponse:
     return JsonResponse({
         'clientSecret': intent['client_secret']
     }, status=HTTPStatus.OK)
+
+
+@login_required
+@require_http_methods([PATCH])
+def update_basket(request: HttpRequest) -> HttpResponse:
+    """
+    Update the basket
+    :param request: http request
+    :return: response
+    """
+
+    basket = get_basket(request)
+
+    success = False
+    if BASKET_CCY_QUERY in request.GET:
+        new_ccy = request.GET[BASKET_CCY_QUERY]
+        if is_valid_code(new_ccy):
+            basket.currency = new_ccy
+            success = True
+
+    payload = None if not success else replace_inner_html_payload(
+        "#id__basket-div", render_to_string(
+            app_template_path(
+                THIS_APP, "snippet", "basket.html"),
+            context=basket_context(basket))
+    )
+
+    return JsonResponse(
+        payload, status=HTTPStatus.OK if success else HTTPStatus.BAD_REQUEST)
 
 
 @login_required

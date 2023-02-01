@@ -211,6 +211,7 @@ class Basket:
         currency = currency.upper()
         if is_valid_code(currency):
             self._currency = currency
+            self._calc_total()
         else:
             raise ValueError(f'Unsupported currency: {currency}')
 

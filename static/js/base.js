@@ -74,5 +74,20 @@ function redirectRewriteInfoResponseHandler(data) {
     }
 }
 
+/**
+ * Add the CSRF header to the specified object
+ * @param update - object to update
+ * @returns updated object
+ */
+function csrfHeader(update = undefined) {
+    if (update === undefined) {
+        update = {}
+    }
+    return Object.assign(update, {
+        'X-CSRFTOKEN': csrfToken()
+    });
+}
+
+
 enableTooltips();
 

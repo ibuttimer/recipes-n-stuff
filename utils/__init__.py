@@ -57,7 +57,7 @@ from .url_path import (
 )
 from .views import (
     redirect_on_success_or_render, resolve_req, redirect_payload,
-    replace_html_payload, replace_inner_html_payload, rewrite_payload
+    replace_html_payload, replace_inner_html_payload, rewrite_payload,
 )
 
 

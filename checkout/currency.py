@@ -106,4 +106,4 @@ def is_valid_code(code: str) -> bool:
     :return: True if supported
     """
     currencies = get_currencies(copy=False)
-    return code in currencies
+    return code.upper() in currencies

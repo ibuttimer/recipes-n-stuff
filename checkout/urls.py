@@ -27,10 +27,11 @@ from .constants import (
     THIS_APP,
     CHECKOUT_PAY_URL, CHECKOUT_PAY_ROUTE_NAME,
     CHECKOUT_CREATE_PAYMENT_URL, CHECKOUT_CREATE_PAYMENT_ROUTE_NAME,
-    CHECKOUT_PAID_URL, CHECKOUT_PAID_ROUTE_NAME
+    CHECKOUT_UPDATE_BASKET_URL, CHECKOUT_UPDATE_BASKET_ROUTE_NAME,
+    CHECKOUT_PAID_URL, CHECKOUT_PAID_ROUTE_NAME,
 )
 from .views import (
-    checkout, create_payment_intent, payment_complete
+    checkout, create_payment_intent, payment_complete, update_basket
 )
 
 # https://docs.djangoproject.com/en/4.1/topics/http/urls/#url-namespaces-and-included-urlconfs
@@ -40,5 +41,7 @@ urlpatterns = [
     path(CHECKOUT_PAY_URL, checkout, name=CHECKOUT_PAY_ROUTE_NAME),
     path(CHECKOUT_CREATE_PAYMENT_URL, create_payment_intent,
          name=CHECKOUT_CREATE_PAYMENT_ROUTE_NAME),
+    path(CHECKOUT_UPDATE_BASKET_URL, update_basket,
+         name=CHECKOUT_UPDATE_BASKET_ROUTE_NAME),
     path(CHECKOUT_PAID_URL, payment_complete, name=CHECKOUT_PAID_ROUTE_NAME),
 ]

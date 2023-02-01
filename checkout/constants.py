@@ -40,16 +40,23 @@ RATES_FIELD = 'rates'
 # urls/routes related
 CHECKOUT_PAY_URL = append_slash("pay")
 CHECKOUT_CREATE_PAYMENT_URL = append_slash("payment-intent")
+CHECKOUT_UPDATE_BASKET_URL = append_slash("update-basket")
 CHECKOUT_PAID_URL = append_slash("paid")
 
-CHECKOUT_CREATE_PAYMENT_ROUTE_NAME = "payment_intent"
 CHECKOUT_PAY_ROUTE_NAME = "pay"
+CHECKOUT_CREATE_PAYMENT_ROUTE_NAME = "payment_intent"
+CHECKOUT_UPDATE_BASKET_ROUTE_NAME = "update_basket"
 CHECKOUT_PAID_ROUTE_NAME = "paid"
+
+# query related
+BASKET_CCY_QUERY = 'ccy'
+
 
 # context related
 STRIPE_PUBLISHABLE_KEY_CTX = 'stripe_publishable_key'
 STRIPE_RETURN_URL_CTX = 'stripe_return_url'
 BASKET_CTX = 'basket'
+CURRENCIES_CTX = 'currencies'
 
 # session related
 BASKET_SES = 'basket'

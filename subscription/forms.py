@@ -42,7 +42,7 @@ G10_CURRENCIES = sorted([
 def get_currency_choices() -> Tuple[Tuple[str, str]]:
     """
     Get list of currency choices
-    :return:
+    :return: list of tuples of currency code and name
     """
     currencies = get_currencies()
     default = DEFAULT_CURRENCY.upper()

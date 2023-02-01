@@ -33,49 +33,14 @@
 </div>
 
 <div class="row flex-grow-1 overflow-auto d-flex justify-content-center">
-
-    <div class="row">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th scope="col">Description</th>
-                    <th scope="col">Unit cost</th>
-                    <th scope="col">Units</th>
-                    <th scope="col">Item total</th>
-                    <th scope="col">Currency</th>
-                    <th scope="col">SKU</th>
-                    <th scope="col">Subtotal<br>{{ basket.currency }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in basket.items %}
-                    <tr>
-                        <td>{{ item.description }}</td>
-                        <td>{{ item.amt_str }}</td>
-                        <td>{{ item.count }}</td>
-                        <td>{{ item.item_total_str }}</td>
-                        <td>{{ item.currency }}</td>
-                        <td>{{ item.sku }}</td>
-                        <td>{{ basket.subtotals.0 }}</td>
-                    </tr>
-                    {% if item.instructions %}
-                        <tr>
-                            <td><em>Instructions</em></td>
-                            <td colspan="5">{{ item.instructions }}</td>
-                        </tr>
-                    {% endif %}
-                {% endfor %}
-                <tr>
-                    <td colspan="5"></td>
-                    <td><b>Total {{ basket.currency }}</b></td>
-                    <td>{{ basket.total_str }}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-
     <article id="article-content" class="row d-flex justify-content-center">
+
+        <div class="row" id="id__basket-div">
+            {# --- basket.html template variable defines for includes --- #}
+            {# basket template expects: 'basket' as Basket #}
+            {#                          'currencies' as currency choices for select #}
+            {% include 'checkout/snippet/basket.html' %}
+        </div>
 
         <!-- Display a payment form -->
         <form id="payment-form">
@@ -103,14 +68,22 @@
 {% block extra_js_body %}
     {{ block.super }}
     <script>
-        const stripePublishableKey = () => '{{ stripe_publishable_key }}';
-        const createPaymentIntentUrl = () => '{% url "checkout:payment_intent" %}';
+        const STRIPE_PUBLISHABLE_KEY = '{{ stripe_publishable_key }}';
+        const CREATE_PAYMENT_INTENT_URL = '{% url "checkout:payment_intent" %}';
         const baseUrl = window.location.href.slice(0, window.location.href.indexOf(window.location.pathname))
         const stripeReturnUrl = () => `${baseUrl}{% url "checkout:paid" %}`;
+        const UPDATE_BASKET_URL = '{% url "checkout:update_basket" %}';
+
+        const paymentCurrencySelectSelector = "#id__pay-ccy-select";
+
+
+
 
         $(document).ready(function() {
             initialize().then();
             checkStatus().then();
+
+            setPaymentCcyChangeHandler();
         });
 
 

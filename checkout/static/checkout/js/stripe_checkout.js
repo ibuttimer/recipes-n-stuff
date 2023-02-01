@@ -26,7 +26,7 @@
  * Based on the sample files from https://stripe.com/docs/payments/quickstart?lang=python
  */
 // This is your test publishable API key.
-const stripe = Stripe(stripePublishableKey());
+const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
 
 let elements;
 
@@ -38,12 +38,11 @@ let emailAddress = '';
 
 // Fetches a payment intent and captures the client secret
 async function initialize() {
-    const response = await fetch(createPaymentIntentUrl(), {
+    const response = await fetch(CREATE_PAYMENT_INTENT_URL, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            'X-CSRFTOKEN': csrfToken()
-        },
+        headers: csrfHeader({
+            "Content-Type": "application/json"
+        }),
     });
     const { clientSecret } = await response.json();
 
@@ -121,6 +120,23 @@ async function checkStatus() {
             break;
     }
 }
+
+
+const setPaymentCcyChangeHandler = () => $(paymentCurrencySelectSelector).on('change', processPaymentCcyChange);
+
+function processPaymentCcyChange(event) {
+
+    $.ajax({
+        url: `${UPDATE_BASKET_URL}?ccy=${event.currentTarget.value}`,
+        method: 'patch',
+        headers: csrfHeader()
+    }).done(function(data) {
+        redirectRewriteInfoResponseHandler(data);
+
+        setPaymentCcyChangeHandler();
+    });
+}
+
 
 // ------- UI helpers -------
 

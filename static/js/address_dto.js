@@ -43,9 +43,7 @@ $(document).ready(function () {
             method: 'patch',
             // address_dto.html: href of make default 'a' tag
             url: event.currentTarget.attributes['href'].textContent,
-            headers: {
-                'X-CSRFTOKEN': csrfToken()
-            },
+            headers: csrfHeader(),
         }).done(function (data) {
             redirectRewriteInfoResponseHandler(data)
         });
