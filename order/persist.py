@@ -19,12 +19,28 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from _decimal import Decimal
 
-from django.apps import AppConfig
+from checkout.basket import Basket
+from order.models import Order, OrderStatus, OrderProduct
 
-from .constants import THIS_APP
 
+def save_order(basket: Basket):
+    """
+    Save the basket order to the database
+    :param basket: basket to save
+    """
+    order = Order.objects.create(**{
+        f'{Order.ORDER_NUM_FIELD}': basket.order_num,
+        f'{Order.USER_FIELD}': basket.user,
+        f'{Order.STATUS_FIELD}': OrderStatus.PAID.choice,
+        f'{Order.AMOUNT_FIELD}': Decimal.from_float(basket.total),
+        f'{Order.BASE_CURRENCY_FIELD}': basket.currency,
+    })
 
-class CheckoutConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = THIS_APP
+    order.items.set(
+        OrderProduct.objects.get(**{
+            f'{OrderProduct.SKU_FIELD}': item.sku
+        }) for item in basket.items
+    )
+    order.save()

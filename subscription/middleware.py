@@ -29,15 +29,20 @@ from django.contrib import messages
 import json_fix
 import jsonpickle
 
-from checkout.constants import CHECKOUT_CREATE_PAYMENT_ROUTE_NAME
+from checkout.constants import (
+    CHECKOUT_CREATE_PAYMENT_ROUTE_NAME, CHECKOUT_PAY_ROUTE_NAME,
+    CHECKOUT_UPDATE_BASKET_ROUTE_NAME, CHECKOUT_PAID_ROUTE_NAME
+)
 from recipesnstuff.constants import LOGOUT_ROUTE_NAME, CHECKOUT_APP_NAME
 from recipesnstuff.settings import STATIC_URL
 from subscription.views.subscription_queries import user_has_subscription
 from utils import namespaced_url, resolve_req
 
 from .constants import (
-    THIS_APP, SUBSCRIPTION_CHOICE_ROUTE_NAME, SUBSCRIPTION_PICK_ROUTE_NAME
+    THIS_APP, SUBSCRIPTION_CHOICE_ROUTE_NAME, SUBSCRIPTION_PICK_ROUTE_NAME,
+    USER_SUB_ID_SES
 )
+from .models import UserSubscription, SubscriptionStatus
 
 SUB_EXPIRY = 'sub_expiry'   # subscription expiry date
 SUB_STATUS = 'sub_status'   # subscription status
@@ -82,7 +87,10 @@ NO_SUB_SANDBOX = [
     # no subscription restricted to choose subscription, payment or logout
     SUB_CHOICE_ROUTE, LOGOUT_ROUTE_NAME,
     namespaced_url(THIS_APP, SUBSCRIPTION_PICK_ROUTE_NAME),
-    namespaced_url(CHECKOUT_APP_NAME, CHECKOUT_CREATE_PAYMENT_ROUTE_NAME)
+    namespaced_url(CHECKOUT_APP_NAME, CHECKOUT_CREATE_PAYMENT_ROUTE_NAME),
+    namespaced_url(CHECKOUT_APP_NAME, CHECKOUT_UPDATE_BASKET_ROUTE_NAME),
+    namespaced_url(CHECKOUT_APP_NAME, CHECKOUT_PAY_ROUTE_NAME),
+    namespaced_url(CHECKOUT_APP_NAME, CHECKOUT_PAID_ROUTE_NAME)
 ]
 
 
@@ -175,6 +183,24 @@ def update_session_subscription(
     """
     request.session[SUB_STATUS] = status
     request.session[SUB_EXPIRY] = expiry.timestamp() if expiry else 0
+
+
+def subscription_payment_completed(request: HttpRequest):
+    """
+    Update status following completion of subscription payment
+    :param request: http request
+    """
+    user_sub = UserSubscription.objects.get(**{
+        f'{UserSubscription.id_field()}':
+            int(request.session[USER_SUB_ID_SES]),
+    })
+
+    user_sub.status = SubscriptionStatus.ACTIVE.choice
+    user_sub.save()
+
+    # update session
+    update_session_subscription(
+        request, SessionSubStatus.VALID, user_sub.end_date)
 
 
 def clear_session_subscription(request: HttpRequest):

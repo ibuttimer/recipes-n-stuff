@@ -30,10 +30,12 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_http_methods
 
+from order.persist import save_order
 from recipesnstuff.settings import (
     STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY
 )
 from subscription.forms import get_currency_choices
+from subscription.middleware import subscription_payment_completed
 from utils import (
     GET, POST, PATCH, namespaced_url, app_template_path,
     replace_inner_html_payload, TITLE_CTX, PAGE_HEADING_CTX, DELETE,
@@ -44,7 +46,7 @@ from .basket import Basket
 from .constants import (
     THIS_APP, STRIPE_PUBLISHABLE_KEY_CTX, STRIPE_RETURN_URL_CTX,
     CHECKOUT_PAID_ROUTE_NAME, BASKET_SES, BASKET_CTX, CURRENCIES_CTX,
-    BASKET_CCY_QUERY, ITEM_QUERY, UNITS_QUERY
+    BASKET_CCY_QUERY, ITEM_QUERY, UNITS_QUERY, ORDER_NUM_CTX
 )
 from .currency import is_valid_code
 
@@ -124,7 +126,6 @@ def create_payment_intent(request: HttpRequest) -> HttpResponse:
     :param request: http request
     :return: response
     """
-
     basket = get_basket(request)
 
     # Create a PaymentIntent with the order amount and currency
@@ -148,7 +149,6 @@ def update_basket(request: HttpRequest) -> HttpResponse:
     :param request: http request
     :return: response
     """
-
     basket = get_basket(request)
 
     redraw_basket = False
@@ -171,7 +171,6 @@ def update_basket(request: HttpRequest) -> HttpResponse:
             # change num of units of item
             units = int(request.GET[UNITS_QUERY])
             redraw_basket = basket.update_item_units(item, units)
-
 
     if redraw_basket or redraw_msg:
         # need to update serialised basket in request
@@ -202,7 +201,15 @@ def payment_complete(request: HttpRequest) -> HttpResponse:
     :param request: http request
     :return: response
     """
+    basket = get_basket(request)
+    save_order(basket)
+
+    subscription_payment_completed(request)
+
     return render(request, app_template_path(
         THIS_APP, 'payment_complete.html'
     ), context={
+        TITLE_CTX: "Payment complete",
+        PAGE_HEADING_CTX: "Payment received",
+        ORDER_NUM_CTX: basket.order_num
     })

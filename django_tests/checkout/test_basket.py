@@ -138,7 +138,8 @@ class TestForexFixtures(BaseCheckoutTest):
             expected_total = Decimal(0)
             expected_items = 0
             for idx in range(1, 5):
-                basket.add(items[idx][0], f'item {idx}', currency=items[idx][1])
+                basket.add(items[idx][0], f'item {idx}',
+                           currency=items[idx][1])
                 expected_total += items[idx][2]
                 expected_items += 1
             self.verify_basket_attributes(

@@ -59,6 +59,7 @@ STRIPE_PUBLISHABLE_KEY_CTX = 'stripe_publishable_key'
 STRIPE_RETURN_URL_CTX = 'stripe_return_url'
 BASKET_CTX = 'basket'
 CURRENCIES_CTX = 'currencies'
+ORDER_NUM_CTX = 'order_num'
 
 # session related
 BASKET_SES = 'basket'

@@ -19,7 +19,7 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from typing import List, Union, TypeVar
+from typing import List, Union, TypeVar, Tuple
 from dataclasses import dataclass
 from decimal import Decimal
 
@@ -29,9 +29,12 @@ import jsonpickle
 
 from checkout.constants import BASKET_SES
 from checkout.currency import is_valid_code, get_currency
-from checkout.forex import get_rates, NumType, convert_forex, normalise_amount
+from checkout.forex import NumType, convert_forex, normalise_amount
+from order.misc import generate_order_num
+from order.queries import get_subscription_product
 from recipesnstuff.settings import FINANCIAL_FACTOR, DEFAULT_CURRENCY
-
+from subscription.models import Subscription
+from user.models import User
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
 TypeBasketItem = TypeVar("TypeBasketItem", bound="BasketItem")
@@ -122,9 +125,17 @@ class Basket:
     items: List[BasketItem]
     subtotals: List[float]
     _total: Decimal
+    order_num: str
+    user: User
 
-    def __init__(self, currency: str = None):
+    def __init__(self, currency: str = None, request: HttpRequest = None):
         self._initialise(currency)
+        if request:
+            self.order_num = generate_order_num(request)
+            self.user = request.user
+        else:
+            self.order_num = ''
+            self.user = None
 
     def _initialise(self, currency: str):
         """
@@ -283,24 +294,35 @@ class Basket:
         return jsonpickle.decode(jsonable)
 
 
-def add_to_basket(request: HttpRequest, amount: Union[int, float, Decimal],
-                  description: str, count: int = 1, sku: str = None,
-                  currency: str = None, instructions: str = None):
+def get_session_basket(request: HttpRequest) -> Tuple[Basket, bool]:
+    """
+    Get the session basket
+    :param request: http request
+    :return tuple of basket and new basket flag
+    """
+    new_order = BASKET_SES not in request.session
+    basket = Basket(request=request) if new_order else \
+        Basket.from_jsonable(request.session[BASKET_SES])
+    request.session[BASKET_SES] = basket
+    return basket, new_order
+
+
+def add_subscription_to_basket(
+        request: HttpRequest, subscription: Subscription, count: int = 1,
+        instructions: str = None):
     """
     Add an item to the request basket
     :param request: http request
-    :param amount: cost per item
-    :param description: description
-    :param count: number of items
-    :param sku: stock keeping unit; default None
-    :param currency: currency code; default None i.e. basket currency
+    :param subscription: subscription
+    :param count: number of items; default 1
     :param instructions: additional instructions; default None
     """
-    basket = request.session[BASKET_SES] \
-        if BASKET_SES in request.session else Basket()
-    request.session[BASKET_SES] = basket
+    basket, new_order = get_session_basket(request)
+
+    order_prod = get_subscription_product(subscription)
 
     basket.add(
-        amount, description, count=count, sku=sku, currency=currency,
+        subscription.amount, f"'{subscription.name}' subscription",
+        count=count, sku=order_prod.sku, currency=subscription.base_currency,
         instructions=instructions
     )

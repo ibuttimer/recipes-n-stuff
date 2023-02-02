@@ -19,12 +19,23 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from pathlib import Path
+from utils import append_slash, url_path
 
-from django.apps import AppConfig
+# name of this app
+THIS_APP = Path(__file__).resolve().parent.name
 
-from .constants import THIS_APP
+# common field names
+USER_FIELD = 'user'
+CREATED_FIELD = 'created'
+UPDATED_FIELD = 'updated'
+STATUS_FIELD = 'status'
+AMOUNT_FIELD = 'amount'
+BASE_CURRENCY_FIELD = 'base_currency'
+ORDER_NUM_FIELD = 'order_num'
+ITEMS_FIELD = 'items'
+TYPE_FIELD = 'type'
+SUBSCRIPTION_FIELD = 'subscription'
+SKU_FIELD = 'sku'
 
-
-class CheckoutConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = THIS_APP
+# context related

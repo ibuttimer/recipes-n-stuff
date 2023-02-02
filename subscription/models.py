@@ -33,7 +33,7 @@ from dateutil.relativedelta import *
 
 from recipesnstuff.settings import DEFAULT_CURRENCY
 from user.models import User
-from utils import ModelMixin
+from utils import ModelMixin, NameChoiceMixin
 
 from .constants import (
     NAME_FIELD, FREQUENCY_FIELD, FREQUENCY_TYPE_FIELD, AMOUNT_FIELD,
@@ -43,62 +43,14 @@ from .constants import (
 )
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
+# models
 TypeMeasure = TypeVar("TypeMeasure", bound="Measure")
+TypeSubscription = TypeVar("TypeSubscription", bound="Subscription")
+# choice fields
 TypeFrequencyType = TypeVar("FrequencyType", bound="FrequencyType")
-TypeNameChoiceMixin = TypeVar("NameChoiceMixin", bound="NameChoiceMixin")
 TypeFeatureType = TypeVar("FeatureType", bound="FeatureType")
 TypeSubscriptionStatus = \
     TypeVar("SubscriptionStatus", bound="SubscriptionStatus")
-
-
-class NameChoiceMixin:
-
-    NAME = 'name'
-    CHOICE = 'choice'
-
-    def is_from_choice(self, choice: str) -> bool:
-        """
-        Check if the specified `choice` relates to this object
-        :param choice: choice to check
-        :return: True if choice matches
-        """
-        return self.value.choice == choice
-
-    @property
-    def display_name(self):
-        """ Name value for this object """
-        return self.value.name
-
-    @property
-    def choice(self):
-        """ Choice value for this object """
-        return self.value.choice
-
-    @staticmethod
-    def obj_from_choice(
-            obj_type: TypeNameChoiceMixin, choice: str
-    ) -> Optional[TypeNameChoiceMixin]:
-        """
-        Get the object corresponding to `choice`
-        :param obj_type: NameChoice enum
-        :param choice: choice to find
-        :return: feature type or None of not found
-        """
-        result = list(
-            filter(lambda t: t.value.choice == choice, obj_type)
-        )
-        return result[0] if len(result) == 1 else None
-
-    @staticmethod
-    def get_model_choices(obj_type: TypeNameChoiceMixin) -> List[Tuple]:
-        """
-        Get the model choices for this object
-        :return: list of choices
-        """
-        return [
-            (sub.value.choice, sub.value.name) for sub in obj_type
-        ]
-
 
 Frequency = namedtuple(
     'Frequency', [
@@ -161,6 +113,9 @@ class FrequencyType(NameChoiceMixin, Enum):
         return NameChoiceMixin.get_model_choices(FrequencyType)
 
 
+NameChoiceMixin.assert_uniqueness(FrequencyType)
+
+
 class FeatureType(NameChoiceMixin, Enum):
     """ Enum representing subscription feature types """
     BASIC = Feature('Basic', 'ba')
@@ -187,6 +142,9 @@ class FeatureType(NameChoiceMixin, Enum):
         :return: list of choices
         """
         return NameChoiceMixin.get_model_choices(FeatureType)
+
+
+NameChoiceMixin.assert_uniqueness(FeatureType)
 
 
 class SubscriptionFeature(ModelMixin, models.Model):
@@ -273,6 +231,9 @@ class SubscriptionStatus(NameChoiceMixin, Enum):
         return NameChoiceMixin.get_model_choices(SubscriptionStatus)
 
 
+NameChoiceMixin.assert_uniqueness(SubscriptionStatus)
+
+
 class Subscription(ModelMixin, models.Model):
     """
     Subscription model
@@ -343,6 +304,17 @@ class Subscription(ModelMixin, models.Model):
     def numeric_fields(cls) -> list[str]:
         """ Get the list of numeric fields """
         return [Subscription.FREQUENCY_FIELD, Subscription.AMOUNT_FIELD]
+
+    @classmethod
+    def get_default_subscription(cls) -> TypeSubscription:
+        """ Get the default pk for objects requiring a Subscription field """
+        return cls.get_default_instance(unique_fields={
+            # name needs to be unique
+            f'{Subscription.NAME_FIELD}': 'None',
+        }, defaults={
+            # description required, other fields have reasonable defaults
+            f'{Subscription.DESCRIPTION_FIELD}': 'Subscription placeholder'
+        })
 
     def __str__(self):
         return f'{self.name}'

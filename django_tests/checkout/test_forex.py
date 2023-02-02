@@ -64,8 +64,7 @@ class TestForexFixtures(BaseCheckoutTest):
                         code=code, count=units):
                     self.assertEqual(
                         int(self.test_rates[code] * units *
-                            (10 ** self.test_digits[code])
-                        ),
+                            (10 ** self.test_digits[code])),
                         convert_forex(1, 'EUR', code, count=units,
                                       smallest_unit=True)
                     )

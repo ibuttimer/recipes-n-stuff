@@ -103,6 +103,11 @@ class SubscriptionForm(FormMixin, forms.ModelForm):
         max_length=Subscription.SUBSCRIPTION_ATTRIB_DESCRIPTION_MAX_LEN,
         required=True)
 
+    call_to_pick = forms.CharField(
+        label=_("Call to pick"),
+        max_length=Subscription.SUBSCRIPTION_ATTRIB_CALL_TO_PICK_MAX_LEN,
+        required=True)
+
     is_active = forms.BooleanField(label=_("Is active"), initial=True)
 
     class Meta:
@@ -111,7 +116,7 @@ class SubscriptionForm(FormMixin, forms.ModelForm):
             Subscription.NAME_FIELD, Subscription.DESCRIPTION_FIELD,
             Subscription.FREQUENCY_TYPE_FIELD, Subscription.FREQUENCY_FIELD,
             Subscription.BASE_CURRENCY_FIELD, Subscription.AMOUNT_FIELD,
-            Subscription.IS_ACTIVE_FIELD
+            Subscription.CALL_TO_PICK_FIELD, Subscription.IS_ACTIVE_FIELD
         ]
         bool_fields = [
             Subscription.IS_ACTIVE_FIELD

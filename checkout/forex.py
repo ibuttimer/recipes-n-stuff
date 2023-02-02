@@ -86,11 +86,11 @@ def get_rates() -> Tuple[Dict[str, float], str]:
             base = rjson['base']
 
             CurrencyRate.objects.create(**{
-                f'{CurrencyRate.TIMESTAMP_FIELD}': datetime.now(tz=timezone.utc),
+                f'{CurrencyRate.TIMESTAMP_FIELD}':
+                    datetime.now(tz=timezone.utc),
                 f'{CurrencyRate.BASE_FIELD}': base,
                 f'{CurrencyRate.RATES_FIELD}': zlib.compress(
-                    bytes(json.dumps(rates),'UTF-8')
-                )
+                    bytes(json.dumps(rates), 'UTF-8'))
             })
         else:
             # use latest from database

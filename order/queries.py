@@ -19,12 +19,18 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-
-from django.apps import AppConfig
-
-from .constants import THIS_APP
+from order.models import OrderProduct, ProductType
+from subscription.models import Subscription
 
 
-class CheckoutConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = THIS_APP
+def get_subscription_product(subscription: Subscription) -> OrderProduct:
+    """
+    Get the order product for `subscription`
+    :param subscription: subscription to search for
+    :return: OrderProduct
+    """
+    order_prod = OrderProduct.objects.get(**{
+        f'{OrderProduct.TYPE_FIELD}': ProductType.SUBSCRIPTION.choice,
+        f'{OrderProduct.SUBSCRIPTION_FIELD}': subscription
+    })
+    return order_prod

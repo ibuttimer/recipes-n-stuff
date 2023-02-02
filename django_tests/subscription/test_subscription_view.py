@@ -173,8 +173,8 @@ class TestSubscriptionView(SoupMixin, BaseProfilesTest):
                         if self.in_tag_attr(child, "class", "card-header"):
                             # subscription cost
                             self.assertIn(dto.name, child.text,
-                                            msg="name not found")
+                                          msg="name not found")
                         elif self.in_tag_attr(child, "class", "card-title"):
                             # subscription cost
                             self.assertIn(str(dto.amount), child.text,
-                                            msg="amount not found")
+                                          msg="amount not found")

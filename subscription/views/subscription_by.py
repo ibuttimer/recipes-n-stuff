@@ -35,7 +35,7 @@ from django.views.decorators.http import require_http_methods
 from base import (
     InfoModalLevel, InfoModalTemplate, level_info_modal_payload,
 )
-from checkout.basket import add_to_basket
+from checkout.basket import add_subscription_to_basket
 from checkout.constants import CHECKOUT_PAY_ROUTE_NAME
 from subscription.constants import (
     THIS_APP, SUBSCRIPTION_FORM_CTX, SUBSCRIPTION_ID_ROUTE_NAME,
@@ -221,17 +221,9 @@ def subscription_pick(request: HttpRequest, pk: int) -> HttpResponse:
     })
     assert user_sub is not None
 
-    # update session
-    update_session_subscription(
-        request, SessionSubStatus.VALID, end_date)
-
     request.session[USER_SUB_ID_SES] = user_sub.id
 
-    add_to_basket(request, float(subscription.amount),
-                  f'{subscription.name} subscription',
-                  sku=f'sub{subscription.id}',
-                  currency=subscription.base_currency)
-
+    add_subscription_to_basket(request, subscription)
 
     return redirect(
         namespaced_url(CHECKOUT_APP_NAME, CHECKOUT_PAY_ROUTE_NAME)

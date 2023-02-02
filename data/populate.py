@@ -331,7 +331,6 @@ def load_currency(args: argparse.Namespace, curs):
 
                 progress.inc(new_id)
 
-
     progress.end()
 
 

@@ -38,7 +38,7 @@ from .misc import (
     Crud, permission_name, permission_check, ensure_list, find_index
 )
 from .models import (
-    ModelMixin, ModelFacadeMixin,
+    ModelMixin, ModelFacadeMixin, NameChoiceMixin,
     DESC_LOOKUP, DATE_OLDEST_LOOKUP, DATE_NEWEST_LOOKUP
 )
 from .query_params import QuerySetParams
@@ -102,6 +102,7 @@ __all__ = [
 
     'ModelMixin',
     'ModelFacadeMixin',
+    'NameChoiceMixin',
     'DESC_LOOKUP',
     'DATE_OLDEST_LOOKUP',
     'DATE_NEWEST_LOOKUP',

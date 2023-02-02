@@ -43,7 +43,7 @@ from .constants import (
     BASE_APP_NAME, MIN_PASSWORD_LEN, USER_APP_NAME, PROFILES_APP_NAME,
     RECIPES_APP_NAME, SUBSCRIPTION_APP_NAME, CHECKOUT_APP_NAME,
     LOGIN_URL as USER_LOGIN_URL, LOGIN_ROUTE_NAME, HOME_ROUTE_NAME,
-    LANDING_ROUTE_NAME
+    LANDING_ROUTE_NAME, ORDER_APP_NAME
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -165,6 +165,7 @@ INSTALLED_APPS = [
     RECIPES_APP_NAME,
     SUBSCRIPTION_APP_NAME,
     CHECKOUT_APP_NAME,
+    ORDER_APP_NAME,
 
     # needs to be after app with django template overrides
     'django.forms',

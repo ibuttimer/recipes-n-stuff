@@ -20,11 +20,28 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 
-from django.apps import AppConfig
+from django.contrib import admin
 
-from .constants import THIS_APP
+from .models import OrderProduct, Order
 
 
-class CheckoutConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = THIS_APP
+@admin.register(OrderProduct)
+class OrderProductAdmin(admin.ModelAdmin):
+    """ Class representing the OrderProduct model in the admin interface """
+    list_display = (
+        OrderProduct.TYPE_FIELD,
+        OrderProduct.SUBSCRIPTION_FIELD,
+    )
+    ordering = (OrderProduct.TYPE_FIELD,)
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    """ Class representing the Order model in the admin interface """
+    list_display = (
+        Order.ORDER_NUM_FIELD,
+        Order.USER_FIELD,
+        Order.CREATED_FIELD,
+        Order.STATUS_FIELD,
+    )
+    ordering = (Order.ORDER_NUM_FIELD,)

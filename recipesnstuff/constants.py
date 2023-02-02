@@ -32,6 +32,7 @@ PROFILES_APP_NAME = "profiles"
 RECIPES_APP_NAME = "recipes"
 SUBSCRIPTION_APP_NAME = "subscription"
 CHECKOUT_APP_NAME = "checkout"
+ORDER_APP_NAME = "order"
 
 # Base routes related
 HOME_URL = "/"
