@@ -24,6 +24,7 @@ from datetime import datetime, timezone
 from enum import Enum, auto
 from typing import Any, Type, Optional, Tuple, List
 from zoneinfo import ZoneInfo
+from decimal import Decimal, InvalidOperation
 
 from django.db.models import Q, QuerySet
 
@@ -37,16 +38,14 @@ from utils import (
     regex_matchers, regex_date_matchers, QuerySetParams,
     TERM_GROUP, KEY_TERM_GROUP, DATE_QUERY_GROUP, DATE_KEY_TERM_GROUP,
     DATE_QUERY_YR_GROUP, DATE_QUERY_MTH_GROUP,
-    DATE_QUERY_DAY_GROUP, USER_QUERY, YesNo
+    DATE_QUERY_DAY_GROUP, USER_QUERY, YesNo, amount_lookups
 )
-
-# query terms which only appear in a search
-SEARCH_ONLY_QUERIES = [SEARCH_QUERY]
-SEARCH_ONLY_QUERIES.extend(DATE_QUERIES)
+from utils.search import AMOUNT_QUERIES
 
 NON_DATE_QUERIES = [
     USER_QUERY
 ]
+NON_DATE_QUERIES.extend(AMOUNT_QUERIES)
 REGEX_MATCHERS = regex_matchers(NON_DATE_QUERIES)
 REGEX_MATCHERS.update(regex_date_matchers())
 
@@ -65,10 +64,12 @@ FIELD_LOOKUPS = {
     # BEFORE_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date__lt',
     # EQUAL_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date',
 }
+FIELD_LOOKUPS.update(
+    amount_lookups(Subscription.AMOUNT_FIELD))
 # priority order list of query terms
 FILTERS_ORDER = [
     # search is a shortcut filter, if search is specified nothing
-    # else is checked after
+    # else is checked after therefore must be first
     SEARCH_QUERY,
 ]
 ALWAYS_FILTERS = [
@@ -115,14 +116,17 @@ def get_lookup(
     """
     if query_set_params is None:
         query_set_params = QuerySetParams()
-    if not value:
+    if value is None:
         return query_set_params
 
-    if query in SEARCH_ONLY_QUERIES:
+    if query == SEARCH_QUERY:
         query_set_params = get_search_term(
             value, user, query_set_params=query_set_params)
     elif query == IS_ACTIVE_QUERY:
         get_active_query(query_set_params, value)
+    elif query in AMOUNT_QUERIES:
+        get_amount_query(
+            query_set_params, query, value)
     elif query not in NON_LOOKUP_ARGS and value:
         query_set_params.add_and_lookup(query, FIELD_LOOKUPS[query], value)
     # else no value or complex query term handled elsewhere
@@ -180,6 +184,9 @@ def get_search_term(
                         DATE_QUERY_DAY_GROUP
                     ]
                 ])
+            elif query in AMOUNT_QUERIES:
+                success = get_amount_query(
+                    query_set_params, query, match.group(group))
             elif query not in NON_LOOKUP_ARGS:
                 query_set_params.add_and_lookup(
                     query, FIELD_LOOKUPS[query], match.group(group))
@@ -266,6 +273,28 @@ def get_date_query(query_set_params: QuerySetParams,
             query, FIELD_LOOKUPS[query], date)
     except ValueError:
         # ignore invalid date
+        # TODO add errors to QuerySetParams
+        # so they can be returned to user
+        success = False
+    return success
+
+
+def get_amount_query(query_set_params: QuerySetParams,
+                     query: str, amount: str) -> bool:
+    """
+    Get an amount query
+    :param query_set_params: query params to update
+    :param query: query key
+    :param amount: amount
+    :return: True if successfully added
+    """
+    success = True
+    try:
+        amt = Decimal(amount)
+        query_set_params.add_and_lookup(
+            query, FIELD_LOOKUPS[query], amt)
+    except InvalidOperation:
+        # ignore invalid amount
         # TODO add errors to QuerySetParams
         # so they can be returned to user
         success = False
@@ -371,6 +400,24 @@ def user_has_subscription(
         user, active=True, last_expired=last_expired)
     return (user_sub is not None, user_sub, expired_sub) \
         if not user.is_superuser else (True, None, None)
+
+
+def user_had_free_trial_subscription(user: User) -> bool:
+    """
+    Check if the specified user has had a free trial subscription
+    :param user: user to search for
+    :return: True if had free trial
+    """
+    query = UserSubscription.objects.filter(**{
+        f'{UserSubscription.USER_FIELD}': user,
+        f'{UserSubscription.SUBSCRIPTION_FIELD}__{Subscription.AMOUNT_FIELD}':
+            Decimal(0),
+    }).order_by(
+        UserSubscription.date_lookup(UserSubscription.END_DATE_FIELD)
+    )
+    count = query.count()
+
+    return count > 0
 
 
 def get_subscription_features(

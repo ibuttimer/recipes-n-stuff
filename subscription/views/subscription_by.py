@@ -27,6 +27,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.views import View
@@ -39,11 +40,11 @@ from checkout.basket import add_subscription_to_basket
 from checkout.constants import CHECKOUT_PAY_ROUTE_NAME
 from subscription.constants import (
     THIS_APP, SUBSCRIPTION_FORM_CTX, SUBSCRIPTION_ID_ROUTE_NAME,
-    SUBSCRIPTIONS_ROUTE_NAME, USER_SUB_ID_SES,
+    SUBSCRIPTIONS_ROUTE_NAME, USER_SUB_ID_SES, SUBSCRIPTION_CHOICE_ROUTE_NAME,
 )
 from subscription.forms import SubscriptionForm
 from subscription.models import Subscription, UserSubscription, FrequencyType
-from recipesnstuff.constants import CHECKOUT_APP_NAME
+from recipesnstuff.constants import CHECKOUT_APP_NAME, HOME_ROUTE_NAME
 from utils import (
     Crud, SUBMIT_URL_CTX, app_template_path, reverse_q,
     namespaced_url, redirect_on_success_or_render,
@@ -53,8 +54,8 @@ from utils import (
 from .subscription_create import (
     for_subscription_form_render, SubscriptionCreate
 )
-from .utils import subscription_permission_check
-from ..middleware import update_session_subscription, SessionSubStatus
+from .utils import subscription_permission_check, is_eligilble_for_free_trial
+from ..middleware import subscription_payment_completed
 from ..models import SubscriptionStatus
 
 TITLE_UPDATE = 'Update Subscription'
@@ -206,25 +207,40 @@ def subscription_pick(request: HttpRequest, pk: int) -> HttpResponse:
         f'{Subscription.id_field()}': pk
     })
 
-    start_date = datetime.now(tz=timezone.utc)
-    freq_type = FrequencyType.from_choice(subscription.frequency_type)
-    assert freq_type is not None
-    end_date = start_date + freq_type.timedelta(subscription.frequency)
+    if subscription.is_free_trial and \
+            not is_eligilble_for_free_trial(request):
+        # not eligible for free trial, need to pick paid
+        messages.add_message(
+            request, messages.INFO, f"You are not eligible for the "
+                                    f"'{subscription.name}' subscription")
+        redirect_to = namespaced_url(THIS_APP, SUBSCRIPTION_CHOICE_ROUTE_NAME)
+    else:
+        # assign selected subscription
+        start_date = datetime.now(tz=timezone.utc)
+        freq_type = FrequencyType.from_choice(subscription.frequency_type)
+        assert freq_type is not None
+        end_date = start_date + freq_type.timedelta(subscription.frequency)
 
-    user_sub = UserSubscription.objects.create(**{
-        f'{UserSubscription.USER_FIELD}': request.user,
-        f'{UserSubscription.SUBSCRIPTION_FIELD}': subscription,
-        f'{UserSubscription.START_DATE_FIELD}': start_date,
-        f'{UserSubscription.END_DATE_FIELD}': end_date,
-        f'{UserSubscription.STATUS_FIELD}':
-            SubscriptionStatus.PAYMENT_PENDING.choice
-    })
-    assert user_sub is not None
+        user_sub = UserSubscription.objects.create(**{
+            f'{UserSubscription.USER_FIELD}': request.user,
+            f'{UserSubscription.SUBSCRIPTION_FIELD}': subscription,
+            f'{UserSubscription.START_DATE_FIELD}': start_date,
+            f'{UserSubscription.END_DATE_FIELD}': end_date,
+            f'{UserSubscription.STATUS_FIELD}':
+                SubscriptionStatus.ACTIVE.choice if
+                subscription.is_free_trial else
+                SubscriptionStatus.PAYMENT_PENDING.choice
+        })
+        assert user_sub is not None
 
-    request.session[USER_SUB_ID_SES] = user_sub.id
+        request.session[USER_SUB_ID_SES] = user_sub.id
 
-    add_subscription_to_basket(request, subscription)
+        if subscription.is_free_trial:
+            subscription_payment_completed(request)
+            redirect_to = HOME_ROUTE_NAME
+        else:
+            add_subscription_to_basket(request, subscription)
+            redirect_to = namespaced_url(
+                CHECKOUT_APP_NAME, CHECKOUT_PAY_ROUTE_NAME)
 
-    return redirect(
-        namespaced_url(CHECKOUT_APP_NAME, CHECKOUT_PAY_ROUTE_NAME)
-    )
+    return redirect(redirect_to)

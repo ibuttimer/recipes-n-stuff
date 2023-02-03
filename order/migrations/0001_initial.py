@@ -2,11 +2,12 @@
 
 from decimal import Decimal
 from django.conf import settings
-from django.db import migrations, models
+from django.db import migrations, models, connection
 import django.db.models.deletion
 import utils.models
 from order.misc import generate_sku
 from order.models import ProductType
+from recipesnstuff import SUBSCRIPTION_APP_NAME
 from subscription.models import Subscription
 
 
@@ -84,18 +85,24 @@ class Migration(migrations.Migration):
             bases=(utils.models.ModelMixin, models.Model),
         ),
     ]
-    todo_operations.extend([
-        migrations.RunSQL(
-            sql=[
-                ("INSERT INTO order_orderproduct (type, sku, subscription_id) "
-                 "VALUES (%s, %s, %s);", [typ, sku, sub_id])
-            ],
-            reverse_sql=[]
-        ) for typ, sku, sub_id in [
-            (ProductType.SUBSCRIPTION.choice,
-             generate_sku(ProductType.SUBSCRIPTION, subscription=sub),
-             sub.id) for sub in list(Subscription.objects.all())
-        ]
-    ])
+
+    all_tables = connection.introspection.table_names()
+    if f'{SUBSCRIPTION_APP_NAME}_{Subscription.model_name()}'.lower() \
+            in all_tables:
+        # check subscription table exists (it won't in a migration on a
+        # pristine database), before generating subscription skus
+        todo_operations.extend([
+            migrations.RunSQL(
+                sql=[
+                    ("INSERT INTO order_orderproduct (type, sku, subscription_id) "
+                     "VALUES (%s, %s, %s);", [typ, sku, sub_id])
+                ],
+                reverse_sql=[]
+            ) for typ, sku, sub_id in [
+                (ProductType.SUBSCRIPTION.choice,
+                 generate_sku(ProductType.SUBSCRIPTION, subscription=sub),
+                 sub.id) for sub in list(Subscription.objects.all())
+            ]
+        ])
 
     operations = todo_operations

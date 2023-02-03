@@ -46,6 +46,7 @@ from .models import UserSubscription, SubscriptionStatus
 
 SUB_EXPIRY = 'sub_expiry'   # subscription expiry date
 SUB_STATUS = 'sub_status'   # subscription status
+SUB_TRIAL = 'sub_trial'     # trail subscription
 
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
@@ -113,6 +114,7 @@ class SubscriptionMiddleware:
         """
         msg = None
         expiry = None       # subscription expiry date
+        is_trial = False    # trial subscription
         sandbox = False     # stay in subscription sandbox flag
         status = SessionSubStatus.IGNORE if request.user.is_superuser else \
             request.session.get(SUB_STATUS, SessionSubStatus.NOT_FOUND) \
@@ -123,9 +125,10 @@ class SubscriptionMiddleware:
             # check expiry date
             expiry = datetime.fromtimestamp(
                 request.session[SUB_EXPIRY], tz=timezone.utc)
+            is_trial = request.session[SUB_TRIAL]
             if expiry < datetime.now(tz=timezone.utc):
                 status = SessionSubStatus.EXPIRED
-                msg = self.sub_expired_msg(expiry)
+                msg = self.sub_expired_msg(expiry, was_trial=is_trial)
         elif status in [SessionSubStatus.WIP, SessionSubStatus.EXPIRED]:
             # check request url ok
             called_by = resolve_req(request)
@@ -147,13 +150,16 @@ class SubscriptionMiddleware:
             if has_sub:
                 status = SessionSubStatus.VALID
                 expiry = user_sub.end_date
+                is_trial = user_sub.is_free_trial
             else:
                 status = SessionSubStatus.EXPIRED
                 msg = 'Subscription not found' if expired_sub is None else \
-                    self.sub_expired_msg(expired_sub.end_date)
+                    self.sub_expired_msg(expired_sub.end_date,
+                                         was_trial=expired_sub.is_free_trial)
 
         if status != SessionSubStatus.IGNORE:
-            update_session_subscription(request, status, expiry=expiry)
+            update_session_subscription(
+                request, status, expiry=expiry, is_trial=is_trial)
         if msg:
             messages.add_message(request, messages.INFO, msg)
 
@@ -167,22 +173,25 @@ class SubscriptionMiddleware:
 
         return response
 
-    def sub_expired_msg(self, expired_date: datetime):
+    def sub_expired_msg(self, expired_date: datetime, was_trial: bool = False):
         """ Generate expired message text """
-        return f'Subscription expired {expired_date.strftime("%c")}'
+        sub_type = 'Trial subscription' if was_trial else 'Subscription'
+        return f'{sub_type} expired {expired_date.strftime("%c")}'
 
 
 def update_session_subscription(
         request: HttpRequest, status: SessionSubStatus,
-        expiry: datetime = None):
+        expiry: datetime = None, is_trial: bool = False):
     """
     Update the subscription info in a request session
     :param request: request
     :param status: subscription status
     :param expiry: subscription expiry
+    :param is_trial: is trial subscription flag
     """
     request.session[SUB_STATUS] = status
     request.session[SUB_EXPIRY] = expiry.timestamp() if expiry else 0
+    request.session[SUB_TRIAL] = is_trial
 
 
 def subscription_payment_completed(request: HttpRequest):
@@ -199,8 +208,8 @@ def subscription_payment_completed(request: HttpRequest):
     user_sub.save()
 
     # update session
-    update_session_subscription(
-        request, SessionSubStatus.VALID, user_sub.end_date)
+    update_session_subscription(request, SessionSubStatus.VALID,
+                                user_sub.end_date)
 
 
 def clear_session_subscription(request: HttpRequest):

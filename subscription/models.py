@@ -316,6 +316,14 @@ class Subscription(ModelMixin, models.Model):
             f'{Subscription.DESCRIPTION_FIELD}': 'Subscription placeholder'
         })
 
+    @property
+    def is_free_trial(self) -> bool:
+        """
+        Check if subscription is a free trial, i.e. zero cost
+        :return: True if free trial
+        """
+        return self.amount == Decimal(0)
+
     def __str__(self):
         return f'{self.name}'
 
@@ -351,6 +359,14 @@ class UserSubscription(ModelMixin, models.Model):
     @dataclass
     class Meta:
         """ Model metadata """
+
+    @property
+    def is_free_trial(self) -> bool:
+        """
+        Check if subscription is a free trial, i.e. zero cost
+        :return: True if free trial
+        """
+        return self.subscription.is_free_trial
 
     @classmethod
     def date_fields(cls) -> list[str]:

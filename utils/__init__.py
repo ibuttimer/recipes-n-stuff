@@ -45,8 +45,8 @@ from .query_params import QuerySetParams
 from .queries import get_yes_no_ignore_query
 from .search import (
     ORDER_QUERY, PAGE_QUERY, PER_PAGE_QUERY, REORDER_QUERY, SEARCH_QUERY,
-    USER_QUERY, REORDER_REQ_QUERY_ARGS, DATE_QUERIES,
-    regex_matchers, regex_date_matchers,
+    USER_QUERY, REORDER_REQ_QUERY_ARGS, DATE_QUERIES, AMOUNT_QUERY_ARGS,
+    regex_matchers, regex_date_matchers, amount_lookups,
     KEY_TERM_GROUP, TERM_GROUP,
     DATE_KEY_TERM_GROUP, DATE_QUERY_GROUP, DATE_QUERY_DAY_GROUP,
     DATE_QUERY_MTH_GROUP, DATE_QUERY_YR_GROUP
@@ -58,7 +58,7 @@ from .url_path import (
 from .views import (
     redirect_on_success_or_render, resolve_req, redirect_payload,
     replace_html_payload, replace_inner_html_payload, rewrite_payload,
-    entity_delete_result_payload
+    entity_delete_result_payload, query_search_term
 )
 
 
@@ -119,8 +119,10 @@ __all__ = [
     'USER_QUERY',
     'REORDER_REQ_QUERY_ARGS',
     'DATE_QUERIES',
+    'AMOUNT_QUERY_ARGS',
     'regex_matchers',
     'regex_date_matchers',
+    'amount_lookups',
     'KEY_TERM_GROUP',
     'TERM_GROUP',
     'DATE_KEY_TERM_GROUP',
@@ -146,4 +148,5 @@ __all__ = [
     'replace_inner_html_payload',
     'rewrite_payload',
     'entity_delete_result_payload',
+    'query_search_term',
 ]

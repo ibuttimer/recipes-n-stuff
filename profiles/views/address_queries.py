@@ -40,10 +40,6 @@ from utils import (
 # context-related
 DEFAULT_ADDRESS_QUERY: str = 'dflt-addr'    # display default address modal
 
-# query terms which only appear in a search
-SEARCH_ONLY_QUERIES = [SEARCH_QUERY]
-SEARCH_ONLY_QUERIES.extend(DATE_QUERIES)
-
 NON_DATE_QUERIES = [
     USER_QUERY
 ]
@@ -68,7 +64,7 @@ FIELD_LOOKUPS = {
 # priority order list of query terms
 FILTERS_ORDER = [
     # search is a shortcut filter, if search is specified nothing
-    # else is checked after
+    # else is checked after therefore must be first
     SEARCH_QUERY,
 ]
 ALWAYS_FILTERS = [
@@ -116,10 +112,10 @@ def get_lookup(
     """
     if query_set_params is None:
         query_set_params = QuerySetParams()
-    if not value:
+    if value is None:
         return query_set_params
 
-    if query in SEARCH_ONLY_QUERIES:
+    if query == SEARCH_QUERY:
         query_set_params = get_search_term(
             value, user, query_set_params=query_set_params)
     elif query not in NON_LOOKUP_ARGS and value:

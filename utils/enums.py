@@ -21,7 +21,7 @@
 #  DEALINGS IN THE SOFTWARE.
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import TypeVar, Any, Callable, Optional, Type, Union
+from typing import TypeVar, Any, Callable, Optional, Type, Union, Tuple
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
 TypeChoiceArg = TypeVar("TypeChoiceArg", bound="ChoiceArg")
@@ -133,9 +133,9 @@ class QueryArg:
 
     def set(self, value: Any, was_set: bool):
         """
-        Set the value and was set flag
-        :param value:
-        :param was_set:
+        Set the value and flags
+        :param value: value to set
+        :param was_set: set in request flag
         :return:
         """
         self.value = value
@@ -150,6 +150,14 @@ class QueryArg:
         """
         chk_value = self.value if not attrib else getattr(self.value, attrib)
         return self.was_set and chk_value == value
+
+    @property
+    def as_tuple(self) -> Tuple[Any, bool, bool]:
+        """
+        Return this object as a tuple of its properties
+        :return: tuple of value, was_set
+        """
+        return self.value, self.was_set
 
     @property
     def value_arg_or_value(self) -> Any:
@@ -181,7 +189,7 @@ class QueryArg:
         return QueryArg(obj, False)
 
     def __str__(self):
-        return f'{self.value}, was_set {self.was_set}'
+        return f'{self.value}: was_set {self.was_set}'
 
 
 QueryArg.NONE = QueryArg.of(None)

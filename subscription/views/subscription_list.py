@@ -23,6 +23,7 @@
 from enum import Enum
 from typing import Type, Callable, Tuple, Optional, List
 from string import capwords
+from decimal import Decimal
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpRequest
@@ -46,8 +47,9 @@ from utils import (
     NO_CONTENT_HELP_CTX,
     Crud, app_template_path, ORDER_QUERY, PAGE_QUERY, PER_PAGE_QUERY, PerPage,
     REORDER_QUERY, REORDER_REQ_QUERY_ARGS, YesNo,
-    READ_ONLY_CTX
+    READ_ONLY_CTX, AMOUNT_QUERY_ARGS, REPEAT_SEARCH_TERM_CTX, query_search_term
 )
+from utils.search import AMT_GT_QUERY, SEARCH_QUERY
 # from opinions.views.opinion_queries import (
 #     FILTERS_ORDER, ALWAYS_FILTERS, get_lookup
 # )
@@ -62,7 +64,10 @@ from utils import (
 from .utils import (
     subscription_permission_check
 )
-from .subscription_queries import get_lookup, user_has_subscription
+from .subscription_queries import (
+    get_lookup, user_has_subscription, user_had_free_trial_subscription,
+    FILTERS_ORDER, ALWAYS_FILTERS
+)
 from subscription.constants import (
     THIS_APP, SUBSCRIPTION_LIST_CTX, IS_ACTIVE_QUERY
 )
@@ -87,8 +92,11 @@ assert REORDER_REQ_QUERY_ARGS == list(
 LIST_QUERY_ARGS = REORDER_QUERY_ARGS.copy()
 LIST_QUERY_ARGS.extend([
     # non-reorder query args
+    QueryOption.of_no_cls_dflt(SEARCH_QUERY),
     QueryOption(IS_ACTIVE_QUERY, YesNo, YesNo.DEFAULT)
 ])
+LIST_QUERY_ARGS.extend(AMOUNT_QUERY_ARGS)
+
 # LIST_QUERY_ARGS.extend(OPINION_APPLIED_DEFAULTS_QUERY_ARGS)
 
 
@@ -172,8 +180,8 @@ class SubscriptionList(LoginRequiredMixin, ContentListMixin):
         # build search term string from values that were set
         # inherited from ContextMixin via ListView
         self.extra_context = {
-            # REPEAT_SEARCH_TERM_CTX: query_search_term(
-            #     query_params, exclude_queries=REORDER_REQ_QUERY_ARGS)
+            REPEAT_SEARCH_TERM_CTX: query_search_term(
+                query_params, exclude_queries=REORDER_REQ_QUERY_ARGS)
         }
 
         self.extra_context.update(
@@ -188,7 +196,6 @@ class SubscriptionList(LoginRequiredMixin, ContentListMixin):
 
         return {
             TITLE_CTX: title,
-            PAGE_HEADING_CTX: title,
             LIST_HEADING_CTX: capwords(title),
             READ_ONLY_CTX: False
         }
@@ -196,30 +203,68 @@ class SubscriptionList(LoginRequiredMixin, ContentListMixin):
     def set_queryset(
         self, query_params: dict[str, QueryArg],
         query_set_params: QuerySetParams = None
-    ) -> Tuple[QuerySetParams, Optional[dict]]:
+    ) -> Tuple[QuerySetParams, bool, Optional[dict]]:
         """
         Set the queryset to get the list of items for this view
         :param query_params: request query
         :param query_set_params: QuerySetParams to update; default None
-        :return: tuple of query set params and dict of kwargs to pass to
-                apply_queryset_param
+        :return: tuple of query set params, query term entered flag and
+                dict of kwargs to pass to `apply_queryset_param()`
         """
         if query_set_params is None:
             query_set_params = QuerySetParams()
 
-        for query in self.valid_req_non_reorder_query_args():
-            get_lookup(query, query_params[query].value, self.user,
-                       query_set_params=query_set_params)
+        query_entered = False  # query term entered flag
 
-        return query_set_params, None
+        for key in FILTERS_ORDER:
+            value, was_set = query_params[key].as_tuple
 
-    def apply_queryset_param(
-            self, query_set_params: QuerySetParams, **kwargs):
+            if value is not None:
+                if key in ALWAYS_FILTERS and not was_set:
+                    # don't set always applied filter until everything
+                    # else is checked
+                    continue
+
+                if not query_entered:
+                    query_entered = was_set
+
+                get_lookup(
+                    key, value, self.user, query_set_params=query_set_params)
+
+                if key == SEARCH_QUERY and not query_set_params.is_empty:
+                    # search is a shortcut filter, if search is specified
+                    # nothing else is checked after
+                    break
+
+        return query_set_params, query_entered, None
+
+    def apply_queryset_param(self, query_params: dict[str, QueryArg],
+                             query_set_params: QuerySetParams,
+                             query_entered: bool, **kwargs):
         """
         Apply `query_set_params` to set the queryset
+        :param query_params: request query
         :param query_set_params: QuerySetParams to apply
+        :param query_entered: query was entered flag
         """
-        self.queryset = query_set_params.apply(Subscription.objects)
+        if not query_entered or not query_set_params.is_empty:
+            # no query term entered => all objects,
+            # or query term => search
+
+            for key in ALWAYS_FILTERS:
+                if query_set_params.key_in_set(key):
+                    continue    # always filter was already applied
+
+                value = query_params[key].value
+                if value:
+                    get_lookup(key, value, self.user,
+                               query_set_params=query_set_params)
+
+            self.queryset = query_set_params.apply(Subscription.objects)
+
+        else:
+            # invalid query term entered
+            self.queryset = Subscription.objects.none()
 
     def set_sort_order_options(self, query_params: dict[str, QueryArg]):
         """
@@ -358,6 +403,19 @@ class SubscriptionChoice(SubscriptionList):
 
         self.has_subscription = False
 
+    def validate_queryset(self, query_params: dict[str, QueryArg]):
+        """
+        Validate the query params to get the list of items for this view.
+        (Subclasses may validate and modify the query params by overriding
+         this function)
+        :param query_params: request query
+        """
+        super().validate_queryset(query_params)
+
+        # check if user has had free trial
+        if user_had_free_trial_subscription(self.user):
+            query_params[AMT_GT_QUERY] = QueryArg(Decimal(0), True)
+
     def additional_check_func(
             self, request: HttpRequest, query_params: dict[str, QueryArg],
             *args, **kwargs):
@@ -372,7 +430,8 @@ class SubscriptionChoice(SubscriptionList):
 
         has_sub, user_sub, _ = user_has_subscription(request.user)
         if has_sub:
-            msg = f'Your current subscription is ' \
+            sub_type = 'trial' if user_sub.is_free_trial else 'current'
+            msg = f'Your {sub_type} subscription is ' \
                   f'{user_sub.subscription.name}, ' \
                   f'expiring {user_sub.end_date.strftime("%c")}'
             messages.add_message(request, messages.INFO, msg)

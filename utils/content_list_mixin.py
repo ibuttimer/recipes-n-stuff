@@ -131,10 +131,11 @@ class ContentListMixin(generic.ListView):
             request, query_params, args=args, kwargs=kwargs)
 
         # set queryset
-        query_set_params, query_kwargs = \
+        query_set_params, query_entered, query_kwargs = \
             self.set_queryset(query_params)
         self.apply_queryset_param(
-            query_set_params, **query_kwargs if query_kwargs else {})
+            query_params, query_set_params, query_entered,
+            **(query_kwargs or {}))
 
         # set context extra content
         self.set_extra_context(query_params, query_set_params)
@@ -220,22 +221,25 @@ class ContentListMixin(generic.ListView):
     def set_queryset(
         self, query_params: dict[str, QueryArg],
         query_set_params: QuerySetParams = None
-    ) -> Tuple[QuerySetParams, Optional[dict]]:
+    ) -> Tuple[QuerySetParams, bool, Optional[dict]]:
         """
         Set the queryset to get the list of items for this view
         :param query_params: request query
         :param query_set_params: QuerySetParams to update; default None
-        :return: tuple of query set params and dict of kwargs to pass to
-                apply_queryset_param
+        :return: tuple of query set params, query term entered flag and
+                dict of kwargs to pass to `apply_queryset_param()`
         """
         raise NotImplementedError(
             "'set_queryset' method must be overridden by sub classes")
 
-    def apply_queryset_param(
-            self, query_set_params: QuerySetParams, **kwargs):
+    def apply_queryset_param(self, query_params: dict[str, QueryArg],
+                             query_set_params: QuerySetParams,
+                             query_entered: bool, **kwargs):
         """
         Apply `query_set_params` to set the queryset
+        :param query_params: request query
         :param query_set_params: QuerySetParams to apply
+        :param query_entered: query was entered flag
         """
         raise NotImplementedError(
             "'apply_queryset_param' method must be overridden by sub classes")

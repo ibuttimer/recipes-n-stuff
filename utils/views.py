@@ -28,6 +28,7 @@ from django.template.loader import render_to_string
 from django.urls import ResolverMatch, resolve, Resolver404
 
 from .content_list_mixin import STATUS_CTX
+from .enums import QueryArg
 from .url_path import app_template_path
 
 REDIRECT_CTX = "redirect"                   # redirect url
@@ -185,3 +186,24 @@ def entity_delete_result_payload(
             }
         ), extra=extra
     )
+
+
+def query_search_term(
+        query_params: dict[str, QueryArg], exclude_queries: list[str] = None,
+        join_by: str = '&'
+) -> str:
+    """
+    Get the query search terms for a client to use to request
+    :param query_params: query params
+    :param exclude_queries: list of queries to exclude; default None
+    :param join_by: string to join entries; default '&'
+    :return: joined sting
+    """
+    if exclude_queries is None:
+        exclude_queries = []
+
+    return join_by.join([
+        f'{q}={v.value_arg_or_value if isinstance(v, QueryArg) else v}'
+        for q, v in query_params.items()
+        if q not in exclude_queries and
+        (v.was_set if isinstance(v, QueryArg) else True)])
