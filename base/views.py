@@ -206,3 +206,18 @@ def render_level_info_modal(level: InfoModalLevel,
         context=level_info_modal_context(
             level, message, identifier, redirect_url=redirect_url)
     )
+
+
+def get_about(request: HttpRequest) -> HttpResponse:
+    """
+    Render about page
+    :param request: request
+    :return: response
+    """
+    context = {}
+    # context.update(get_search_terms_help())
+    # context.update(get_reactions_help())
+    return render(
+        request, app_template_path(THIS_APP, "about.html"),
+        context=context
+    )

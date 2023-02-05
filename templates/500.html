@@ -1,0 +1,22 @@
+{% extends "base/status_code_error.html" %}
+
+{% load static %}
+
+{% block head_title %}Server Error{% endblock head_title %}
+
+{% block status_code_error %}
+<div>
+    <img src="{% static 'img/nuclear-explosion.png' %}" alt="server error icon" height="100" width="100" class="img__center">
+</div>
+
+<h1>Well that didn't go well!</h1>
+<p>It's not you it's us &#x1F627;</p>
+<div>
+    <p>
+        Please try again later,
+        <a href="{% url 'home' %}" aria-label="goto home page">
+            Home
+        </a>
+    </p>
+</div>
+{% endblock status_code_error %}

@@ -1,0 +1,22 @@
+{% extends "base/status_code_error.html" %}
+
+{% load static %}
+
+{% block head_title %}Forbidden{% endblock head_title %}
+
+{% block status_code_error %}
+<div>
+    <img src="{% static 'img/banned.png' %}" alt="forbidden error icon" height="100" width="100" class="img__center">
+</div>
+
+<h1>Thou shalt not pass</h1>
+<p>Sorry, you can't go there it's above your pay grade &#x1F5FF;</p>
+<div>
+    <p>
+        Please start again, go
+        <a href="{% url 'home' %}" aria-label="goto home page">
+            Home
+        </a>
+    </p>
+</div>
+{% endblock status_code_error %}

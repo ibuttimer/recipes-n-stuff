@@ -37,9 +37,11 @@ ORDER_APP_NAME = "order"
 # Base routes related
 HOME_URL = "/"
 HELP_URL = append_slash("help")
+ABOUT_URL = append_slash("about")
 
 HOME_ROUTE_NAME = "home"
 HELP_ROUTE_NAME = "help"
+ABOUT_ROUTE_NAME = "about"
 LANDING_ROUTE_NAME = "landing"
 
 # Admin routes related
@@ -84,6 +86,7 @@ USER_MENU_CTX = "user_menu"
 SIGN_IN_MENU_CTX = "sign_in_menu"
 REGISTER_MENU_CTX = "register_menu"
 HELP_MENU_CTX = "help_menu"
+ABOUT_MENU_CTX = "about_menu"
 
 IS_SUPER_CTX = "is_super"
 IS_DEVELOPMENT_CTX = "is_development"

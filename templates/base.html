@@ -5,19 +5,7 @@
 {% load static %}
 {% load cloudinary_static %}
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32x32.png' %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon-16x16.png' %}">
-    <link rel="manifest" href="{% static 'site.webmanifest' %}">
-    <link rel="mask-icon" href="{% static 'safari-pinned-tab.svg' %}" color="#00504a">
-    <meta name="msapplication-TileColor" content="#e6b3a0">
-    <meta name="theme-color" content="#e6b3a0">
-    <meta name="description" content="{{app_name}} is a community platform for those looking for recipe suggestions and online shopping convenience.">
-    <meta name="google-site-verification" content="{{ google_site_verification }}">
+    {% include 'snippet/head_meta.html' %}
 
     {% if not val_test %}
     {# exclude Bootstrap & Font Awesome css for css test as they fail the W3C CSS Validation Service #}
@@ -103,6 +91,11 @@
                                 </li>
                                 {% endif %}
                             {% endif %}
+                            <li class="nav-item">
+                                <a {{ about_menu.a_attr | safe }} href="{% url 'about' %}">
+                                    <span {{ about_menu.span_attr | safe }}>About</span>
+                                </a>
+                            </li>
                         </ul>
                         <form class="d-flex" role="search">
                             <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">

@@ -94,7 +94,8 @@ class Migration(migrations.Migration):
         todo_operations.extend([
             migrations.RunSQL(
                 sql=[
-                    ("INSERT INTO order_orderproduct (type, sku, subscription_id) "
+                    ("INSERT INTO order_orderproduct "
+                     "(type, sku, subscription_id) "
                      "VALUES (%s, %s, %s);", [typ, sku, sub_id])
                 ],
                 reverse_sql=[]

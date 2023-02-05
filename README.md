@@ -613,6 +613,10 @@ The following resources were used to build the website.
 - [Currency data](data/currency.csv) courtesy of https://en.wikipedia.org/wiki/ISO_4217
 - Standard measures data courtesy of [Cooking weights and measures](https://en.wikipedia.org/wiki/Cooking_weights_and_measures) and [United States customary units](https://en.wikipedia.org/wiki/United_States_customary_units)
 - Recipe data courtesy of [Food.com - Recipes and Reviews](https://www.kaggle.com/datasets/irkaal/foodcom-recipes-and-reviews) by [Alvin](https://www.kaggle.com/irkaal)
+- [404 error icon](static/img/no-results.png) created by [Freepik - Flaticon](https://www.flaticon.com/free-icons/404-error)
+- [Explosion icon](static/img/nuclear-explosion.png) created by [Freepik - Flaticon](https://www.flaticon.com/free-icons/explosion)
+- [Stop sign icon](static/img/banned.png) created by [Freepik - Flaticon](https://www.flaticon.com/free-icons/stop-sign)
+- [Confusion icon](static/img/confusion.png) created by [Freepik - Flaticon](https://www.flaticon.com/free-icons/confusion)
 
 ### Code
 

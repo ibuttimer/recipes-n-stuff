@@ -1,0 +1,22 @@
+{% extends "base/status_code_error.html" %}
+
+{% load static %}
+
+{% block head_title %}Not Found{% endblock head_title %}
+
+{% block status_code_error %}
+<div>
+    <img src="{% static 'img/no-results.png' %}" alt="not found error icon" height="100" width="100" class="img__center">
+</div>
+
+<h1>We're missing something</h1>
+<p>Sorry, we couldn't find <em>{{ request_path }}</em></p>
+<div>
+    <p>
+        Take me
+        <a href="{% url 'home' %}" aria-label="goto home page">
+            Home
+        </a>
+    </p>
+</div>
+{% endblock status_code_error %}
