@@ -389,6 +389,20 @@ class ContentListMixin(generic.ListView):
         query_arg = query_params.get(query, None)
         return query_arg is not None and query_arg.was_set_to(value)
 
+    @staticmethod
+    def query_value_was_set_as_one_of_values(
+            query_params: dict[str, QueryArg], query: str,
+            values: List[Any]) -> bool:
+        """
+        Check if the specified query was set to one of the specified values
+        :param query_params: query params
+        :param query: query to check
+        :param values: values to check
+        :return: True if query was set to one of the specified values
+        """
+        query_arg = query_params.get(query, None)
+        return query_arg is not None and query_arg.was_set_to_one_of(values)
+
     def is_query_own(self, query_params: dict[str, QueryArg]) -> bool:
         """
         Check if query is for the current user

@@ -44,9 +44,9 @@ class SubscriptionSortOrder(SortOrder):
     NAME_ZA = (
         'Name Z-A', 'nza', f'{DESC_LOOKUP}{Subscription.NAME_FIELD}')
     COST_LH = (
-        'Cost Low-High', 'caz', f'{Subscription.AMOUNT_FIELD}')
+        'Cost Low-High', 'c09', f'{Subscription.AMOUNT_FIELD}')
     COST_HL = (
-        'Cost High-Low', 'cza', f'{DESC_LOOKUP}{Subscription.AMOUNT_FIELD}')
+        'Cost High-Low', 'c90', f'{DESC_LOOKUP}{Subscription.AMOUNT_FIELD}')
 
     @classmethod
     def name_orders(cls) -> list[TypeSubscriptionSortOrder]:
