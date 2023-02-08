@@ -63,19 +63,19 @@ def user_context(request: HttpRequest) -> dict:
     context = {}
     called_by = resolve_req(request)
     if called_by:
-        for ctx, check_func, a_xtra in [
+        for ctx, check_func, is_dropdown_toggle in [
             (USER_MENU_CTX, lambda name: name in [
                 USER_ID_ROUTE_NAME, USER_USERNAME_ROUTE_NAME,
                 CHANGE_PASSWORD_ROUTE_NAME, LOGOUT_ROUTE_NAME
-            ], 'dropdown-toggle'),
+            ], True),
             (SIGN_IN_MENU_CTX,
-             lambda name: _sign_in_route_check(request, name), None),
+             lambda name: _sign_in_route_check(request, name), False),
             (REGISTER_MENU_CTX,
-             lambda name: name == REGISTER_ROUTE_NAME, None),
+             lambda name: name == REGISTER_ROUTE_NAME, False),
         ]:
             add_navbar_attr(
                 context, ctx, is_active=check_func(called_by.url_name),
-                a_xtra=a_xtra
+                is_dropdown_toggle=is_dropdown_toggle
             )
 
     context.update({

@@ -80,6 +80,9 @@ SUBSCRIPTIONS_URL = append_slash("subscriptions")
 # Checkout routes related
 CHECKOUT_URL = append_slash("checkout")
 
+# Recipes routes related
+RECIPES_URL = append_slash("recipes")
+
 # context related
 HOME_MENU_CTX = "home_menu"
 USER_MENU_CTX = "user_menu"
@@ -87,6 +90,8 @@ SIGN_IN_MENU_CTX = "sign_in_menu"
 REGISTER_MENU_CTX = "register_menu"
 HELP_MENU_CTX = "help_menu"
 ABOUT_MENU_CTX = "about_menu"
+SUBSCRIPTION_MENU_CTX = "subscription_menu"
+RECIPES_MENU_CTX = "recipes_menu"
 
 IS_SUPER_CTX = "is_super"
 IS_DEVELOPMENT_CTX = "is_development"

@@ -21,7 +21,9 @@
 #  DEALINGS IN THE SOFTWARE.
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import TypeVar, Any, Callable, Optional, Type, Union, Tuple
+from typing import TypeVar, Any, Callable, Optional, Type, Union, Tuple, List
+
+from .misc import ensure_list
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
 TypeChoiceArg = TypeVar("TypeChoiceArg", bound="ChoiceArg")
@@ -141,18 +143,27 @@ class QueryArg:
         self.value = value
         self.was_set = was_set
 
-    def was_set_to(self, value: Any, attrib: str = None):
+    def was_set_to_one_of(self, values: List[Any], attrib: str = None):
         """
-        Check if value was to set the specified `value`
-        :param value: value to check
+        Check if value was to set one of the specified `values`
+        :param values: values to check
         :param attrib: attribute of set value to check; default None
         :return: True if value was to set the specified `value`
         """
         chk_value = self.value if not attrib else getattr(self.value, attrib)
-        return self.was_set and chk_value == value
+        return self.was_set and chk_value in values
+
+    def was_set_to(self, value: Any, attrib: str = None):
+        """
+        Check if value was to the specified `value`
+        :param value: value to check
+        :param attrib: attribute of set value to check; default None
+        :return: True if value was to set the specified `value`
+        """
+        return self.was_set_to_one_of(ensure_list(value), attrib=attrib)
 
     @property
-    def as_tuple(self) -> Tuple[Any, bool, bool]:
+    def as_tuple(self) -> tuple[Any, bool]:
         """
         Return this object as a tuple of its properties
         :return: tuple of value, was_set

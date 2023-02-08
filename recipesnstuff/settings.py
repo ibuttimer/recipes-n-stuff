@@ -213,6 +213,9 @@ TEMPLATES = [
                 # f'{MAIN_APP}.context_processors.test_context',
                 f'{BASE_APP_NAME}.context_processors.base_context',
                 f'{USER_APP_NAME}.context_processors.user_context',
+                f'{SUBSCRIPTION_APP_NAME}.context_processors'
+                f'.subscription_context',
+                f'{RECIPES_APP_NAME}.context_processors.recipe_context',
             ],
         },
     },

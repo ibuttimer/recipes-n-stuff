@@ -1,0 +1,45 @@
+<!-- recipe_dto.html start -->
+{# --- recipe_dto.html template variable defines for includes --- #}
+{# recipe dto template expects: 'recipe_dto' as RecipeDto #}
+{#                              'identifier' as individual identifier #}
+
+{% load i18n %}
+{% load static %}
+{% load stock_image %}
+{% load human_readable_timedelta %}
+{% load attr_append %}
+{% load negate %}
+
+<div class="col-sm-6 col-md-6 col-lg-4 col-xl-3">
+    <a href="{% url 'recipes:recipe_id' recipe_dto.id %}" class="a__recipe-card" aria-label="view recipe">
+        <div class="card rounded-3 mb-4 h-100">
+            {% negate recipe_dto.main_image as has_no_image %}
+            {% attr_append 'class="card-img-top"' 'img__stock-image' has_no_image as img_class %}
+            <img {{ img_class | safe }}
+                 alt="{{ recipe_dto.name }} image"
+                 {% if recipe_dto.main_image %}
+                 src = "{{ recipe_dto.main_image }}"
+                 {% else %}
+                 src = "{% get_static_prefix %}img/{% stock_image %}"
+                 {% endif %}
+            >
+            <div id="id--recipe-{{identifier}}"
+                 class="card-body div__recipe-{{recipe_dto.id}}">
+                <div class="row mb-3">
+                    <div class="col-12 text-center">
+                        <h5 class="card-title">{{ recipe_dto.name | safe }}</h5>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <p class="card-text">{{ recipe_dto.author.username }}</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <p class="card-text"><i class="fa-regular fa-clock"></i> {% human_readable_timedelta recipe_dto.total_time %}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </a>
+</div>
+<!-- recipe_dto.html end -->

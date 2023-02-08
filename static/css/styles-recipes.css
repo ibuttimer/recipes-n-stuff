@@ -1,0 +1,18 @@
+
+
+.card-img-top {
+    max-height: 20vh;
+    object-fit: cover;
+}
+
+.div__recipe-card {
+}
+
+.img__stock-image {
+    opacity: 0.5;
+}
+
+.a__recipe-card {
+    text-decoration: none;
+    color: var(--bs-card-color);
+}

@@ -89,6 +89,11 @@ class ModelMixin:
         return []
 
     @classmethod
+    def timedelta_fields(cls) -> list[str]:
+        """ Get the list of timedelta fields """
+        return []
+
+    @classmethod
     def numeric_fields(cls) -> list[str]:
         """ Get the list of numeric fields """
         return []
@@ -101,6 +106,15 @@ class ModelMixin:
         :return: True if `field` is a date field
         """
         return field in cls.date_fields()
+
+    @classmethod
+    def is_timedelta_field(cls, field: str):
+        """
+        Check if the specified `field` is a timedelta
+        :param field: field
+        :return: True if `field` is a timedelta field
+        """
+        return field in cls.timedelta_fields()
 
     @classmethod
     def is_numeric_field(cls, field: str):
@@ -120,6 +134,17 @@ class ModelMixin:
         """
         return any(
             map(lambda fld: fld in lookup, cls.date_fields())
+        )
+
+    @classmethod
+    def is_timedelta_lookup(cls, lookup: str):
+        """
+        Check if the specified `lookup` represents a timedelta Lookup
+        :param lookup: lookup string
+        :return: True if lookup is a timedelta Lookup
+        """
+        return any(
+            map(lambda fld: fld in lookup, cls.timedelta_fields())
         )
 
     @classmethod
@@ -152,6 +177,7 @@ class ModelMixin:
         :return: True if lookup is not a text lookup
         """
         return cls.is_date_lookup(lookup) or \
+            cls.is_timedelta_lookup(lookup) or \
             cls.is_numeric_lookup(lookup) or cls.is_id_lookup(lookup)
 
     @classmethod

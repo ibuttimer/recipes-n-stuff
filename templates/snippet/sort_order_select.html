@@ -24,7 +24,7 @@
                         selected
                         {% endif %}
                 >
-                    {{ sort_opt.display }}
+                    {{ sort_opt.display | safe }}
                 </option>
                 {% endfor %}
             </select>

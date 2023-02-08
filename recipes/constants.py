@@ -21,6 +21,8 @@
 #  DEALINGS IN THE SOFTWARE.
 from pathlib import Path
 
+from utils import url_path
+
 # name of this app
 THIS_APP = Path(__file__).resolve().parent.name
 
@@ -42,6 +44,7 @@ RECIPE_FIELD = 'recipe'
 
 PREP_TIME_FIELD = 'prep_time'
 COOK_TIME_FIELD = 'cook_time'
+TOTAL_TIME_FIELD = 'total_time'
 DATE_PUBLISHED_FIELD = 'date_published'
 DESCRIPTION_FIELD = 'description'
 CATEGORY_FIELD = 'category'
@@ -51,3 +54,29 @@ SERVINGS_FIELD = 'servings'
 RECIPE_YIELD_FIELD = 'recipe_yield'
 INGREDIENTS_FIELD = 'ingredients'
 INSTRUCTIONS_FIELD = 'instructions'
+IMAGES_FIELD = 'images'
+CALORIES_FIELD = 'calories'
+FAT_CONTENT_FIELD = 'fat_content'
+SATURATED_FAT_CONTENT_FIELD = 'saturated_fat_content'
+CHOLESTEROL_CONTENT_FIELD = 'cholesterol_content'
+SODIUM_CONTENT_FIELD = 'sodium_content'
+CARBOHYDRATE_CONTENT_FIELD = 'carbohydrate_content'
+FIBRE_CONTENT_FIELD = 'fibre_content'
+SUGAR_CONTENT_FIELD = 'sugar_content'
+PROTEIN_CONTENT_FIELD = 'protein_content'
+
+# Recipe routes related
+PK_PARAM_NAME = "pk"
+RECIPES_URL = ""
+RECIPE_NEW_URL = url_path(RECIPES_URL, "new")
+RECIPE_ID_URL = url_path(RECIPES_URL, f"<int:{PK_PARAM_NAME}>")
+
+# convention is recipes route names begin with 'recipe'
+RECIPES_ROUTE_NAME = "recipes"
+RECIPE_NEW_ROUTE_NAME = "recipe_new"
+RECIPE_ID_ROUTE_NAME = "recipe_id"
+
+# context related
+RECIPE_FORM_CTX = 'recipe_form'
+RECIPE_LIST_CTX = 'recipe_list'
+RECIPE_DTO_CTX = 'recipe_dto'

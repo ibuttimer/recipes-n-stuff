@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+<!-- recipe_view.html start -->
+{# --- recipe_view.html template variable defines for includes --- #}
+{# recipe view template expects: 'recipe_dto' as RecipeDto #}
+
+{% load i18n %}
+{% load static %}
+{% load stock_image %}
+{% load human_readable_timedelta %}
+
+{% block head_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <link href="{% static 'css/styles-recipes.css' %}" rel="stylesheet" type="text/css">
+{% endblock extra_css %}
+
+{% block extra_js_head %}
+    {{ block.super }}
+    {% include "snippet/jquery.html" %}
+{% endblock extra_js_head %}
+
+{% block content %}
+<div class="row mt-2 mb-2">
+    <div class="col-12 text-center">
+        <h3>{{ recipe_dto.name }}</h3>
+    </div>
+</div>
+
+<article id="article-content" class="row d-flex justify-content-center">
+    <div class="row">
+        <div class="col-6">
+            <img class="card-img-top"
+                 alt="{{ recipe_dto.name }} image"
+                 {% if recipe_dto.main_image %}
+                 src = "{{ recipe_dto.main_image }}"
+                 {% else %}
+                 src = "{% get_static_prefix %}img/{% stock_image %}"
+                 {% endif %}
+            >
+            <a href="{{ recipe_dto.food_dot_com_url }}" aria-label="view recipe on food.com in another tab" target="_blank" rel="noopener">
+                <img src="{% static 'img/internet.png' %}" alt="internet icon" width="30" height="30">
+            </a>
+        </div>
+        <div class="col-6">
+            <div class="row">
+                <div class="col-12">
+                    <p>{{ recipe_dto.author.username }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6">
+                    <p>Prep <i class="fa-regular fa-clock"></i>: {% human_readable_timedelta recipe_dto.prep_time %}</p>
+                </div>
+                <div class="col-6">
+                    <p>Cook <i class="fa-regular fa-clock"></i>: {% human_readable_timedelta recipe_dto.cook_time %}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6">
+                    <p>Ready in <i class="fa-regular fa-clock"></i>: {% human_readable_timedelta recipe_dto.total_time %}</p>
+                </div>
+                <div class="col-6">
+                    <p><i class="fa-solid fa-people-group"></i>: {{ recipe_dto.servings }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6 offset-6">
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+
+{% endblock content %}
+
+<!-- recipe_view.html end -->
