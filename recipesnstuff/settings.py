@@ -129,6 +129,9 @@ if env('DEVELOPMENT'):
 else:
     ALLOWED_HOSTS = env.list('HEROKU_HOSTNAME')
 
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
 
 # Application definition
 
@@ -158,6 +161,7 @@ INSTALLED_APPS = [
     'django_summernote',
 
     'django_countries',
+    "debug_toolbar",
 
     BASE_APP_NAME,
     USER_APP_NAME,
@@ -180,6 +184,8 @@ INSTALLED_APPS = [
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 MIDDLEWARE = [
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
