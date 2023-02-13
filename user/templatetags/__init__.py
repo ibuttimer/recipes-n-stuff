@@ -1,6 +1,6 @@
 #  MIT License
 #
-#  Copyright (c) 2022 Ian Buttimer
+#  Copyright (c) 2023 Ian Buttimer
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to
@@ -19,16 +19,3 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-#
-from typing import Union
-
-from django import template
-
-register = template.Library()
-
-# https://docs.djangoproject.com/en/4.1/howto/custom-template-tags/#simple-tags
-
-
-@register.simple_tag
-def array_value(array: Union[list, tuple], index: int):
-    return array[index]

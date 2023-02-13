@@ -19,9 +19,12 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from typing import Type
+from typing import Type, Optional, List, Union
 
 from django.db.models import QuerySet, Model
+from django.db.models.manager import Manager
+from django.http import Http404
+from django.shortcuts import _get_queryset
 
 from .enums import ChoiceArg
 from .misc import ensure_list
@@ -82,3 +85,37 @@ def get_yes_no_ignore_query(
             success = False
 
     return success
+
+
+def get_object_and_related_or_404(
+        klass: Union[Model, Manager, QuerySet], *args,
+        related: Optional[List[str]] = None, **kwargs):
+    """
+    Enhanced version of django.shortcuts.get_object_or_404()
+
+    Use get() to return an object, or raise an Http404 exception if the object
+    does not exist.
+
+    klass may be a Model, Manager, or QuerySet object. All other passed
+    arguments and keyword arguments are used in the get() query.
+
+    Like with QuerySet.get(), MultipleObjectsReturned is raised if more than
+    one object is found.
+    """
+    queryset = _get_queryset(klass)
+    if not hasattr(queryset, "get"):
+        klass__name = (
+            klass.__name__ if isinstance(klass, type) else klass.__class__.__name__
+        )
+        raise ValueError(
+            "First argument to get_object_or_404() must be a Model, Manager, "
+            "or QuerySet, not '%s'." % klass__name
+        )
+    if related:
+        queryset = queryset.prefetch_related(*ensure_list(related))
+    try:
+        return queryset.get(*args, **kwargs)
+    except queryset.model.DoesNotExist:
+        raise Http404(
+            "No %s matches the given query." % queryset.model._meta.object_name
+        )

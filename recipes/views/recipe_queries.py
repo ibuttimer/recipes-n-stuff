@@ -22,14 +22,15 @@
 #
 from datetime import datetime, timezone
 from enum import Enum, auto
-from typing import Any, Type, Optional, Tuple, List
+from typing import Any, Type, Optional, Tuple, List, Union
 from zoneinfo import ZoneInfo
 from decimal import Decimal, InvalidOperation
 
-from django.db.models import Q, QuerySet
+from django.db.models import Q, QuerySet, Prefetch
+from django.shortcuts import get_object_or_404
 
 from recipes.models import (
-    Recipe, Ingredient, Instruction
+    Recipe, Ingredient, Instruction, RecipeIngredient
 )
 from user.models import User
 from utils import (
@@ -37,7 +38,7 @@ from utils import (
     regex_matchers, regex_date_matchers, QuerySetParams,
     TERM_GROUP, KEY_TERM_GROUP, DATE_QUERY_GROUP, DATE_KEY_TERM_GROUP,
     DATE_QUERY_YR_GROUP, DATE_QUERY_MTH_GROUP,
-    DATE_QUERY_DAY_GROUP, USER_QUERY, YesNo
+    DATE_QUERY_DAY_GROUP, USER_QUERY, YesNo, get_object_and_related_or_404
 )
 
 NON_DATE_QUERIES = [
@@ -272,8 +273,7 @@ def _get_recipe_contents(
     :param recipe_id: id of recipe
     :return: list of contents or None if recipe not found
     """
-    recipe = Recipe.objects.prefetch_related(
-        field).get(**{
+    recipe = Recipe.objects.prefetch_related(field).get(**{
         f'{Recipe.id_field()}': recipe_id
     })
     if recipe:
@@ -286,8 +286,7 @@ def _get_recipe_contents(
     return list(contents.all()) if contents else None
 
 
-def get_recipe_ingredients(
-        recipe_id) -> Optional[List[Ingredient]]:
+def get_recipe_ingredients(recipe_id: int) -> Optional[List[Ingredient]]:
     """
     Get the list of ingredients
     :param recipe_id: id of recipe
@@ -296,11 +295,103 @@ def get_recipe_ingredients(
     return _get_recipe_contents(recipe_id, Recipe.INGREDIENTS_FIELD)
 
 
-def get_recipe_instructions(
-        recipe_id) -> Optional[List[Instruction]]:
+def get_recipe_instructions(recipe_id: int) -> Optional[List[Instruction]]:
     """
     Get the list of instructions
     :param recipe_id: id of recipe
     :return: list of instructions or None if recipe not found
     """
     return _get_recipe_contents(recipe_id, Recipe.INSTRUCTIONS_FIELD)
+
+
+# def get_ingredient(ingredient_id: int) -> Optional[List[Ingredient | Instruction]]:
+#     """
+#     Get the list of contents
+#     :param ingredient_id: id of ingredient
+#     :return: list of contents or None if recipe not found
+#     """
+#     recipe = Recipe.objects.prefetch_related(
+#         field).get(**{
+#         f'{Recipe.id_field()}': recipe_id
+#     })
+#     if recipe:
+#         contents = recipe.ingredients if field == Recipe.INGREDIENTS_FIELD \
+#             else recipe.instructions if field == Recipe.INSTRUCTIONS_FIELD \
+#             else recipe.keywords if field == Recipe.KEYWORDS_FIELD else None
+#     else:
+#         contents = None
+#
+#     return list(contents.all()) if contents else None
+
+
+def get_recipe(
+        pk: int, related: Optional[List[str]] = None) -> Tuple[Recipe, dict]:
+    """
+    Get recipe by specified `id`
+    :param pk: id of recipe
+    :param related: list of related fields to prefetch; default None
+    :return: tuple of object and query param
+    """
+    query_param = {
+        f'{Recipe.id_field()}': pk
+    }
+    entity = get_object_and_related_or_404(
+        Recipe, **query_param, related=related)
+    return entity, query_param
+
+
+def get_recipe_ingredients_list(
+        recipe: Union[int, Recipe],
+        order_by: str = RecipeIngredient.INDEX_FIELD,
+        prefetch_related: bool = True
+        ) -> List[RecipeIngredient]:
+    """
+    Get recipe ingredients for the specified `recipe`
+    :param recipe: recipe object or its id
+    :param order_by: order by; default index field
+    :param prefetch_related: prefetch related flag, default True
+    :return: tuple of object and query param
+    """
+    query_param = {
+        f'{RecipeIngredient.RECIPE_FIELD}':
+            get_recipe(recipe) if isinstance(recipe, int) else recipe
+    }
+
+    measures_prefetch = Prefetch(
+        Ingredient.MEASURE_FIELD, queryset=Ingredient.objects.all())
+    ingredients_prefetch = Prefetch(
+        RecipeIngredient.INGREDIENT_FIELD,
+        queryset=measures_prefetch.queryset.all())
+
+    return list(
+        RecipeIngredient.objects.prefetch_related(
+            ingredients_prefetch
+        ).filter(**query_param).order_by(order_by).all()
+    )
+
+
+def get_recipe_ingredient(pk: int) -> Tuple[RecipeIngredient, dict]:
+    """
+    Get recipe ingredient by specified `id`
+    :param pk: id of recipe ingredient
+    :return: tuple of object and query param
+    """
+    query_param = {
+        f'{RecipeIngredient.id_field()}': pk
+    }
+    entity = get_object_or_404(RecipeIngredient, **query_param)
+    return entity, query_param
+
+
+# def get_recipe_ingredient(pk: int, ingredient_pk: int) -> Tuple[Union[Recipe, RecipeDto], dict]:
+#     """
+#     Get recipe by specified `id`
+#     :param pk: id of recipe
+#     :param as_dto: return as dto object flag; default False
+#     :return: tuple of object and query param
+#     """
+#     query_param = {
+#         f'{Recipe.id_field()}': pk
+#     }
+#     entity = get_object_or_404(Recipe, **query_param)
+#     return RecipeDto.from_model(entity) if as_dto else entity, query_param

@@ -1,6 +1,6 @@
 #  MIT License
 #
-#  Copyright (c) 2023 Ian Buttimer
+#  Copyright (c) 2022 Ian Buttimer
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to
@@ -19,19 +19,17 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from .recipe_list import RecipeList
-from .recipe_by import RecipeDetail, RecipeDetailUpdate
-from .recipe_ingredient_by import RecipeIngredientDetail
-from .recipe_ingredient_create import create_recipe_ingredient
+#
+
+from django import template
+
+from .form_submit_btn_id import tag_id
+
+register = template.Library()
+
+# https://docs.djangoproject.com/en/4.1/howto/custom-template-tags/#simple-tags
 
 
-__all__ = [
-    'RecipeList',
-
-    'RecipeDetail',
-    'RecipeDetailUpdate',
-
-    'RecipeIngredientDetail',
-
-    'create_recipe_ingredient',
-]
+@register.simple_tag
+def a_id(identifier: str, index: str = None):
+    return tag_id(identifier, 'a', index=index)

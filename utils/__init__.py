@@ -42,7 +42,7 @@ from .models import (
     DESC_LOOKUP, DATE_OLDEST_LOOKUP, DATE_NEWEST_LOOKUP
 )
 from .query_params import QuerySetParams
-from .queries import get_yes_no_ignore_query
+from .queries import get_yes_no_ignore_query, get_object_and_related_or_404
 from .search import (
     ORDER_QUERY, PAGE_QUERY, PER_PAGE_QUERY, REORDER_QUERY, SEARCH_QUERY,
     USER_QUERY, REORDER_REQ_QUERY_ARGS, DATE_QUERIES, AMOUNT_QUERY_ARGS,
@@ -110,6 +110,7 @@ __all__ = [
     'QuerySetParams',
 
     'get_yes_no_ignore_query',
+    'get_object_and_related_or_404',
 
     'ORDER_QUERY',
     'PAGE_QUERY',

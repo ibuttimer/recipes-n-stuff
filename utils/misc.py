@@ -22,7 +22,7 @@
 #
 import random
 import string
-from typing import Union, List, Any, Callable
+from typing import Union, List, Any, Callable, Optional, TypeVar
 
 import environ
 from enum import Enum
@@ -30,6 +30,10 @@ from enum import Enum
 from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.http import HttpRequest
+
+
+# workaround for self type hints from https://peps.python.org/pep-0673/
+TypeCrud = TypeVar("TypeCrud", bound="Crud")
 
 
 def random_string_generator(
@@ -57,10 +61,27 @@ class Crud(Enum):
     """
     Enum to map standard CRUD terms to Django models default permissions
     """
-    CREATE = 'add'
-    READ = 'view'
-    UPDATE = 'change'
-    DELETE = 'delete'
+    # first term in tuple is django permission, the rest are sensible
+    # alternative names
+    CREATE = ('add', 'create', 'new')
+    READ = ('view', 'read')
+    UPDATE = ('change', 'update')
+    DELETE = ('delete', 'remove')
+
+    @staticmethod
+    def from_str(value: str) -> Optional[TypeCrud]:
+        """
+        Get enum object matching specified `string`
+        :param value: string to match
+        :return: Crud or None
+        """
+        crud = None
+        value = value.lower()
+        for action in Crud:
+            if value in action.value:
+                crud = action
+                break
+        return crud
 
 
 def permission_name(
@@ -88,12 +109,12 @@ def permission_name(
 
 
 def permission_check(
-        request: HttpRequest, model: [str, models.Model],
+        request: Union[HttpRequest], model: [str, models.Model],
         perm_op: Union[Union[Crud, str], List[Union[Crud, str]]],
         app_label: str = None, raise_ex: bool = False) -> bool:
     """
     Check request user has specified permission
-    :param request: http request
+    :param request: http request or user
     :param model: model or model name
     :param perm_op: Crud operation or permission name to check
     :param app_label:
@@ -104,10 +125,11 @@ def permission_check(
     :raises PermissionDenied if user does not have permission and `raise_ex`
         is True
     """
-    has_perm = request.user.is_superuser
+    user = request.user if isinstance(request, HttpRequest) else request
+    has_perm = user.is_superuser
     if not has_perm:
         for chk_perm in ensure_list(perm_op):
-            has_perm = request.user.has_perm(
+            has_perm = user.has_perm(
                 permission_name(model, chk_perm, app_label=app_label))
             if not has_perm:
                 break

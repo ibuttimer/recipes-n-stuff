@@ -19,7 +19,7 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-
+from dataclasses import dataclass
 from decimal import Decimal
 from typing import List, Tuple
 
@@ -110,7 +110,9 @@ class SubscriptionForm(FormMixin, forms.ModelForm):
 
     is_active = forms.BooleanField(label=_("Is active"), initial=True)
 
+    @dataclass
     class Meta:
+        """ Model metadata """
         model = Subscription
         fields = [
             Subscription.NAME_FIELD, Subscription.DESCRIPTION_FIELD,

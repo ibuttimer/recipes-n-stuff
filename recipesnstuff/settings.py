@@ -455,3 +455,6 @@ FINANCIAL_FACTOR = 6
 # Exchange Rates Data API
 EXCHANGERATES_DATA_KEY = env('EXCHANGERATES_DATA_KEY', default='')
 DEFAULT_RATES_REQUEST_INTERVAL = timedelta(days=1)
+
+# Miscellaneous settings
+FOOD_DOT_COM = env('FOOD_DOT_COM', default=False)

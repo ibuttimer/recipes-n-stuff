@@ -36,3 +36,6 @@ STRIPE_SECRET_KEY='sk_test_verylongstringofalphanumericchars'
 
 # Exchange Rates Data API key; https://apilayer.com/marketplace/exchangerates_data-api
 EXCHANGERATES_DATA_KEY='verylongstringofalphanumericchars'
+
+# A boolean that turns on/off Food.com links; set to any of 'true', 'on', 'ok', 'y', 'yes', '1' to enable
+FOOD_DOT_COM=off

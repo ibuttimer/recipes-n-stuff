@@ -1,0 +1,111 @@
+<!-- ingredient_delete_modal.html start -->
+{% load i18n %}
+{% load form_field %}
+
+{% with confirm_id="id__ingredient_delete-confirm-modal" deleted_id="id__ingredient_deleted-modal" delete_btn_id="id__btn-ingredient_delete-confirm" cancel_btn_id="id__btn-ingredient_delete-cancel" close_btn_id="id__btn-ingredient_delete-close" url_var_id="id__ingredient_delete-url" entity="Ingredient" %}
+<!-- Confirm delete ingredient modal -->
+<div id="{{confirm_id}}" class="modal fade" tabindex="-1" aria-labelledby="{{confirm_id}}-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <var id="{{ url_var_id }}" hidden>
+                {# content replaced by click event handler for button #}
+            </var>
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="{{confirm_id}}-label">{{ entity }} Delete Confirm</h5>
+                <button id="{{close_btn_id}}" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this {{ entity|lower }}?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="{{cancel_btn_id}}" class="btn btn-dark btn__text" type="button" data-bs-dismiss="modal">Cancel</button>
+                <button id="{{delete_btn_id}}" class="btn btn-outline-danger btn__text" type="button" data-bs-dismiss="modal">
+                    {% trans "Delete" %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ingredient deleted modal -->
+<div id="{{deleted_id}}" class="modal fade" tabindex="-1" aria-labelledby="{{deleted_id}}-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="{{deleted_id}}-label">{{ entity }} Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="{{deleted_id}}-body" class="modal-body">
+                {# --- entity_delete_result.html template variable defines for includes --- #}
+                {# entity delete template expects: 'status' as success/failure status #}
+                {#                                 'entity' as entity name #}
+                {% include 'snippet/entity_delete_result.html' %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-dark btn__text" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const ingredientDeleteConfirmModalSelector = "#{{confirm_id}}";
+    const ingredientDeletedModalSelector = "#{{deleted_id}}";
+    const ingredientDeleteModalBodySelector = "#{{deleted_id}}-body";
+    const ingredientDeleteUrlSelector = "#{{ url_var_id }}";
+    const ingredientDeleteBtnSelector = "#{{delete_btn_id}}";
+    const ingredientDeleteCancelBtnSelector = "#{{cancel_btn_id}}";
+    const ingredientDeleteCloseBtnSelector = "#{{close_btn_id}}";
+    const ingredientDeleteLinkSelector = "a[class*='a--ingredient-del']";
+
+    $(document).ready(function () {
+
+        $(ingredientDeleteLinkSelector).on('click', function (event) {
+            /* Add delete link to delete confirm modal and display it */
+            // ingredients_form.html: href of delete 'a' tag
+            $(ingredientDeleteUrlSelector).text(event.currentTarget.attributes['href'].textContent);
+
+            // display confirmation modal
+            $(ingredientDeleteConfirmModalSelector).modal('show');
+
+            event.preventDefault();
+            event.stopPropagation();
+        });
+
+        $(ingredientDeleteBtnSelector).on('click', function (event) {
+            /* Delete ingredient and display deleted result modal */
+            const url = $(ingredientDeleteUrlSelector).text();
+
+            $.ajax({
+                method: 'delete',
+                url: `${url}?ref=${window.location.pathname}`,
+                headers: csrfHeader(),
+            }).done(function(data) {
+                const modalDisplayed = redirectRewriteInfoResponseHandler(data);
+                if (!modalDisplayed) {
+                    // show modal
+                    $(ingredientDeletedModalSelector).modal('show');
+                }
+            }).fail(function(data) {
+                // display reason
+                const modalDisplayed = redirectRewriteInfoResponseHandler(data);
+                if (!modalDisplayed) {
+                    // show modal
+                    $(ingredientDeletedModalSelector).modal('show');
+                }
+            });
+
+            event.preventDefault();
+            event.stopPropagation();
+        });
+
+        $(ingredientDeletedModalSelector).on('hidden.bs.modal', function (event) {
+            /* refresh ingredient listing after deleted result modal closed */
+            document.location.href = "{{ refresh_url }}";
+        });
+    });
+</script>
+{% endwith %}
+<!-- ingredient_delete_modal.html end -->

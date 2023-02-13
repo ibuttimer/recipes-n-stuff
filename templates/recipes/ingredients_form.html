@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+<!-- ingredients_form.html start -->
+{# --- ingredients_form.html template variable defines for includes --- #}
+{# ingredients form template expects: 'ingredients_form' as list of RecipeIngredientForm #}
+
+{% load i18n %}
+{% load static %}
+{% load form_submit_btn_id  a_id  lookup_value %}
+
+{% block head_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <link href="{% static 'css/styles-recipes.css' %}" rel="stylesheet" type="text/css">
+{% endblock extra_css %}
+
+{% block extra_js_head %}
+    {{ block.super }}
+    {% include "snippet/jquery.html" %}
+{% endblock extra_js_head %}
+
+{% block content %}
+<div class="row mt-2 mb-2">
+    {% if page_heading %}
+    <div class="col-12 text-center">
+        <h3>{{ page_heading | safe }}</h3>
+    </div>
+    {% endif %}
+</div>
+
+<article id="article-content" class="row d-flex justify-content-center">
+    <div class="col-lg-10 col-md-11 col-sm-12">
+
+        <div class="row mb-3 text-center">
+            <div class="col-sm-2">
+                <h6>Index</h6>
+                <div class="form-text">
+                    Position in ingredient list, duplicates indicate alternatives.
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <h6>Quantity</h6>
+            </div>
+            <div class="col-sm-1">
+                <h6>Measure</h6>
+            </div>
+            <div class="col-sm-4">
+                <h6>Ingredient</h6>
+            </div>
+            <div class="col-sm-3">
+            </div>
+        </div>
+        {% for ingredient in ingredients %}
+            <form {% if not read_only %} class="needs-validation" novalidate method="post" action="{% url 'recipes:recipe_ingredients_id' ingredient.form.instance.id %}" enctype="multipart/x-www-form-urlencoded" {% endif %}>
+                {% if not read_only %}
+                    {% csrf_token %}
+                {% endif %}
+
+                <fieldset class="row mb-3 text-center" {% if read_only %} disabled {% endif %}>
+                    {% for field in ingredient.form %}
+                    <div class="col-sm-2">
+                        {{ field }}
+                        <div class="invalid-feedback">
+                            {% lookup_value new_form.Meta.error_messages field.name 'combined' as error_message %}
+                            <p>{{ error_message }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <div class="col-sm-1">
+                        {{ ingredient.measure_name }}
+                    </div>
+                    <div class="col-sm-4">
+                        {{ ingredient.ingredient_name }}
+                    </div>
+                    <div class="col-sm-3">
+                        <button id="{% form_submit_btn_id 'ingredient' forloop.counter %}"
+                                class="btn btn-primary primaryAction me-2"
+                                data-bs-toggle="tooltip" data-bs-placement="top"
+                                data-bs-title="Save ingredient"
+                                type="submit">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" hidden></span>
+                        </button>
+                        <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Delete ingredient">
+                            <a href="{% url 'recipes:recipe_ingredients_id' ingredient.form.instance.id %}" aria-label="Delete ingredient"
+                               id="{% a_id 'del-ingredient' forloop.counter %}"
+                               class="btn btn-danger a--ingredient-del">
+                                <i class="fa-solid fa-trash-arrow-up"></i>
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" hidden></span>
+                            </a>
+                        </span>
+                    </div>
+                </fieldset>
+            </form>
+        {% endfor %}
+        {% if not read_only %}
+            <form method="post" class="needs-validation" novalidate action="{{ new_url }}" enctype="multipart/x-www-form-urlencoded">
+                {% csrf_token %}
+
+                <fieldset class="row mb-3 text-center">
+                    {% for field in new_form %}
+                        {% if field.name != 'ingredient' %}
+                            <div class="col-sm-2">
+                                {{ field }}
+                                <div class="invalid-feedback">
+                                    {% lookup_value new_form.Meta.error_messages field.name 'combined' as error_message %}
+                                    <p>{{ error_message }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    <div class="col-sm-1">
+                    </div>
+                    <div class="col-sm-4">
+                        {{ new_form.ingredient }}
+                        <div class="invalid-feedback">
+                            {% lookup_value new_form.Meta.error_messages 'ingredient' 'combined' as error_message %}
+                            <p>{{ error_message }}</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <button id="{% form_submit_btn_id 'ingredient-new' %}"
+                                class="btn btn-primary primaryAction me-2"
+                                data-bs-toggle="tooltip" data-bs-placement="top"
+                                data-bs-title="Save ingredient"
+                                type="submit">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" hidden></span>
+                        </button>
+                    </div>
+                </fieldset>
+            </form>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-10 col-md-11 col-sm-12">
+        {# --- page_done.html template variable defines for includes --- #}
+        {# page done template expects: 'done_url' as url for done action #}
+        {#                             'done_text' as text for done button #}
+        {#                             'large' as large button flag #}
+        {% url 'recipes:recipe_id' recipe_dto.id as done_url %}
+        {% include 'snippet/page_done.html' %}
+    </div>
+
+
+</article>
+
+{% include "recipes/snippet/ingredient_delete_modal.html" %}
+
+<script>
+    const newIngredientBtnSelector = "#{% form_submit_btn_id 'ingredient-new' %}";
+    const updateIngredientBtnSelector = "button[id^='{% form_submit_btn_id 'ingredient' %}']";
+    const deleteIngredientBtnSelector = "a[id^='{% a_id 'del-ingredient' %}']";
+
+    /**
+     * Toggle the icon and spinner display for the specified selector
+     * @param selector
+     */
+    function hideIconShowSpinner(selector) {
+        /* hide upload icon and show in progress spinner */
+        $(`${selector} > i`).attr("hidden", "hidden");
+        $(`${selector} > span`).removeAttr("hidden");
+    }
+
+    /**
+     * Toggle the icon and spinner display for the specified selector
+     * @param selector
+     */
+    function showIconHideSpinner(selector) {
+        /* hide upload icon and show in progress spinner */
+        $(`${selector} > i`).removeAttr("hidden");
+        $(`${selector} > span`).attr("hidden", "hidden");
+    }
+
+    /**
+     * Toggle the icon and spinner display for the specified selector
+     * @param selector
+     */
+    function toggleIconAndSpinner(selector) {
+        /* hide/show upload icon and show/hide in progress spinner */
+        const hidden = $(`${selector} > i`).attr("hidden");
+        if (!hidden) {
+            hideIconShowSpinner(selector);
+        } else {
+            showIconHideSpinner(selector);
+        }
+    }
+
+    $(document).ready(function () {
+
+        $(newIngredientBtnSelector).on('click', function (event) {
+            /* hide upload icon and display in progress spinner */
+            hideIconShowSpinner(newIngredientBtnSelector);
+        });
+
+        for (const selector of [updateIngredientBtnSelector, deleteIngredientBtnSelector]) {
+            $(selector).on('click', function (event) {
+                /* hide upload icon and display in progress spinner */
+                toggleIconAndSpinner(`#${event.currentTarget.id}`);
+            });
+        }
+
+        for (const selector of [ingredientDeleteCloseBtnSelector, ingredientDeleteCancelBtnSelector]) {
+            $(selector).on('click', function (event) {
+                /* show upload icon and hide in progress spinner */
+                showIconHideSpinner(deleteIngredientBtnSelector);
+            });
+        }
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        const forms = document.querySelectorAll('.needs-validation')
+
+        // Loop over them and prevent submission
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    showIconHideSpinner(newIngredientBtnSelector);
+                    showIconHideSpinner(updateIngredientBtnSelector);
+                }
+
+                form.classList.add('was-validated')
+            }, false);
+        })
+    });
+</script>
+{% endblock content %}
+
+<!-- ingredients_form.html end -->

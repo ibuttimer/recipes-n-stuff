@@ -19,18 +19,40 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import timedelta
+from typing import List
 
 from django.utils.text import slugify
 
 from base.dto import BaseDto
 from recipes.views.recipe_queries import (
-    get_recipe_instructions, get_recipe_ingredients
+    get_recipe_instructions, get_recipe_ingredients_list, get_recipe
 )
 from recipes.models import (
-    Recipe
+    Recipe, RecipeIngredient
 )
+
+
+@dataclass
+class IngredientDto(BaseDto):
+    """ Recipe ingredient data transfer object """
+
+    measure: str = ''
+
+    @staticmethod
+    def from_model(ingredient: RecipeIngredient):
+        """
+        Generate a DTO from the specified `ingredient`
+        :param ingredient: model instance to populate DTO from
+        :return: DTO instance
+        """
+        dto = BaseDto.from_model_to_obj(ingredient, IngredientDto())
+        # custom handling for specific attributes
+        dto.ingredient = ingredient.ingredient.name
+        dto.measure = ingredient.ingredient.measure.abbrev
+
+        return dto
 
 
 @dataclass
@@ -38,11 +60,12 @@ class RecipeDto(BaseDto):
     """ Recipe data transfer object """
 
     _total_time: timedelta = timedelta()
+    _alternatives: list[bool] = field(default_factory=list)
 
     @staticmethod
     def from_model(recipe: Recipe, *args, all_attrib: bool = True):
         """
-        Generate a DTO from the specified `model`
+        Generate a DTO from the specified `recipe`
         :param recipe: model instance to populate DTO from
         :param args: list of Recipe.xxx_FIELD names to populate in addition
                     to basic fields
@@ -53,7 +76,22 @@ class RecipeDto(BaseDto):
         # custom handling for specific attributes
 
         if all_attrib or Recipe.INGREDIENTS_FIELD in args:
-            dto.ingredients = get_recipe_ingredients(dto.id)
+            dto.ingredients = list(
+                map(IngredientDto.from_model, list(
+                    recipe.recipeingredient_set.order_by(
+                        RecipeIngredient.INDEX_FIELD).all()
+                    )
+                )
+            )
+            num_ingredients = len(dto.ingredients)
+            dto._alternatives = list(
+                map(lambda _: False, range(num_ingredients)))
+            for idx in range(len(dto.ingredients) - 1):
+                alt_idx = idx + 1
+                dto._alternatives[alt_idx] = \
+                    dto.ingredients[alt_idx].index == \
+                    dto.ingredients[idx].index
+
         if all_attrib or Recipe.INSTRUCTIONS_FIELD in args:
             dto.instructions = get_recipe_instructions(dto.id)
         if all_attrib or Recipe.IMAGES_FIELD in args:
@@ -62,6 +100,19 @@ class RecipeDto(BaseDto):
             dto.author = recipe.author
 
         return dto
+
+    @staticmethod
+    def from_id(pk: int, *args, all_attrib: bool = True):
+        """
+        Generate a DTO from the specified recipe `id`
+        :param pk: recipe id to populate DTO from
+        :param args: list of Recipe.xxx_FIELD names to populate in addition
+                    to basic fields
+        :param all_attrib: populate all attributes flag; default True
+        :return: DTO instance
+        """
+        recipe, _ = get_recipe(pk)
+        return RecipeDto.from_model(recipe, *args, all_attrib=all_attrib)
 
     @property
     def total_time(self) -> timedelta:
@@ -73,6 +124,14 @@ class RecipeDto(BaseDto):
     def total_time(self, time: timedelta):
         """ Set total cook and prep time """
         self._total_time = time
+
+    @property
+    def alternatives(self) -> List[bool]:
+        """
+        Alternative ingredients flags; True if entry is alternative for
+        previous entry in ingredient list
+        """
+        return self._alternatives
 
     @property
     def display_order(self):

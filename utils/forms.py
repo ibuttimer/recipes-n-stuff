@@ -22,9 +22,12 @@
 #
 
 from collections import namedtuple
-from string import Template
+from string import Template, capwords
+
 from typing import Type, Union, NoReturn, List, Tuple, Optional
 
+from django.core.validators import MaxValueValidator, MinValueValidator, \
+    MinLengthValidator, MaxLengthValidator
 from django.forms import BaseForm
 from django.utils.translation import gettext_lazy as _
 
@@ -33,42 +36,83 @@ ALL_FIELDS = "__all__"
 
 
 _ATTRIB = 'attrib'
-_MAX_LEN = 'max_length'
-_MIN_LEN = 'min_length'
+_ATTRIB_VAL = 'attrib_val'
+_MAX_LEN = MaxLengthValidator.code
+_MIN_LEN = MinLengthValidator.code
+_MAX_VAL = MaxValueValidator.code
+_MIN_VAL = MinValueValidator.code
+# from django.forms.fields.Field.default_error_messages dict
+_REQUIRED = 'required'
+# combined error message combining all the other messages
+_COMBINED = 'combined'
 
 ErrorMsgs: Type[tuple] = namedtuple(
     'ErrorMsgs',
-    [_ATTRIB, _MAX_LEN, _MIN_LEN],
-    defaults=['', False, False]
+    [_ATTRIB, _MAX_LEN, _MIN_LEN, _MAX_VAL, _MIN_VAL, _REQUIRED],
+    defaults=['', None, None, None, None, None]
 )
 
+# keys are error codes of ValidationError raised by validator
+# (except 'combined' which is made up)
 _msg_templates = {
-    _MAX_LEN: Template(f'The ${_ATTRIB} is too long.'),
-    _MIN_LEN: Template(f'The ${_ATTRIB} is too short.')
+    _MIN_LEN: Template(f'Minimum length for ${_ATTRIB} is ${_ATTRIB_VAL}.'),
+    _MAX_LEN: Template(f'Maximum length for ${_ATTRIB} is ${_ATTRIB_VAL}.'),
+    _MIN_VAL: Template(f'Minimum value for ${_ATTRIB} is ${_ATTRIB_VAL}.'),
+    _MAX_VAL: Template(f'Maximum value for ${_ATTRIB} is ${_ATTRIB_VAL}.'),
+    _REQUIRED: Template(f'Please enter ${_ATTRIB}, it is required.')
+}
+_description = {
+    _MIN_LEN: 'minimum length',
+    _MAX_LEN: 'maximum length',
+    _MIN_VAL: 'minimum value',
+    _MAX_VAL: 'maximum value',
 }
 
 
 def error_messages(model: str, *args: ErrorMsgs) -> dict:
     """
-    Generate help texts for the specified attributes of 'model'.
+    Generate error texts for the specified attributes of 'model'.
     Note: currently only supports min/max length.
     :param model:   name of model
     :param args:    list of attributes
     :return: dict of help texts of the form 'Model attrib.'
     """
-    def inc_msg(fld: str, err_msg: ErrorMsgs):
-        # Check if field is not attrib & value is true
-        return fld != _ATTRIB and getattr(err_msg, fld)
+    def inc_msg(fld: str, err_msg: ErrorMsgs, exclude: List[str]=None):
+        # Check if field is not attrib & value is not None
+        if exclude is None:
+            exclude = [_ATTRIB]
+        return fld not in exclude and getattr(err_msg, fld) is not None
+
+    def combined_msg(err_msg: ErrorMsgs):
+        msg = capwords(getattr(err_msg, _ATTRIB))
+        msg = f'{msg}' if getattr(err_msg, _REQUIRED) is None \
+            else f'{msg} is required'
+        terms = [
+            f'{_description[k]} {getattr(entry, k)}'
+            for k in ErrorMsgs._fields
+            if inc_msg(k, entry, exclude=[_ATTRIB, _REQUIRED])
+        ]
+        if len(terms) > 1:
+            msg = f'{msg}, {",".join(terms[:-1])} and {terms[-1]}'
+        elif len(terms) > 0:
+            msg = f'{msg}, {terms[-1]}'
+        return f'{msg}.'
 
     messages = {}
     for entry in args:
-        messages[entry.attrib] = dict(
+        messages[entry.attrib] = {
+            _COMBINED: combined_msg(entry)
+        }
+        messages[entry.attrib].update(dict(
             zip(
                 [k for k in ErrorMsgs._fields if inc_msg(k, entry)],
-                [_msg_templates[k].substitute({_ATTRIB: entry.attrib})
-                 for k in ErrorMsgs._fields if inc_msg(k, entry)]
+                [_msg_templates[k].substitute({
+                    _ATTRIB: capwords(entry.attrib),
+                    _ATTRIB_VAL: getattr(entry, k)
+                })
+                for k in ErrorMsgs._fields if inc_msg(k, entry)]
             )
-        )
+        ))
     return messages
 
 

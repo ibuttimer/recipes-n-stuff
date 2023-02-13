@@ -44,6 +44,8 @@ urlpatterns = [
     path(CHECKOUT_URL, include(f'{CHECKOUT_APP_NAME}.urls')),
     path(RECIPES_URL, include(f'{RECIPES_APP_NAME}.urls')),
 
+    path('__debug__/', include('debug_toolbar.urls')),
+
     path('', include(f'{BASE_APP_NAME}.root_urls')),
 ]
 
