@@ -41,3 +41,9 @@ python -m manage dumpdata subscription.Subscription --indent 4 -o subscription_t
 ```pycon
 python -m manage dumpdata subscription.SubscriptionFeature --indent 4 -o subscription_feature_test.json
 ```
+
+## recipes.Measure
+
+```pycon
+python -m manage dumpdata recipes.Measure --indent 4 -o data/fixtures/measure.json
+```
