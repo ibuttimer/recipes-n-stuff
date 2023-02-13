@@ -1,0 +1,17 @@
+<!-- entity_delete_result.html start -->
+{% load i18n %}
+
+{# --- entity_delete_result.html template variable defines for includes --- #}
+{# entity delete template expects: 'status' as success/failure status #}
+{#                                 'entity' as entity name #}
+
+<div class="row mt-1 mb-1">
+    <div class="text-center">
+        {% if status %}
+            <p>The {{ entity | lower }} was successfully deleted.</p>
+        {% else %}
+            <p>There was an error deleting the {{ entity | lower }}.</p>
+        {% endif %}
+    </div>
+</div>
+<!-- entity_delete_result.html end -->

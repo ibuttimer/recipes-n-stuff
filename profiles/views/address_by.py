@@ -43,7 +43,8 @@ from utils import (
     Crud, SUBMIT_URL_CTX, app_template_path, reverse_q,
     namespaced_url, redirect_on_success_or_render,
     replace_inner_html_payload, redirect_payload,
-    GET, PATCH, POST, DELETE, STATUS_CTX, USER_QUERY
+    GET, PATCH, POST, DELETE, STATUS_CTX, USER_QUERY,
+    entity_delete_result_payload
 )
 from .address_create import (
     for_address_form_render, manage_default, get_user_addresses_url
@@ -180,16 +181,9 @@ class AddressDetail(LoginRequiredMixin, View):
         else:
             # delete address
             count, _ = address.delete()
-            payload = replace_inner_html_payload(
-                "#id--address-deleted-modal-body",
-                render_to_string(
-                    app_template_path(
-                        THIS_APP, "snippet", "address_delete.html"),
-                    context={
-                        STATUS_CTX: count > 0
-                    },
-                    request=request)
-            )
+            payload = entity_delete_result_payload(
+                "#id--address-deleted-modal-body", count > 0, 'address')
+
             if count == 0:
                 status = HTTPStatus.BAD_REQUEST
 

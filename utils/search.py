@@ -22,7 +22,7 @@
 #
 import re
 from re import Pattern
-from typing import Any
+from typing import Any, Dict
 
 from .enums import QueryOption
 
@@ -49,15 +49,34 @@ ON_OR_BEFORE_QUERY: str = 'on-or-before'    # search <= date
 AFTER_QUERY: str = 'after'                  # search > date
 BEFORE_QUERY: str = 'before'                # search < date
 EQUAL_QUERY: str = 'date'                   # search == date
+AMT_GTE_QUERY: str = 'amt-gte'              # search >= amount
+AMT_LTE_QUERY: str = 'amt-lte'              # search <= amount
+AMT_GT_QUERY: str = 'amt-gt'                # search > amount
+AMT_LT_QUERY: str = 'amt-lt'                # search < amount
+AMT_EQ_QUERY: str = 'amt'                   # search == amount
 
 DATE_QUERIES = [
     ON_OR_AFTER_QUERY, ON_OR_BEFORE_QUERY, AFTER_QUERY, BEFORE_QUERY,
     EQUAL_QUERY
 ]
+AMOUNT_QUERIES = [
+    AMT_GTE_QUERY, AMT_LTE_QUERY, AMT_GT_QUERY, AMT_LT_QUERY, AMT_EQ_QUERY
+]
 # date query request arguments for a search request
 DATE_QUERY_ARGS = [
     QueryOption.of_no_cls_dflt(query) for query in DATE_QUERIES
 ]
+# amount query request arguments for a search request
+AMOUNT_QUERY_ARGS = [
+    QueryOption.of_no_cls_dflt(query) for query in AMOUNT_QUERIES
+]
+AMOUNT_LOOKUP = {
+    AMT_GTE_QUERY: '__gte',
+    AMT_LTE_QUERY: '__lte',
+    AMT_GT_QUERY: '__gt',
+    AMT_LT_QUERY: '__lt',
+    AMT_EQ_QUERY: '__exact'
+}
 
 
 KEY_TERM_GROUP = 1  # match group of required text & key of non-date terms
@@ -122,4 +141,16 @@ def regex_date_matchers() -> dict:
             # use query term as marker
             (qm, qm) for qm in DATE_QUERIES
         ]
+    }
+
+
+def amount_lookups(field: str) -> Dict[str, str]:
+    """
+    Generate a dict of amount lookups
+    :param field: field term to do lookup on
+    :return: dict with query as key and lookup as value
+    """
+    return {
+        # query param: filter lookup
+        query: f'{field}{AMOUNT_LOOKUP[query]}' for query in AMOUNT_QUERIES
     }

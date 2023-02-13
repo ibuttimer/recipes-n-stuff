@@ -161,6 +161,9 @@ def set_basic_permissions(group: [Group, str],
         assert group is not None
         permission = apps.get_model("auth", "Permission")
 
+        if not permission.objects.using(db_alias).exists():
+            migrate_permissions(apps=apps, schema_editor=schema_editor)
+
         if perm_settings:
             for perm_setting in perm_settings:
                 if perm_setting.all:
@@ -277,6 +280,7 @@ def add_subs_permissions_for_registered(
     :param schema_editor:
         editor generating statements to change database schema, default None
     """
+    create_registered_group(apps=apps, schema_editor=schema_editor)
     set_group_permissions(
         REGISTERED_GROUP, Subscription, Crud.READ, SUBSCRIPTION_APP_NAME,
         ADD, apps=apps, schema_editor=schema_editor)

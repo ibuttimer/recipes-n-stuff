@@ -23,10 +23,11 @@ from dataclasses import dataclass
 from typing import TypeVar
 from decimal import Decimal
 from datetime import timedelta, datetime, MINYEAR, timezone
+import html
 
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
 from user.models import User
 from utils import ModelMixin
 
@@ -34,9 +35,13 @@ from .constants import (
     NAME_FIELD, TYPE_FIELD, SYSTEM_FIELD, IS_DEFAULT_FIELD, ABBREV_FIELD,
     BASE_US_FIELD, BASE_METRIC_FIELD, MEASURE_FIELD, FOOD_ID_FIELD, TEXT_FIELD,
     URL_FIELD, RECIPE_FIELD, PREP_TIME_FIELD, COOK_TIME_FIELD,
-    DATE_PUBLISHED_FIELD, DESCRIPTION_FIELD, CATEGORY_FIELD, KEYWORDS_FIELD,
-    AUTHOR_FIELD, SERVINGS_FIELD, RECIPE_YIELD_FIELD, INGREDIENTS_FIELD,
-    INSTRUCTIONS_FIELD
+    TOTAL_TIME_FIELD, DATE_PUBLISHED_FIELD, DESCRIPTION_FIELD, CATEGORY_FIELD,
+    KEYWORDS_FIELD, AUTHOR_FIELD, SERVINGS_FIELD, RECIPE_YIELD_FIELD,
+    INGREDIENTS_FIELD, INSTRUCTIONS_FIELD, IMAGES_FIELD, CALORIES_FIELD,
+    FAT_CONTENT_FIELD, SATURATED_FAT_CONTENT_FIELD, CHOLESTEROL_CONTENT_FIELD,
+    SODIUM_CONTENT_FIELD, CARBOHYDRATE_CONTENT_FIELD, FIBRE_CONTENT_FIELD,
+    SUGAR_CONTENT_FIELD, PROTEIN_CONTENT_FIELD, INGREDIENT_FIELD,
+    QUANTITY_FIELD, INDEX_FIELD
 )
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
@@ -266,7 +271,7 @@ class Ingredient(ModelMixin, models.Model):
         """ Model metadata """
 
     def __str__(self):
-        return f'{self.name}'
+        return f'{html.unescape(self.name)} ({self.measure.name})'
 
 
 class Instruction(ModelMixin, models.Model):
@@ -299,6 +304,7 @@ class Recipe(ModelMixin, models.Model):
     FOOD_ID_FIELD = FOOD_ID_FIELD
     PREP_TIME_FIELD = PREP_TIME_FIELD
     COOK_TIME_FIELD = COOK_TIME_FIELD
+    TOTAL_TIME_FIELD = TOTAL_TIME_FIELD     # sum of prep & cook annotation
     DATE_PUBLISHED_FIELD = DATE_PUBLISHED_FIELD
     DESCRIPTION_FIELD = DESCRIPTION_FIELD
     CATEGORY_FIELD = CATEGORY_FIELD
@@ -308,6 +314,16 @@ class Recipe(ModelMixin, models.Model):
     RECIPE_YIELD_FIELD = RECIPE_YIELD_FIELD
     INGREDIENTS_FIELD = INGREDIENTS_FIELD
     INSTRUCTIONS_FIELD = INSTRUCTIONS_FIELD
+    IMAGES_FIELD = IMAGES_FIELD             # image set
+    CALORIES_FIELD = CALORIES_FIELD
+    FAT_CONTENT_FIELD = FAT_CONTENT_FIELD
+    SATURATED_FAT_CONTENT_FIELD = SATURATED_FAT_CONTENT_FIELD
+    CHOLESTEROL_CONTENT_FIELD = CHOLESTEROL_CONTENT_FIELD
+    SODIUM_CONTENT_FIELD = SODIUM_CONTENT_FIELD
+    CARBOHYDRATE_CONTENT_FIELD = CARBOHYDRATE_CONTENT_FIELD
+    FIBRE_CONTENT_FIELD = FIBRE_CONTENT_FIELD
+    SUGAR_CONTENT_FIELD = SUGAR_CONTENT_FIELD
+    PROTEIN_CONTENT_FIELD = PROTEIN_CONTENT_FIELD
 
     RECIPE_ATTRIB_NAME_MAX_LEN: int = 100
     RECIPE_ATTRIB_DESC_MAX_LEN: int = 10000
@@ -367,22 +383,64 @@ class Recipe(ModelMixin, models.Model):
     class Meta:
         """ Model metadata """
 
+    @classmethod
+    def date_fields(cls) -> list[str]:
+        return [Recipe.DATE_PUBLISHED_FIELD]
+
+    @classmethod
+    def timedelta_fields(cls) -> list[str]:
+        return [
+            Recipe.PREP_TIME_FIELD, Recipe.COOK_TIME_FIELD,
+            Recipe.TOTAL_TIME_FIELD
+        ]
+
+    @classmethod
+    def numeric_fields(cls) -> list[str]:
+        return [
+            Recipe.SERVINGS_FIELD, Recipe.CALORIES_FIELD,
+            Recipe.FAT_CONTENT_FIELD, Recipe.SATURATED_FAT_CONTENT_FIELD,
+            Recipe.CHOLESTEROL_CONTENT_FIELD, Recipe.SODIUM_CONTENT_FIELD,
+            Recipe.CARBOHYDRATE_CONTENT_FIELD, Recipe.FIBRE_CONTENT_FIELD,
+            Recipe.SUGAR_CONTENT_FIELD, Recipe.PROTEIN_CONTENT_FIELD
+        ]
+
     def __str__(self):
         return f'{self.name}'
 
 
-class RecipeIngredient(models.Model):
+class RecipeIngredient(ModelMixin, models.Model):
     """
     Recipe ingredients model
     """
 
+    RECIPE_FIELD = RECIPE_FIELD
+    INGREDIENT_FIELD = INGREDIENT_FIELD
+    QUANTITY_FIELD = QUANTITY_FIELD
+    INDEX_FIELD = INDEX_FIELD
+
     RECIPE_INGREDIENT_ATTRIB_QUANTITY_MAX_LEN: int = 30
+    RECIPE_INGREDIENT_ATTRIB_INDEX_MIN: int = 1
+    RECIPE_INGREDIENT_ATTRIB_INDEX_MAX: int = 32767
 
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     quantity = models.CharField(
         max_length=RECIPE_INGREDIENT_ATTRIB_QUANTITY_MAX_LEN)
+    index = models.PositiveSmallIntegerField(
+        _('index in ingredient list'),
+        default=RECIPE_INGREDIENT_ATTRIB_INDEX_MIN,
+        validators=[
+            MinValueValidator(RECIPE_INGREDIENT_ATTRIB_INDEX_MIN),
+            MaxValueValidator(RECIPE_INGREDIENT_ATTRIB_INDEX_MAX)
+        ]
+    )
 
+    @dataclass
+    class Meta:
+        """ Model metadata """
+
+    def __str__(self):
+        return f'{self.index} {self.ingredient.name} - {self.recipe.name}'
 
 class Image(ModelMixin, models.Model):
     """

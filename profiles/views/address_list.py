@@ -30,7 +30,9 @@ from django.template.loader import render_to_string
 
 from profiles.constants import ADDRESS_LIST_CTX, NEW_ENTRY_CTX
 from profiles.enums import AddressQueryType, AddressSortOrder
-from profiles.views.address_queries import get_lookup, DEFAULT_ADDRESS_QUERY
+from profiles.views.address_queries import (
+    get_lookup, DEFAULT_ADDRESS_QUERY, FILTERS_ORDER, ALWAYS_FILTERS
+)
 # from opinions.constants import (
 #     STATUS_QUERY, AUTHOR_QUERY, SEARCH_QUERY, PINNED_QUERY,
 #     TEMPLATE_OPINION_REACTIONS, TEMPLATE_REACTION_CTRLS, CONTENT_STATUS_CTX,
@@ -46,7 +48,8 @@ from utils import (
     TITLE_CTX, LIST_HEADING_CTX, PAGE_HEADING_CTX, NO_CONTENT_MSG_CTX,
     NO_CONTENT_HELP_CTX,
     Crud, app_template_path, ORDER_QUERY, PAGE_QUERY, PER_PAGE_QUERY, PerPage,
-    REORDER_QUERY, REORDER_REQ_QUERY_ARGS, USER_QUERY, SNIPPETS_CTX
+    REORDER_QUERY, REORDER_REQ_QUERY_ARGS, USER_QUERY, SNIPPETS_CTX,
+    SEARCH_QUERY, REPEAT_SEARCH_TERM_CTX, query_search_term
 )
 # from opinions.views.opinion_queries import (
 #     FILTERS_ORDER, ALWAYS_FILTERS, get_lookup
@@ -69,20 +72,21 @@ from ..dto import AddressDto
 
 
 # args for an address reorder/next page/etc. request
-ADDRESS_REORDER_QUERY_ARGS = [
+REORDER_QUERY_ARGS = [
     QueryOption(ORDER_QUERY, AddressSortOrder, AddressSortOrder.DEFAULT),
     QueryOption.of_no_cls(PAGE_QUERY, 1),
     QueryOption(PER_PAGE_QUERY, PerPage, PerPage.DEFAULT),
     QueryOption.of_no_cls(REORDER_QUERY, 0),
 ]
 assert REORDER_REQ_QUERY_ARGS == list(
-    map(lambda query_opt: query_opt.query, ADDRESS_REORDER_QUERY_ARGS)
+    map(lambda query_opt: query_opt.query, REORDER_QUERY_ARGS)
 )
 
 # request arguments for an address list request
-ADDRESS_LIST_QUERY_ARGS = ADDRESS_REORDER_QUERY_ARGS.copy()
+ADDRESS_LIST_QUERY_ARGS = REORDER_QUERY_ARGS.copy()
 ADDRESS_LIST_QUERY_ARGS.extend([
     # non-reorder query args
+    QueryOption.of_no_cls_dflt(SEARCH_QUERY),
     QueryOption.of_no_cls(USER_QUERY, None),
     QueryOption.of_no_cls(DEFAULT_ADDRESS_QUERY, -1),
 ])
@@ -167,8 +171,8 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         # build search term string from values that were set
         # inherited from ContextMixin via ListView
         self.extra_context = {
-            # REPEAT_SEARCH_TERM_CTX: query_search_term(
-            #     query_params, exclude_queries=REORDER_REQ_QUERY_ARGS)
+            REPEAT_SEARCH_TERM_CTX: query_search_term(
+                query_params, exclude_queries=REORDER_REQ_QUERY_ARGS)
         }
 
         addr_count = query_params.get(DEFAULT_ADDRESS_QUERY).value
@@ -194,30 +198,68 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
     def set_queryset(
         self, query_params: dict[str, QueryArg],
         query_set_params: QuerySetParams = None
-    ) -> Tuple[QuerySetParams, Optional[dict]]:
+    ) -> Tuple[QuerySetParams, bool, Optional[dict]]:
         """
         Set the queryset to get the list of items for this view
         :param query_params: request query
         :param query_set_params: QuerySetParams to update; default None
-        :return: tuple of query set params and dict of kwargs to pass to
-                apply_queryset_param
+        :return: tuple of query set params, query term entered flag and
+                dict of kwargs to pass to `apply_queryset_param()`
         """
         if query_set_params is None:
             query_set_params = QuerySetParams()
 
-        for query in self.valid_req_non_reorder_query_args():
-            get_lookup(query, query_params[query].value, self.user,
-                       query_set_params=query_set_params)
+        query_entered = False  # query term entered flag
 
-        return query_set_params, None
+        for key in FILTERS_ORDER:
+            value, was_set = query_params[key].as_tuple
 
-    def apply_queryset_param(
-            self, query_set_params: QuerySetParams, **kwargs):
+            if value is not None:
+                if key in ALWAYS_FILTERS and not was_set:
+                    # don't set always applied filter until everything
+                    # else is checked
+                    continue
+
+                if not query_entered:
+                    query_entered = was_set
+
+                get_lookup(
+                    key, value, self.user, query_set_params=query_set_params)
+
+                if key == SEARCH_QUERY and not query_set_params.is_empty:
+                    # search is a shortcut filter, if search is specified
+                    # nothing else is checked after
+                    break
+
+        return query_set_params, query_entered, None
+
+    def apply_queryset_param(self, query_params: dict[str, QueryArg],
+                             query_set_params: QuerySetParams,
+                             query_entered: bool, **kwargs):
         """
         Apply `query_set_params` to set the queryset
+        :param query_params: request query
         :param query_set_params: QuerySetParams to apply
+        :param query_entered: query was entered flag
         """
-        self.queryset = query_set_params.apply(Address.objects)
+        if not query_entered or not query_set_params.is_empty:
+            # no query term entered => all objects,
+            # or query term => search
+
+            for key in ALWAYS_FILTERS:
+                if query_set_params.key_in_set(key):
+                    continue    # always filter was already applied
+
+                value = query_params[key].value
+                if value:
+                    get_lookup(key, value, self.user,
+                               query_set_params=query_set_params)
+
+            self.queryset = query_set_params.apply(Address.objects)
+
+        else:
+            # invalid query term entered
+            self.queryset = Address.objects.none()
 
     def set_sort_order_options(self, query_params: dict[str, QueryArg]):
         """

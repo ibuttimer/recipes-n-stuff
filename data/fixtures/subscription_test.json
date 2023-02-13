@@ -1,0 +1,87 @@
+[
+{
+    "model": "subscription.subscription",
+    "pk": 1,
+    "fields": {
+        "name": "Per week",
+        "frequency_type": "wk",
+        "frequency": 1,
+        "amount": "5.00",
+        "base_currency": "EUR",
+        "description": "Pay by the week, cancel anytime.",
+        "call_to_pick": "Start flexibly",
+        "is_active": true,
+        "features": [
+            1
+        ]
+    }
+},
+{
+    "model": "subscription.subscription",
+    "pk": 7,
+    "fields": {
+        "name": "Starter",
+        "frequency_type": "dy",
+        "frequency": 3,
+        "amount": "0.00",
+        "base_currency": "EUR",
+        "description": "Try it out, you don't know what you've been missing.",
+        "call_to_pick": "Start for free",
+        "is_active": true,
+        "features": [
+            1
+        ]
+    }
+},
+{
+    "model": "subscription.subscription",
+    "pk": 8,
+    "fields": {
+        "name": "Per month",
+        "frequency_type": "mt",
+        "frequency": 1,
+        "amount": "15.00",
+        "base_currency": "EUR",
+        "description": "Monthly payment, easier to manage.",
+        "call_to_pick": "Start serious",
+        "is_active": true,
+        "features": [
+            1,
+            6
+        ]
+    }
+},
+{
+    "model": "subscription.subscription",
+    "pk": 9,
+    "fields": {
+        "name": "Per year",
+        "frequency_type": "yr",
+        "frequency": 1,
+        "amount": "150.00",
+        "base_currency": "EUR",
+        "description": "Best value",
+        "call_to_pick": "Start committed",
+        "is_active": true,
+        "features": [
+            1,
+            3
+        ]
+    }
+},
+{
+    "model": "subscription.subscription",
+    "pk": 10,
+    "fields": {
+        "name": "Just a minute",
+        "frequency_type": "mn",
+        "frequency": 1,
+        "amount": "0.50",
+        "base_currency": "EUR",
+        "description": "Be quick!",
+        "call_to_pick": "Don't miss it",
+        "is_active": true,
+        "features": []
+    }
+}
+]

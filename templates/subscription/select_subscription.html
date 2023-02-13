@@ -39,7 +39,7 @@
     <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
       {% for sub_dto in subscription_list %}
       <div class="col mb-4">
-        <div class="card mb-2 rounded-3 shadow-sm h-100">
+        <div class="card mb-2 rounded-3 shadow-sm h-100" id="id--subscription-{{sub_dto.id}}">
           <div class="card-header py-3">
             <h4 class="my-0 fw-normal">{{ sub_dto.name }}</h4>
           </div>

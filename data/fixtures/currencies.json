@@ -715,7 +715,7 @@
     "fields": {
         "code": "MGA",
         "numeric_code": 969,
-        "digits": 2,
+        "digits": 0,
         "name": "Malagasy ariary"
     }
 },

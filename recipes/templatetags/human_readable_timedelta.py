@@ -20,7 +20,9 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 #
-from typing import Union
+from datetime import timedelta
+
+from pedantic_timedelta import PedanticTimedelta
 
 from django import template
 
@@ -30,5 +32,13 @@ register = template.Library()
 
 
 @register.simple_tag
-def array_value(array: Union[list, tuple], index: int):
-    return array[index]
+def human_readable_timedelta(delta: timedelta) -> str:
+    """
+    Return the name of a random stock image
+    :return: str image file name
+    """
+    hrt = PedanticTimedelta(
+        days=delta.days, seconds=delta.seconds,
+        microseconds=delta.microseconds).time_format_scaled(
+        precision=1, abbreviate=5)
+    return hrt[0]

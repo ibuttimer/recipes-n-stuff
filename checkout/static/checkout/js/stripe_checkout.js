@@ -26,15 +26,9 @@
  * Based on the sample files from https://stripe.com/docs/payments/quickstart?lang=python
  */
 // This is your test publishable API key.
-const stripe = Stripe(stripePublishableKey());
-
-// The items the customer wants to buy
-const items = [{ id: "xl-tshirt" }];
+const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
 
 let elements;
-
-// initialize().then();
-// checkStatus().then();
 
 document
     .querySelector("#payment-form")
@@ -44,13 +38,11 @@ let emailAddress = '';
 
 // Fetches a payment intent and captures the client secret
 async function initialize() {
-    const response = await fetch(createPaymentIntentUrl(), {
+    const response = await fetch(CREATE_PAYMENT_INTENT_URL, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            'X-CSRFTOKEN': csrfToken()
-        },
-        body: JSON.stringify({ items }),
+        headers: csrfHeader({
+            "Content-Type": "application/json"
+        }),
     });
     const { clientSecret } = await response.json();
 
@@ -128,6 +120,53 @@ async function checkStatus() {
             break;
     }
 }
+
+/** Set the payment currency change handler */
+const setPaymentCcyChangeHandler = () => $(paymentCurrencySelectSelector).on('change', function (event) {
+
+    $.ajax({
+        url: `${UPDATE_BASKET_URL}?ccy=${event.currentTarget.value}`,
+        method: 'patch',
+        headers: csrfHeader()
+    }).done(function(data) {
+        redirectRewriteInfoResponseHandler(data);
+
+        setBasketChangeHandler();
+    });
+});
+
+/** Set the basket items change handler */
+const setItemUnitsChangeHandler = () => $(basketItemUnitsSelector).on('change', function (event) {
+
+    if (parseInt(event.currentTarget.value) < 1) {
+        // warn about invalid and reset to min
+        $(`#${event.currentTarget.id}`).val("1");
+
+        const toast = new bootstrap.Toast(minUnitToast)
+        toast.show()
+    } else {
+        // update basket
+        $.ajax({
+            url: `${event.currentTarget.attributes['data-bs-href'].value}&units=${event.currentTarget.value}`,
+            method: 'patch',
+            headers: csrfHeader()
+        }).done(function (data) {
+            redirectRewriteInfoResponseHandler(data);
+
+            setBasketChangeHandler();
+        });
+    }
+});
+
+/** Set the basket change handlers */
+const setBasketChangeHandler = () => {
+    setPaymentCcyChangeHandler();
+    setItemUnitsChangeHandler();
+    setItemDeleteConfirmHandler();
+    setItemDeleteHandler();
+};
+
+
 
 // ------- UI helpers -------
 

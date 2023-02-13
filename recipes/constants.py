@@ -21,6 +21,8 @@
 #  DEALINGS IN THE SOFTWARE.
 from pathlib import Path
 
+from utils import url_path
+
 # name of this app
 THIS_APP = Path(__file__).resolve().parent.name
 
@@ -42,6 +44,7 @@ RECIPE_FIELD = 'recipe'
 
 PREP_TIME_FIELD = 'prep_time'
 COOK_TIME_FIELD = 'cook_time'
+TOTAL_TIME_FIELD = 'total_time'
 DATE_PUBLISHED_FIELD = 'date_published'
 DESCRIPTION_FIELD = 'description'
 CATEGORY_FIELD = 'category'
@@ -51,3 +54,52 @@ SERVINGS_FIELD = 'servings'
 RECIPE_YIELD_FIELD = 'recipe_yield'
 INGREDIENTS_FIELD = 'ingredients'
 INSTRUCTIONS_FIELD = 'instructions'
+IMAGES_FIELD = 'images'
+CALORIES_FIELD = 'calories'
+FAT_CONTENT_FIELD = 'fat_content'
+SATURATED_FAT_CONTENT_FIELD = 'saturated_fat_content'
+CHOLESTEROL_CONTENT_FIELD = 'cholesterol_content'
+SODIUM_CONTENT_FIELD = 'sodium_content'
+CARBOHYDRATE_CONTENT_FIELD = 'carbohydrate_content'
+FIBRE_CONTENT_FIELD = 'fibre_content'
+SUGAR_CONTENT_FIELD = 'sugar_content'
+PROTEIN_CONTENT_FIELD = 'protein_content'
+
+INGREDIENT_FIELD = 'ingredient'
+QUANTITY_FIELD = 'quantity'
+INDEX_FIELD = 'index'
+
+# Recipe routes related
+PK_PARAM_NAME = "pk"
+INGREDIENT_PK_PARAM_NAME = "ingredient_pk"
+RECIPES_URL = ""
+RECIPE_NEW_URL = url_path(RECIPES_URL, "new")
+RECIPE_ID_URL = url_path(RECIPES_URL, f"<int:{PK_PARAM_NAME}>")
+RECIPE_ID_UPDATE_URL = url_path(RECIPE_ID_URL, "update")
+RECIPE_ID_INGREDIENT_NEW_URL = url_path(RECIPE_ID_URL, "ingredient", "new")
+
+RECIPE_INGREDIENTS_URL = "recipe_ingredients"
+RECIPE_INGREDIENTS_ID_URL = \
+    url_path(RECIPE_INGREDIENTS_URL, f"<int:{PK_PARAM_NAME}>")
+
+# convention is recipes route names begin with 'recipe'
+RECIPES_ROUTE_NAME = "recipes"
+RECIPE_NEW_ROUTE_NAME = "recipe_new"
+RECIPE_ID_ROUTE_NAME = "recipe_id"
+RECIPE_ID_UPDATE_ROUTE_NAME = "recipe_id_update"
+RECIPE_ID_INGREDIENT_NEW_ROUTE_NAME = "recipe_id_ingredient_new"
+
+RECIPE_INGREDIENTS_ROUTE_NAME = "recipe_ingredients"
+RECIPE_INGREDIENTS_ID_ROUTE_NAME = "recipe_ingredients_id"
+
+# context related
+RECIPE_FORM_CTX = 'recipe_form'
+RECIPE_LIST_CTX = 'recipe_list'
+RECIPE_DTO_CTX = 'recipe_dto'
+INGREDIENTS_CTX = 'ingredients'
+INGREDIENT_NAME_CTX = 'ingredient_name'
+MEASURE_NAME_CTX = 'measure_name'
+INGREDIENT_FORM_CTX = 'form'
+NEW_INGREDIENT_FORM_CTX = 'new_form'
+NEW_URL_CTX = 'new_url'
+REFRESH_URL_CTX = 'refresh_url'

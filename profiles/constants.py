@@ -54,7 +54,7 @@ ADDRESSES_ID_DEFAULT_ROUTE_NAME = "address_id_default"
 COUNTRYINFO_URL = "countryinfo"
 COUNTRYINFO_CODE_URL = url_path(COUNTRYINFO_URL, "<str:country>")
 
-# convention is CountryInfo route names begin with 'address'
+# convention is CountryInfo route names begin with 'countryinfo'
 COUNTRYINFO_ROUTE_NAME = "countryinfo"
 COUNTRYINFO_CODE_ROUTE_NAME = "countryinfo_country"
 

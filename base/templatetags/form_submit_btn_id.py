@@ -30,4 +30,16 @@ register = template.Library()
 
 @register.simple_tag
 def form_submit_btn_id(identifier: str, index: str = None):
-    return f'id--{identifier}{index or ""}-submit-btn'
+    return tag_id(identifier, 'submit-btn', index=index)
+
+
+def tag_id(identifier: str, modifier: str, index: str = None):
+    """
+    Generate a tag id of the form `id--identifier-modifier` or
+    `id--identifier-modifier-index` if index specified
+    :param identifier: block identifier
+    :param modifier: modifier
+    :param index: element-specific index; default None
+    :return: id
+    """
+    return f'id--{identifier}-{modifier}{f"-{index}" if index else ""}'

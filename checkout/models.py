@@ -28,13 +28,13 @@ from utils import ModelMixin
 
 from .constants import (
     CURRENCY_CODE_MAX_LEN, CURRENCY_CODE_FIELD, NUMERIC_CODE_FIELD,
-    DIGITS_CODE_FIELD, NAME_FIELD
+    DIGITS_CODE_FIELD, NAME_FIELD, TIMESTAMP_FIELD, BASE_FIELD, RATES_FIELD
 )
 
 
 class Currency(ModelMixin, models.Model):
     """
-    Currency rate information model
+    Currency information model
     """
     # field names
     CURRENCY_CODE_FIELD = CURRENCY_CODE_FIELD
@@ -65,3 +65,32 @@ class Currency(ModelMixin, models.Model):
 
     def __str__(self):
         return f'{self.code} {self.name}'
+
+
+class CurrencyRate(ModelMixin, models.Model):
+    """
+    Currency rate data model
+    """
+    # field names
+    TIMESTAMP_FIELD = TIMESTAMP_FIELD
+    BASE_FIELD = BASE_FIELD
+    RATES_FIELD = RATES_FIELD
+
+    CURRENCY_RATE_ATTRIB_CODE_MAX_LEN: int = CURRENCY_CODE_MAX_LEN
+    CURRENCY_RATE_ATTRIB_NAME_MAX_LEN: int = 3000
+
+    timestamp = models.DateTimeField(_('timestamp'), blank=False)
+
+    base = models.CharField(
+        _('base currency'), max_length=CURRENCY_RATE_ATTRIB_CODE_MAX_LEN,
+        blank=False)
+
+    rates = models.BinaryField(
+        _('rates'), blank=False, max_length=CURRENCY_RATE_ATTRIB_NAME_MAX_LEN)
+
+    @dataclass
+    class Meta:
+        """ Model metadata """
+
+    def __str__(self):
+        return f'{self.timestamp} {self.base}'

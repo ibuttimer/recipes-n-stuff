@@ -1,0 +1,18 @@
+<!-- page_done.html start -->
+{# --- page_done.html template variable defines for includes --- #}
+{# page done template expects: 'done_url' as url for done action #}
+{#                             'done_text' as text for done button #}
+{#                             'large' as large button flag #}
+
+{% load i18n %}
+
+<div class="row mb-3">
+    <div class="col-sm-12 mt-2 d-flex justify-content-center">
+        <a id="{{ done_url }}"
+           {% if large %} class="btn btn-secondary btn__dbl-text-lg" {% else %} class="btn btn-secondary btn__text" {% endif %}
+           href="{{ done_url }}">
+            {% if done_text %}{{ done_text }}{% else %}{% trans "Done" %}{% endif %}
+        </a>
+    </div>
+</div>
+<!-- page_done.html end -->

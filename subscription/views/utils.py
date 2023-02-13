@@ -25,6 +25,8 @@ from django.http import HttpRequest
 
 from subscription.constants import THIS_APP
 from subscription.models import Subscription
+from subscription.views.subscription_queries import \
+    user_had_free_trial_subscription
 from utils import (
     Crud, permission_check
 )
@@ -42,3 +44,13 @@ def subscription_permission_check(
     """
     return permission_check(request, Subscription, perm_op,
                             app_label=THIS_APP, raise_ex=raise_ex)
+
+
+def is_eligilble_for_free_trial(request: HttpRequest) -> bool:
+    """
+    Checks if user is eligilble for free trial subscription
+    :param request: http request
+    :return: True is eligible for free subscription
+    """
+    # add other business rules as required
+    return not user_had_free_trial_subscription(request.user)

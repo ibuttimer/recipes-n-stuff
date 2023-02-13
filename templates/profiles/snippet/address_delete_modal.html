@@ -2,22 +2,22 @@
 {% load i18n %}
 {% load form_field %}
 
-{% with confirm_id="id--address-delete-confirm-modal" deleted_id="id--address-deleted-modal" btn_id="id--btn-address-delete-confirm" %}
+{% with confirm_id="id--address-delete-confirm-modal" deleted_id="id--address-deleted-modal" btn_id="id--btn-address-delete-confirm" url_var_id="id--address-delete-url" entity="Address" %}
 <!-- Confirm delete address modal -->
 <div id="{{confirm_id}}" class="modal fade" tabindex="-1" aria-labelledby="{{confirm_id}}-label" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
 
-            <var id="id--address-delete-url" hidden>
+            <var id="{{ url_var_id }}" hidden>
                 {# content replaced by click event handler for button #}
             </var>
 
             <div class="modal-header">
-                <h5 class="modal-title" id="{{confirm_id}}-label">Address Delete Confirm</h5>
+                <h5 class="modal-title" id="{{confirm_id}}-label">{{ entity }} Delete Confirm</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete this address?</p>
+                <p>Are you sure you want to delete this {{ entity|lower }}?</p>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-dark btn__text" type="button" data-bs-dismiss="modal">Cancel</button>
@@ -34,12 +34,14 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="{{deleted_id}}-label">Address Deleted</h5>
+                <h5 class="modal-title" id="{{deleted_id}}-label">{{ entity }} Deleted</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div id="{{deleted_id}}-body" class="modal-body">
-                {# content replaced by deletion result text #}
-                {% include 'profiles/snippet/address_delete.html' %}
+                {# --- entity_delete_result.html template variable defines for includes --- #}
+                {# entity delete template expects: 'status' as success/failure status #}
+                {#                                 'entity' as entity name #}
+                {% include 'snippet/entity_delete_result.html' %}
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-dark btn__text" data-bs-dismiss="modal">Close</button>
@@ -56,7 +58,7 @@
     const addressDeleteConfirmModalSelector = "#{{confirm_id}}";
     const addressDeletedModalSelector = "#{{deleted_id}}";
     const addressDeleteModalBodySelector = "#{{deleted_id}}-body";
-    const addressDeleteUrlSelector = "#id--address-delete-url";
+    const addressDeleteUrlSelector = "#{{ url_var_id }}";
     const addressDeleteBtnSelector = "#{{btn_id}}";
     const addressDeleteLinkSelector = "a[class*='a--addr-del']";
     const addressEditLinkSelector = "a[class*='a--addr-edit']";
@@ -82,9 +84,7 @@
             $.ajax({
                 method: 'delete',
                 url: `${url}?ref=${window.location.pathname}`,
-                headers: {
-                    'X-CSRFTOKEN': csrfToken()
-                },
+                headers: csrfHeader(),
             }).done(function(data) {
                 const modalDisplayed = redirectRewriteInfoResponseHandler(data);
                 if (!modalDisplayed) {

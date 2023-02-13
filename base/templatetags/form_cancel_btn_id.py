@@ -22,7 +22,8 @@
 #
 
 from django import template
-from django.forms import ModelForm
+
+from .form_submit_btn_id import tag_id
 
 register = template.Library()
 
@@ -31,4 +32,4 @@ register = template.Library()
 
 @register.simple_tag
 def form_cancel_btn_id(identifier: str, index: str = None):
-    return f'id--{identifier}{index or ""}-cancel-btn'
+    return tag_id(identifier, 'cancel-btn', index=index)

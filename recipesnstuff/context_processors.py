@@ -28,7 +28,9 @@ from django.http import HttpRequest
 from .constants import (
     COPYRIGHT_YEAR, COPYRIGHT, IS_DEVELOPMENT_CTX, IS_TEST_CTX
 )
-from .settings import DEVELOPMENT, TEST, GOOGLE_SITE_VERIFICATION
+from .settings import (
+    DEVELOPMENT, TEST, GOOGLE_SITE_VERIFICATION, FOOD_DOT_COM
+)
 
 Social = namedtuple("Social", ["name", "icon", "url"])
 
@@ -52,6 +54,7 @@ def footer_context(request: HttpRequest) -> dict:
         ],
         IS_DEVELOPMENT_CTX: DEVELOPMENT,
         IS_TEST_CTX: TEST,
-        "google_site_verification": GOOGLE_SITE_VERIFICATION
+        "google_site_verification": GOOGLE_SITE_VERIFICATION,
+        "food_dot_com": FOOD_DOT_COM
     }
     return context

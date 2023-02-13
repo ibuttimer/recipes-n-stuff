@@ -143,14 +143,16 @@ The recipe page will have the following features:
 # UX Surface
 ## Font
 The font used for title text will be [Kanit](https://fonts.google.com/specimen/Kanit?preview.text=Recipes%20%27N%27%20Stuff&preview.text_type=custom&category=Serif,Sans+Serif) from Google fonts.
-The font used for paragraph text will be [Rokkitt](https://fonts.google.com/specimen/Rokkitt?preview.text=Recipes%20%27N%27%20Stuff&preview.text_type=custom&category=Serif,Sans+Serif) from Google fonts.
+The font used for paragraph text will be [Source Serif Pro](https://fonts.google.com/specimen/Source+Serif+Pro?preview.text=Recipes%20%27N%27%20Stuff&preview.text_type=custom&category=Serif,Sans+Serif) from Google fonts.
 
 ```css
-@import url('https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Rokkitt:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Source+Serif+Pro:wght@300;400;600&display=swap');
 
 font-family: 'Kanit', sans-serif;
-font-family: 'Rokkitt', serif;
+font-family: 'Source Serif Pro', serif;
 ```
+
+![](img/font-sample.png)
 
 ## Colour Scheme
 
@@ -199,7 +201,9 @@ The following third party libraries will be utilised:
 | [Bootstrap](https://getbootstrap.com/)                                                               | Frontend page styling                                                                                            | A powerful, extensible, and feature-packed frontend toolkit to build fast, responsive sites. See [Get started with Bootstrap](https://getbootstrap.com/docs/5.2/getting-started/introduction/).                                           |
 | [Font Awesome](https://github.com/FortAwesome/Font-Awesome)                                          | Frontend icons                                                                                                   | A powerful, extensible, and feature-packed frontend toolkit to build fast, responsive sites. See [Fontawesome docs](https://fontawesome.com/docs).                                                                                        |
 | [json-fix](https://pypi.org/project/json-fix/)                                                       | Serialisation of non-standard objects                                                                            | A patch to the built-in python json object that allows classes to specify how they should be serialised.                                                                                                                                  |
+| [jsonpickle](https://pypi.org/project/jsonpickle/                                                    | Serialisation of non-standard objects                                                                            | Python library for serializing any arbitrary object graph into JSON. It is a library for the two-way conversion of complex Python objects and JSON.                                                                                       |
 | [python-dateutil](https://pypi.org/project/python-dateutil/)                                         | Calculation of relative time deltas                                                                              | The dateutil module provides powerful extensions to the standard datetime module, available in Python.                                                                                                                                    |
+| [human-friendly-pedantic-timedelta](https://pypi.org/project/human-friendly-pedantic-timedelta/)     | String formatting of time deltas                                                                                 | A Python timedelta wrapper which provides pedantic string formatting.                                                                                                                                                                     |
 | [stripe](https://pypi.org/project/stripe/)                                                           | Payments processing                                                                                              | A Python library for Stripe’s API.                                                                                                                                                                                                        |
 | _The following libraries will be used during development_                                            |                                                                                                                  |                                                                                                                                                                                                                                           |
 | [pycodestyle](https://pypi.org/project/pycodestyle/)                                                 | [PEP8](http://www.python.org/dev/peps/pep-0008/) compliance check                                                | Python style guide checker                                                                                                                                                                                                                |

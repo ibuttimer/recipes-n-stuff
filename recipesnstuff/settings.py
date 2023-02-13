@@ -33,6 +33,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -42,7 +43,7 @@ from .constants import (
     BASE_APP_NAME, MIN_PASSWORD_LEN, USER_APP_NAME, PROFILES_APP_NAME,
     RECIPES_APP_NAME, SUBSCRIPTION_APP_NAME, CHECKOUT_APP_NAME,
     LOGIN_URL as USER_LOGIN_URL, LOGIN_ROUTE_NAME, HOME_ROUTE_NAME,
-    LANDING_ROUTE_NAME
+    LANDING_ROUTE_NAME, ORDER_APP_NAME
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -128,6 +129,9 @@ if env('DEVELOPMENT'):
 else:
     ALLOWED_HOSTS = env.list('HEROKU_HOSTNAME')
 
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
 
 # Application definition
 
@@ -157,6 +161,7 @@ INSTALLED_APPS = [
     'django_summernote',
 
     'django_countries',
+    "debug_toolbar",
 
     BASE_APP_NAME,
     USER_APP_NAME,
@@ -164,6 +169,7 @@ INSTALLED_APPS = [
     RECIPES_APP_NAME,
     SUBSCRIPTION_APP_NAME,
     CHECKOUT_APP_NAME,
+    ORDER_APP_NAME,
 
     # needs to be after app with django template overrides
     'django.forms',
@@ -178,6 +184,8 @@ INSTALLED_APPS = [
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 MIDDLEWARE = [
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -211,6 +219,9 @@ TEMPLATES = [
                 # f'{MAIN_APP}.context_processors.test_context',
                 f'{BASE_APP_NAME}.context_processors.base_context',
                 f'{USER_APP_NAME}.context_processors.user_context',
+                f'{SUBSCRIPTION_APP_NAME}.context_processors'
+                f'.subscription_context',
+                f'{RECIPES_APP_NAME}.context_processors.recipe_context',
             ],
         },
     },
@@ -438,3 +449,12 @@ STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='')
 
 # ISO 4217 code of the default currency
 DEFAULT_CURRENCY = 'eur'
+# number of decimal places to use during financial calculations
+FINANCIAL_FACTOR = 6
+
+# Exchange Rates Data API
+EXCHANGERATES_DATA_KEY = env('EXCHANGERATES_DATA_KEY', default='')
+DEFAULT_RATES_REQUEST_INTERVAL = timedelta(days=1)
+
+# Miscellaneous settings
+FOOD_DOT_COM = env('FOOD_DOT_COM', default=False)

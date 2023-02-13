@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+<!-- recipe_view.html start -->
+{# --- recipe_view.html template variable defines for includes --- #}
+{# recipe view template expects: 'recipe_dto' as RecipeDto #}
+
+{% load i18n %}
+{% load static %}
+{% load stock_image  human_readable_timedelta  has_permission  lookup_value %}
+
+{% block head_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <link href="{% static 'css/styles-recipes.css' %}" rel="stylesheet" type="text/css">
+{% endblock extra_css %}
+
+{% block extra_js_head %}
+    {{ block.super }}
+    {% include "snippet/jquery.html" %}
+{% endblock extra_js_head %}
+
+{% block content %}
+<div class="row mt-2 mb-2">
+    <div class="col-12 text-center">
+        <h3>{{ recipe_dto.name }}</h3>
+    </div>
+</div>
+
+<article id="article-content" class="row d-flex justify-content-center">
+    <div class="row">
+        <div class="col-sm-6">
+            <img class="card-img-top"
+                 alt="{{ recipe_dto.name }} image"
+                 {% if recipe_dto.main_image %}
+                 src = "{{ recipe_dto.main_image }}"
+                 {% else %}
+                 src = "{% get_static_prefix %}img/{% stock_image %}"
+                 {% endif %}
+            >
+            {% if food_dot_com %}
+                <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="View recipe on Food.com">
+                    <a href="{{ recipe_dto.food_dot_com_url }}" aria-label="view recipe on food.com in another tab" target="_blank" rel="noopener">
+                        <img src="{% static 'img/internet.png' %}" alt="internet icon" width="30" height="30">
+                    </a>
+                </span>
+            {% endif %}
+        </div>
+        <div class="col-sm-6">
+            <div class="row">
+                <div class="col-12">
+                    <p>{{ recipe_dto.author.username }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <p>Prep <i class="fa-regular fa-clock"></i> {% human_readable_timedelta recipe_dto.prep_time %}</p>
+                </div>
+                <div class="col-sm-6">
+                    <p>Cook <i class="fa-regular fa-clock"></i> {% human_readable_timedelta recipe_dto.cook_time %}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <p>Ready in <i class="fa-regular fa-clock"></i> {% human_readable_timedelta recipe_dto.total_time %}</p>
+                </div>
+                <div class="col-sm-6">
+                    <p><i class="fa-solid fa-people-group"></i> {{ recipe_dto.servings }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="row">
+                {% has_permission user 'recipe' 'update' as can_update %}
+                <div class="col-sm-12 mb-3">
+                    <h6 class="d-inline p-2">Ingredients</h6>
+                    <a class="btn btn-sm btn-outline-primary d-inline p-2" href="{% url 'recipes:recipe_id_update' recipe_dto.id %}"
+                       data-bs-toggle="tooltip" data-bs-placement="top"
+                       data-bs-title="Edit ingredients"
+                       id="id__edit-recipe-ingredients">
+                        <i class="fa-solid fa-pen"></i>
+                    </a>
+                </div>
+            </div>
+            {% for ingredient in recipe_dto.ingredients %}
+            <div class="row">
+                <div class="col-sm-2 text-center"><span>{{ ingredient.quantity }}</span></div>
+                <div class="col-sm-1"><span>{{ ingredient.measure}}</span></div>
+                <div class="col-sm-9">
+                    <span>
+                    {{ ingredient.ingredient }}
+                    {% if not forloop.last %}
+                        {% lookup_value recipe_dto.alternatives forloop.counter as is_alt %}
+                        {% if is_alt %}
+                            <em><strong>, or</strong></em>
+                        {% endif %}
+                    {% endif %}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="col-sm-6">
+            <h6>Instructions</h6>
+            {% for instruction in recipe_dto.instructions %}
+            <div class="row">
+                <div class="col-sm-1"><span>{{ forloop.counter }}.</span></div>
+                <div class="col-sm-11"><span>{{ instruction.text }}</span></div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</article>
+
+{% endblock content %}
+
+<!-- recipe_view.html end -->

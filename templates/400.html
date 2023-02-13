@@ -1,0 +1,22 @@
+{% extends "base/status_code_error.html" %}
+
+{% load static %}
+
+{% block head_title %}Bad Request{% endblock head_title %}
+
+{% block status_code_error %}
+<div>
+    <img src="{% static 'img/confusion.png' %}" alt="forbidden error icon" height="100" width="100" class="img__center">
+</div>
+
+<h1>Whir, beep, beep, bang ... does not compute</h1>
+<p>Sorry, didn't quite understand that &#x1F615;</p>
+<div>
+    <p>
+        Please try again, go
+        <a href="{% url 'home' %}" aria-label="goto home page">
+            Home
+        </a>
+    </p>
+</div>
+{% endblock status_code_error %}

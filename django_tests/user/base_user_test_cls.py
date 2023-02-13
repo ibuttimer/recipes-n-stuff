@@ -20,9 +20,14 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 #
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 
 from django.test import TestCase
+
+from subscription.models import (
+    Subscription, UserSubscription, SubscriptionStatus
+)
 from user.models import User
 from user.permissions import add_to_registered
 
@@ -32,6 +37,11 @@ class BaseUserTest(TestCase):
     Base user test class
     https://docs.djangoproject.com/en/4.1/topics/testing/tools/
     """
+    fixtures = [
+        'currencies.json', 'subscription_feature_test.json',
+        'subscription_test.json'
+    ]
+
     USER_INFO = {
         user[0].lower(): {
             User.FIRST_NAME_FIELD: user[0],
@@ -81,6 +91,30 @@ class BaseUserTest(TestCase):
             cls.registered.update(**{
                 user.username: user
             })
+
+    def setUp(self):
+        """ Set up test """
+        self.user_config(add_subs=True)
+
+    def user_config(self, add_subs: bool = True):
+        """ Configure test users """
+        self.subscriptions = list(Subscription.objects.all())
+        if add_subs:
+            # give all users a subscription
+            now = datetime.now(tz=timezone.utc)
+            start = now - timedelta(minutes=1)
+            end = now + timedelta(days=1)
+            for idx, user_item in enumerate(self.users.items()):
+                sub = UserSubscription.objects.create(**{
+                    f'{UserSubscription.SUBSCRIPTION_FIELD}':
+                        self.subscriptions[idx % len(self.subscriptions)],
+                    f'{UserSubscription.USER_FIELD}': user_item[1],
+                    f'{UserSubscription.START_DATE_FIELD}': start,
+                    f'{UserSubscription.END_DATE_FIELD}': end,
+                    f'{UserSubscription.STATUS_FIELD}':
+                        SubscriptionStatus.ACTIVE.choice
+                })
+                self.assertIsNotNone(sub)
 
     @classmethod
     def get_user_by_index(cls, index: int) -> tuple[User, str]:

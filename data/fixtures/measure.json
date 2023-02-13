@@ -388,5 +388,18 @@
         "base_us": "0.0000352739",
         "base_metric": "0.0010000000"
     }
+},
+{
+    "model": "recipes.measure",
+    "pk": 31,
+    "fields": {
+        "type": "w",
+        "system": "1",
+        "is_default": false,
+        "name": "can",
+        "abbrev": "can",
+        "base_us": "1.0000000000",
+        "base_metric": "1.0000000000"
+    }
 }
 ]

@@ -27,22 +27,54 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import BadRequest
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.template.loader import render_to_string
 from django.views.decorators.http import require_http_methods
 
+from order.persist import save_order
 from recipesnstuff.settings import (
-    DEFAULT_CURRENCY, STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY
+    STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY
 )
-from utils import GET, namespaced_url, app_template_path, POST
+from subscription.forms import get_currency_choices
+from subscription.middleware import subscription_payment_completed
+from utils import (
+    GET, POST, PATCH, namespaced_url, app_template_path,
+    replace_inner_html_payload, TITLE_CTX, PAGE_HEADING_CTX, DELETE,
+    rewrite_payload, entity_delete_result_payload
+)
+from .basket import Basket
 
 from .constants import (
     THIS_APP, STRIPE_PUBLISHABLE_KEY_CTX, STRIPE_RETURN_URL_CTX,
-    PAYMENT_AMOUNT_SES, PAYMENT_CURRENCY_SES, ZERO_DECIMAL_CURRENCIES,
-    THREE_DECIMAL_CURRENCIES, CHECKOUT_PAID_ROUTE_NAME
+    CHECKOUT_PAID_ROUTE_NAME, BASKET_SES, BASKET_CTX, CURRENCIES_CTX,
+    BASKET_CCY_QUERY, ITEM_QUERY, UNITS_QUERY, ORDER_NUM_CTX
 )
-
+from .currency import is_valid_code
 
 # set Stripe API key
 stripe.api_key = STRIPE_SECRET_KEY
+
+
+def get_basket(request: HttpRequest) -> Basket:
+    """
+    Get the session basket.
+    :param request: http request
+    :return: basket
+    """
+    if BASKET_SES not in request.session:
+        raise BadRequest('Basket not found')
+
+    return Basket.from_jsonable(
+        request.session[BASKET_SES])
+
+
+def set_basket(request: HttpRequest, basket: Basket) -> Basket:
+    """
+    Set the session basket.
+    :param request: http request
+    :param basket: current basket
+    :return: basket
+    """
+    request.session[BASKET_SES] = basket
 
 
 @login_required
@@ -53,14 +85,37 @@ def checkout(request: HttpRequest) -> HttpResponse:
     :param request: http request
     :return: response
     """
-    return render(request, app_template_path(
-        THIS_APP, 'checkout.html'
-    ), context={
+    basket = get_basket(request)
+
+    title = "Checkout"
+
+    context = {
+        TITLE_CTX: title,
+        PAGE_HEADING_CTX: title,
         STRIPE_PUBLISHABLE_KEY_CTX: STRIPE_PUBLISHABLE_KEY,
         STRIPE_RETURN_URL_CTX: namespaced_url(
             THIS_APP, CHECKOUT_PAID_ROUTE_NAME
         )
-    })
+    }
+    context.update(
+        basket_context(basket)
+    )
+
+    return render(request, app_template_path(
+        THIS_APP, 'checkout.html'
+    ), context=context)
+
+
+def basket_context(basket: Basket) -> dict:
+    """
+    Get context for basket template
+    :param basket: current basket
+    :return: context
+    """
+    return {
+        BASKET_CTX: basket,
+        CURRENCIES_CTX: get_currency_choices()
+    }
 
 
 @login_required
@@ -71,31 +126,71 @@ def create_payment_intent(request: HttpRequest) -> HttpResponse:
     :param request: http request
     :return: response
     """
-
-    if PAYMENT_AMOUNT_SES not in request.session or \
-            PAYMENT_CURRENCY_SES not in request.session:
-        raise BadRequest('Invalid payment amount')
-
-    # amount must be how much to charge in the smallest currency unit
-    currency = request.session[PAYMENT_CURRENCY_SES]
-    factor = 0 if currency in ZERO_DECIMAL_CURRENCIES else \
-        3 if currency in THREE_DECIMAL_CURRENCIES else 2
-    amount = int(request.session[PAYMENT_AMOUNT_SES] * 10**factor)
-    if factor == 3:
-        # must round amounts to the nearest ten
-        amount = round(amount/10, 1) * 10
+    basket = get_basket(request)
 
     # Create a PaymentIntent with the order amount and currency
     intent = stripe.PaymentIntent.create(
-        amount=amount,
-        currency=currency,
+        amount=basket.payment_total,
+        currency=basket.currency,
         automatic_payment_methods={
-            'enabled': True,
+            'enabled': False,
         },
     )
     return JsonResponse({
         'clientSecret': intent['client_secret']
     }, status=HTTPStatus.OK)
+
+
+@login_required
+@require_http_methods([PATCH, DELETE])
+def update_basket(request: HttpRequest) -> HttpResponse:
+    """
+    Update the basket
+    :param request: http request
+    :return: response
+    """
+    basket = get_basket(request)
+
+    redraw_basket = False
+    redraw_msg = False
+    if request.method == PATCH and BASKET_CCY_QUERY in request.GET:
+        new_ccy = request.GET[BASKET_CCY_QUERY]
+        if is_valid_code(new_ccy):
+            basket.currency = new_ccy
+            redraw_basket = True
+    elif ITEM_QUERY in request.GET:
+        item = int(request.GET[ITEM_QUERY])
+        if request.method == DELETE:
+            # remove item
+            redraw_basket = basket.remove(item)
+            if redraw_basket:
+                redraw_msg = entity_delete_result_payload(
+                    "#id--item-deleted-modal-body", True, 'item')
+
+        elif request.method == PATCH and UNITS_QUERY in request.GET:
+            # change num of units of item
+            units = int(request.GET[UNITS_QUERY])
+            redraw_basket = basket.update_item_units(item, units)
+
+    if redraw_basket or redraw_msg:
+        # need to update serialised basket in request
+        set_basket(request, basket)
+
+        if redraw_basket:
+            redraw_basket = replace_inner_html_payload(
+                "#id__basket-div", render_to_string(
+                    app_template_path(
+                        THIS_APP, "snippet", "basket.html"),
+                    context=basket_context(basket))
+            )
+        payload = rewrite_payload(
+            redraw_basket or None, redraw_msg or None
+        )
+    else:
+        payload = {}
+
+    return JsonResponse(
+        payload, status=HTTPStatus.OK if payload else HTTPStatus.BAD_REQUEST)
 
 
 @login_required
@@ -106,7 +201,15 @@ def payment_complete(request: HttpRequest) -> HttpResponse:
     :param request: http request
     :return: response
     """
+    basket = get_basket(request)
+    save_order(basket)
+
+    subscription_payment_completed(request)
+
     return render(request, app_template_path(
         THIS_APP, 'payment_complete.html'
     ), context={
+        TITLE_CTX: "Payment complete",
+        PAGE_HEADING_CTX: "Payment received",
+        ORDER_NUM_CTX: basket.order_num
     })

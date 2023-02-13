@@ -19,7 +19,7 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-
+from dataclasses import dataclass
 from decimal import Decimal
 from typing import List, Tuple
 
@@ -42,7 +42,7 @@ G10_CURRENCIES = sorted([
 def get_currency_choices() -> Tuple[Tuple[str, str]]:
     """
     Get list of currency choices
-    :return:
+    :return: list of tuples of currency code and name
     """
     currencies = get_currencies()
     default = DEFAULT_CURRENCY.upper()
@@ -51,20 +51,23 @@ def get_currency_choices() -> Tuple[Tuple[str, str]]:
         code = code.upper()
         return currencies[code].code, currencies[code].name
 
+    def add_choice(code: str) -> bool:
+        return code in currencies and code != default
+
     # add default currency
     choices = [
         choice(default)
-    ]
+    ] if default in currencies else []
     # add g10 currencies
     choices.extend([
-        choice(code) for code in G10_CURRENCIES if code != default
+        choice(code) for code in G10_CURRENCIES if add_choice(code)
     ])
     # add remaining currencies
     non_g10 = sorted([
         code for code in currencies.keys() if code not in G10_CURRENCIES
     ])
     choices.extend([
-        choice(code) for code in non_g10 if code != default
+        choice(code) for code in non_g10 if add_choice(code)
     ])
     return tuple(choices)
 
@@ -100,15 +103,22 @@ class SubscriptionForm(FormMixin, forms.ModelForm):
         max_length=Subscription.SUBSCRIPTION_ATTRIB_DESCRIPTION_MAX_LEN,
         required=True)
 
+    call_to_pick = forms.CharField(
+        label=_("Call to pick"),
+        max_length=Subscription.SUBSCRIPTION_ATTRIB_CALL_TO_PICK_MAX_LEN,
+        required=True)
+
     is_active = forms.BooleanField(label=_("Is active"), initial=True)
 
+    @dataclass
     class Meta:
+        """ Model metadata """
         model = Subscription
         fields = [
             Subscription.NAME_FIELD, Subscription.DESCRIPTION_FIELD,
             Subscription.FREQUENCY_TYPE_FIELD, Subscription.FREQUENCY_FIELD,
             Subscription.BASE_CURRENCY_FIELD, Subscription.AMOUNT_FIELD,
-            Subscription.IS_ACTIVE_FIELD
+            Subscription.CALL_TO_PICK_FIELD, Subscription.IS_ACTIVE_FIELD
         ]
         bool_fields = [
             Subscription.IS_ACTIVE_FIELD

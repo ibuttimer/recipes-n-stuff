@@ -9,7 +9,7 @@
 {% load countries %}
 
 <div class="col-lg-6">
-    {% attr_append 'class="card rounded-3 mb-4"' 'card--new-subscription' subscription_dto.add_new as card_class %}
+    {% attr_append 'class="card rounded-3 mb-4 h-100"' 'card--new-subscription' subscription_dto.add_new as card_class %}
     <div {{card_class | safe}}>
         <div {% if subscription_dto.add_new %} id="id--subscription-new" {% else %} id="id--subscription-{{identifier}}" {% endif %} class="card-body">
             {% if subscription_dto.add_new %}

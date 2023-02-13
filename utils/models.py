@@ -21,10 +21,15 @@
 #  DEALINGS IN THE SOFTWARE.
 
 from inspect import isclass
-from typing import Union, Type, Any
+from typing import Union, Type, Any, TypeVar, Optional, List, Tuple
 from string import capwords
 
 from django.db.models import Model
+
+
+# workaround for self type hints from https://peps.python.org/pep-0673/
+TypeNameChoiceMixin = TypeVar("NameChoiceMixin", bound="NameChoiceMixin")
+TypeModelMixin = TypeVar("ModelMixin", bound="ModelMixin")
 
 
 # sorting related
@@ -84,6 +89,11 @@ class ModelMixin:
         return []
 
     @classmethod
+    def timedelta_fields(cls) -> list[str]:
+        """ Get the list of timedelta fields """
+        return []
+
+    @classmethod
     def numeric_fields(cls) -> list[str]:
         """ Get the list of numeric fields """
         return []
@@ -96,6 +106,15 @@ class ModelMixin:
         :return: True if `field` is a date field
         """
         return field in cls.date_fields()
+
+    @classmethod
+    def is_timedelta_field(cls, field: str):
+        """
+        Check if the specified `field` is a timedelta
+        :param field: field
+        :return: True if `field` is a timedelta field
+        """
+        return field in cls.timedelta_fields()
 
     @classmethod
     def is_numeric_field(cls, field: str):
@@ -115,6 +134,17 @@ class ModelMixin:
         """
         return any(
             map(lambda fld: fld in lookup, cls.date_fields())
+        )
+
+    @classmethod
+    def is_timedelta_lookup(cls, lookup: str):
+        """
+        Check if the specified `lookup` represents a timedelta Lookup
+        :param lookup: lookup string
+        :return: True if lookup is a timedelta Lookup
+        """
+        return any(
+            map(lambda fld: fld in lookup, cls.timedelta_fields())
         )
 
     @classmethod
@@ -147,6 +177,7 @@ class ModelMixin:
         :return: True if lookup is not a text lookup
         """
         return cls.is_date_lookup(lookup) or \
+            cls.is_timedelta_lookup(lookup) or \
             cls.is_numeric_lookup(lookup) or cls.is_id_lookup(lookup)
 
     @classmethod
@@ -173,6 +204,22 @@ class ModelMixin:
             raise ValueError(f'{field} not found')
         return self.__dict__.get(field, None)
 
+    @classmethod
+    def get_default_instance(
+            cls, unique_fields: Optional[dict] = None,
+            defaults: Optional[dict] = None) -> TypeModelMixin:
+        """
+        Get a default instance for objects requiring an instance of this model
+        :param unique_fields: dict to use a keywords/values to look for
+                            instance
+        :param defaults: dict to use a keywords/values (in addition to
+                            `unique_fields`) to create an instance
+        :return: default instance
+        """
+        default_inst, _ = cls.objects.get_or_create(
+            **unique_fields, defaults=defaults)
+        return default_inst
+
     def __repr__(self):
         return f'{self.model_name()}[{self.id}]: {str(self)}'
 
@@ -189,3 +236,67 @@ class ModelFacadeMixin:
             raise NotImplementedError(
                 "Non-Model objects must override the 'lookup_clazz' method")
         return cls
+
+
+class NameChoiceMixin:
+
+    NAME = 'name'
+    CHOICE = 'choice'
+
+    def is_from_choice(self, choice: str) -> bool:
+        """
+        Check if the specified `choice` relates to this object
+        :param choice: choice to check
+        :return: True if choice matches
+        """
+        return self.value.choice == choice
+
+    @property
+    def display_name(self):
+        """ Name value for this object """
+        return self.value.name
+
+    @property
+    def choice(self):
+        """ Choice value for this object """
+        return self.value.choice
+
+    @staticmethod
+    def obj_from_choice(
+            obj_type: TypeNameChoiceMixin, choice: str
+    ) -> Optional[TypeNameChoiceMixin]:
+        """
+        Get the object corresponding to `choice`
+        :param obj_type: NameChoice enum
+        :param choice: choice to find
+        :return: feature type or None of not found
+        """
+        result = list(
+            filter(lambda t: t.value.choice == choice, obj_type)
+        )
+        return result[0] if len(result) == 1 else None
+
+    @staticmethod
+    def get_model_choices(obj_type: TypeNameChoiceMixin) -> List[Tuple]:
+        """
+        Get the model choices for this object
+        :param obj_type: NameChoice enum
+        :return: list of choices
+        """
+        return [
+            (entry.value.choice, entry.value.name) for entry in obj_type
+        ]
+
+    @staticmethod
+    def assert_uniqueness(obj_type: TypeNameChoiceMixin):
+        """
+        Check that the objects names and choices are unique
+        :param obj_type: NameChoice enum
+        """
+        for entry in obj_type:
+            assert sum(
+                map(lambda e: e.name == entry.name, obj_type)
+            ) == 1
+            assert sum(
+                map(lambda e: e.choice == entry.choice, obj_type)
+            ) == 1

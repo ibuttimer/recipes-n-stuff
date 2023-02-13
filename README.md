@@ -219,6 +219,7 @@ There are two requirements files:
 | GOOGLE_SITE_VERIFICATION | [Google Search Console](https://search.google.com/search-console) meta tag verification value for [site ownership verification](https://support.google.com/webmasters/answer/9008080?hl=en)                                                                                                                                                                                                                                                                                             |
 | STRIPE_PUBLISHABLE_KEY   | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) publishable key value for payments processing.                                                                                                                                                                                                                                                                                                                                                                   |
 | STRIPE_SECRET_KEY        | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) secret key value for payments processing.                                                                                                                                                                                                                                                                                                                                                                        |
+| EXCHANGERATES_DATA_KEY   | [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api) key for exchange rates.                                                                                                                                                                                                                                                                                                                                                                              |
 
 
 #### Environment variables
@@ -290,6 +291,13 @@ In order to configure Stripe payments, the following actions must be performed.
 * Ensure the application is selected in the application list dropdown
 * Select [API keys](https://dashboard.stripe.com/test/apikeys) and copy the `Publishable key` and `Secret key`, and store securely.
 
+#### Exchange Rates
+In order to configure Exchange Rates, the following actions must be performed.
+
+* Login to [APILayer](https://apilayer.com/)
+* Subscribe to the [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api)
+* Copy the API key, and store securely
+
 
 ### Before first run
 Before running the application for the first time following cloning from the repository and setting up a new database,
@@ -357,7 +365,7 @@ python -m manage dumpdata profiles.CountryInfo --indent 4 -o data/fixtures/count
 > **Note:** Due to the large size of the dataset, this operation takes a long time to complete.
 
 ```bash
-# E.g. populated the remote database 
+# E.g. populate the remote database 
 python run_populate.py -r -f data -dv REMOTE_DATABASE_URL
 ```
 #### Create a superuser
@@ -497,6 +505,7 @@ The following steps were followed to deploy the website:
       | GOOGLE_SITE_VERIFICATION | [Google Search Console](https://search.google.com/search-console) meta tag verification value for [site ownership verification](https://support.google.com/webmasters/answer/9008080?hl=en) |
       | STRIPE_PUBLISHABLE_KEY   | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) publishable key value for payments processing.                                                             |
       | STRIPE_SECRET_KEY        | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) secret key value for payments processing.                                                                  |
+      | EXCHANGERATES_DATA_KEY   | [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api) key for exchange rates.                                                                        |
       |                          | _The following keys are automatically added when `Resources` are provisioned:_                                                                                                   |
       | CLOUDINARY_URL           | [Cloudinary url](https://pypi.org/project/dj3-cloudinary-storage/)                                                                                                                |
 
@@ -600,10 +609,19 @@ The following resources were used to build the website.
 - [Chef image](static/img/chef-4807317_1920.jpg) by [abdulla binmassam](https://pixabay.com/users/binmassam-15041405/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=4807317) from [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=4807317), cropped
 - [Barbeque skewers image](static/img/meat-skewer-1440105_1920.jpg) by [-Rita-👩‍🍳 und 📷 mit ❤](https://pixabay.com/users/ritae-19628/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1440105) from [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1440105)
 - [Baked goods image](static/img/baked-goods-1846460_1920.jpg) by [Pexels](https://pixabay.com/users/pexels-2286921/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1846460) from [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1846460), cropped
+- [Wooden spoon (heart) image](static/img/spoon-2918612_640.jpg) by [Bruno /Germany](https://pixabay.com/users/bru-no-1161770/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=2918612) from [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=2918612), cropped
+- [Spices image](static/img/spices-1668200_640.jpg) by [czu_czu_PL](https://pixabay.com/users/czu_czu_pl-2330973/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1668200) from [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1668200), cropped
+- [Vegetables image](static/img/vegetables-1275029_640.jpg) by [congerdesign](https://pixabay.com/users/congerdesign-509903/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1275029) from [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1275029), cropped
+- [Spoons and spices image](static/img/spoon-4700883_640.jpg) by [Kai Reschke](https://pixabay.com/users/ka_re-14461006/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=4700883) from [Pixabay](https://pixabay.com//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=4700883), cropped
 - Country [subdivision data](data/subdivisions.txt) courtesy of https://en.wikipedia.org/wiki/ISO_3166-2
 - [Currency data](data/currency.csv) courtesy of https://en.wikipedia.org/wiki/ISO_4217
 - Standard measures data courtesy of [Cooking weights and measures](https://en.wikipedia.org/wiki/Cooking_weights_and_measures) and [United States customary units](https://en.wikipedia.org/wiki/United_States_customary_units)
 - Recipe data courtesy of [Food.com - Recipes and Reviews](https://www.kaggle.com/datasets/irkaal/foodcom-recipes-and-reviews) by [Alvin](https://www.kaggle.com/irkaal)
+- [404 error icon](static/img/no-results.png) created by [Freepik - Flaticon](https://www.flaticon.com/free-icons/404-error)
+- [Explosion icon](static/img/nuclear-explosion.png) created by [Freepik - Flaticon](https://www.flaticon.com/free-icons/explosion)
+- [Stop sign icon](static/img/banned.png) created by [Freepik - Flaticon](https://www.flaticon.com/free-icons/stop-sign)
+- [Confusion icon](static/img/confusion.png) created by [Freepik - Flaticon](https://www.flaticon.com/free-icons/confusion)
+- [Internet icon](static/img/internet.png) created by [Freepik - Flaticon](https://www.flaticon.com/free-icons/internet)
 
 ### Code
 

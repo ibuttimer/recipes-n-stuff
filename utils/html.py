@@ -27,25 +27,38 @@ class NavbarAttr:
     """ Navbar link attributes """
     a_attr: str
     span_attr: str
+    has_permission: bool
+    active: bool
+    disabled: bool
 
 
 def add_navbar_attr(context: dict, key: str, is_active: bool = False,
-                    a_xtra: str = None, span_xtra: str = None) -> dict:
+                    has_permission: bool = True, disabled: bool = False,
+                    a_xtra: str = None, span_xtra: str = None,
+                    is_dropdown_toggle: bool = False) -> dict:
     """
     Add navbar attributes from the specified key
     :param context: context for template
     :param key: context key
     :param is_active: is active flag; default False
+    :param has_permission: has_permission flag; default True
+    :param disabled: is disabled flag; default False
     :param a_xtra: extra classes for 'a' tag; default None
     :param span_xtra: extra classes for 'span' tag; default None
+    :param is_dropdown_toggle: dropdown toggle flag; default False
     :return: context
     """
+    dropdown_toggle = 'dropdown-toggle' if is_dropdown_toggle else ''
+    if is_active:
+        a_attr = f'class="nav-link {dropdown_toggle} {a_xtra or ""} active active_page" ' \
+                 f'aria-current="page"'
+        span_attr = f'class="{span_xtra or ""}"'
+    else:
+        a_attr = f'class="nav-link {dropdown_toggle} {a_xtra or ""}"'
+        span_attr = f'class="{span_xtra or ""}"'
+
     context[key] = NavbarAttr(
-        f'class="nav-link {a_xtra or ""} active active_page" '
-        f'aria-current="page"',
-        f'class="{span_xtra or ""}"'
-    ) if is_active else NavbarAttr(
-        f'class="nav-link {a_xtra or ""}"',
-        f'class="{span_xtra or ""}"'
-    )
+        a_attr=a_attr, span_attr=span_attr, has_permission=has_permission,
+        active=is_active, disabled=disabled)
+
     return context

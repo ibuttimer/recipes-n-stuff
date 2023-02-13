@@ -27,6 +27,7 @@ from django.views import View
 from django.utils.translation import gettext_lazy as _
 
 from base.constants import SUBMIT_BTN_TEXT
+from order.misc import add_new_subscription_product
 from utils import (
     Crud, READ_ONLY_CTX, SUBMIT_URL_CTX, app_template_path, reverse_q,
     namespaced_url, TITLE_CTX, redirect_on_success_or_render,
@@ -92,6 +93,8 @@ class SubscriptionCreate(LoginRequiredMixin, View):
             form.save()
             # django autocommits changes
             # https://docs.djangoproject.com/en/4.1/topics/db/transactions/#autocommit
+
+            add_new_subscription_product(form.instance)
 
             redirect_to = namespaced_url(THIS_APP, SUBSCRIPTIONS_ROUTE_NAME)
             template_path, context = None, None

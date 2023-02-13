@@ -48,6 +48,8 @@ class QuerySetParams:
     """ OR lookups """
     qs_funcs: [Callable[[QuerySet], QuerySet]]
     """ Functions to apply additional query terms to query set """
+    annotations: dict
+    """ Annotations """
     params: set
     """ Set of query keys """
     all_inclusive: int
@@ -67,6 +69,7 @@ class QuerySetParams:
         self.and_lookups = {}
         self.or_lookups = []
         self.qs_funcs = []
+        self.annotations = {}
         self.params = set()
         self.all_inclusive = 0
         self.is_none = False
@@ -79,6 +82,7 @@ class QuerySetParams:
         self.and_lookups.clear()
         self.or_lookups.clear()
         self.qs_funcs.clear()
+        self.annotations.clear()
         self.params.clear()
         self.all_inclusive = 0
         self.is_none = False
@@ -102,10 +106,15 @@ class QuerySetParams:
         return len(self.qs_funcs)
 
     @property
+    def annotations_count(self):
+        """ Count of annotations """
+        return len(self.annotations)
+
+    @property
     def is_empty(self):
         """ Check if empty i.e. no query terms """
         return self.and_count + self.or_count + self.qs_func_count \
-            + self.all_inclusive == 0
+            + self.annotations_count() + self.all_inclusive == 0
 
     @property
     def is_free_search(self):
@@ -117,7 +126,7 @@ class QuerySetParams:
         """ Check if unknown search i.e. couldn't determine search criteria """
         return self.search_type == SearchType.UNKNOWN
 
-    def add_and_lookup(self, key, lookup: str, value: Any):
+    def add_and_lookup(self, key: str, lookup: str, value: Any):
         """
         Add an AND lookup
         :param key: query key
@@ -127,7 +136,7 @@ class QuerySetParams:
         self.and_lookups[lookup] = value
         self.params.add(key)
 
-    def add_and_lookups(self, key, lookups: dict[str, Any]):
+    def add_and_lookups(self, key: str, lookups: dict[str, Any]):
         """
         Add an AND lookup
         :param key: query key
@@ -136,6 +145,26 @@ class QuerySetParams:
         if isinstance(lookups, dict):
             for lookup, value in lookups.items():
                 self.add_and_lookup(key, lookup, value)
+
+    def add_annotation(self, key: str, annotation: str, value: Any):
+        """
+        Add an annotation
+        :param key: query key
+        :param annotation: annotation term
+        :param value: lookup value
+        """
+        self.annotations[annotation] = value
+        self.params.add(key)
+
+    def add_annotations(self, key: str, annotations: dict[str, Any]):
+        """
+        Add an AND lookup
+        :param key: query key
+        :param annotations: dict with annotation term as key and lookup value
+        """
+        if isinstance(annotations, dict):
+            for annotation, value in annotations.items():
+                self.add_annotation(key, annotation, value)
 
     def add(self, query_set_param: TypeQuerySetParams):
         """
@@ -146,6 +175,7 @@ class QuerySetParams:
             self.and_lookups.update(query_set_param.and_lookups)
             self.or_lookups.extend(query_set_param.or_lookups)
             self.qs_funcs.extend(query_set_param.qs_funcs)
+            self.annotations.update(query_set_param.annotations)
             self.all_inclusive += query_set_param.all_inclusive
             self.params.update(query_set_param.params)
             self.search_terms.extend(query_set_param.search_terms)
@@ -215,6 +245,7 @@ class QuerySetParams:
                 **self.and_lookups)
             for func in self.qs_funcs:
                 query_set = func(query_set)
+            query_set = query_set.annotate(**self.annotations)
         return query_set
 
 
