@@ -159,7 +159,7 @@ def check_ingredient_ordering(recipe: Union[int, Recipe]):
         # alternative ingredients have same index
         alt_end_idx = index
         while alt_end_idx < len(ingredients) and \
-            ingredients[alt_end_idx].index == ingredient.index:
+                ingredients[alt_end_idx].index == ingredient.index:
             alt_end_idx += 1
 
         if ingredient.index > expected_idx:

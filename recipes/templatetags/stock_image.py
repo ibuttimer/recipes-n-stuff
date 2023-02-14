@@ -34,6 +34,7 @@ STOCK_IMAGES = [
     'vegetables-1275029_640.jpg', 'spoon-4700883_640.jpg'
 ]
 
+
 @register.simple_tag
 def stock_image() -> str:
     """

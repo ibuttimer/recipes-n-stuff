@@ -74,8 +74,8 @@ class RecipeIngredientForm(forms.ModelForm):
                 RecipeIngredient.model_name_caps(),
                 *[ErrorMsgs(
                     field, required=True,
-                    max_length=
-                    RecipeIngredient.RECIPE_INGREDIENT_ATTRIB_QUANTITY_MAX_LEN
+                    max_length=RecipeIngredient.
+                    RECIPE_INGREDIENT_ATTRIB_QUANTITY_MAX_LEN
                 ) for field in (
                     QUANTITY_FIELD,
                 )]
@@ -84,10 +84,10 @@ class RecipeIngredientForm(forms.ModelForm):
                 RecipeIngredient.model_name_caps(),
                 *[ErrorMsgs(
                     field, required=True,
-                    max_value=
-                    RecipeIngredient.RECIPE_INGREDIENT_ATTRIB_INDEX_MAX,
-                    min_value=
-                    RecipeIngredient.RECIPE_INGREDIENT_ATTRIB_INDEX_MIN
+                    max_value=RecipeIngredient.
+                    RECIPE_INGREDIENT_ATTRIB_INDEX_MAX,
+                    min_value=RecipeIngredient.
+                    RECIPE_INGREDIENT_ATTRIB_INDEX_MIN
                 ) for field in (
                     INDEX_FIELD,
                 )]
@@ -95,7 +95,6 @@ class RecipeIngredientForm(forms.ModelForm):
             return msgs
 
         error_messages = generate_error_messages()
-
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

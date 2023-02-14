@@ -211,7 +211,8 @@ class RecipeList(LoginRequiredMixin, ContentListMixin):
 
         if self.query_value_was_set_as_one_of_values(
                 query_params, ORDER_QUERY, [
-                    RecipeSortOrder.TOTAL_TIME_LH, RecipeSortOrder.TOTAL_TIME_HL
+                    RecipeSortOrder.TOTAL_TIME_LH,
+                    RecipeSortOrder.TOTAL_TIME_HL
                 ]):
             # add total time annotation as needed for ordering
             query_set_params.add_annotation(

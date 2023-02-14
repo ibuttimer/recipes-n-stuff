@@ -68,7 +68,9 @@ class RecipeAdmin(admin.ModelAdmin):
 
 @admin.register(RecipeIngredient)
 class RecipeIngredientAdmin(admin.ModelAdmin):
-    """ Class representing the RecipeIngredient model in the admin interface """
+    """
+    Class representing the RecipeIngredient model in the admin interface
+    """
     # doesn't really work as sub-queries for details makes it too slow
     list_display = (
         RecipeIngredient.RECIPE_FIELD,

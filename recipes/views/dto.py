@@ -76,13 +76,11 @@ class RecipeDto(BaseDto):
         # custom handling for specific attributes
 
         if all_attrib or Recipe.INGREDIENTS_FIELD in args:
-            dto.ingredients = list(
-                map(IngredientDto.from_model, list(
-                    recipe.recipeingredient_set.order_by(
-                        RecipeIngredient.INDEX_FIELD).all()
-                    )
-                )
-            )
+            dto.ingredients = \
+                list(map(IngredientDto.from_model,
+                         list(recipe.recipeingredient_set.order_by(
+                              RecipeIngredient.INDEX_FIELD).all()))
+                     )
             num_ingredients = len(dto.ingredients)
             dto._alternatives = list(
                 map(lambda _: False, range(num_ingredients)))

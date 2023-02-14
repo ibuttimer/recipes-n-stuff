@@ -50,8 +50,8 @@ def add_navbar_attr(context: dict, key: str, is_active: bool = False,
     """
     dropdown_toggle = 'dropdown-toggle' if is_dropdown_toggle else ''
     if is_active:
-        a_attr = f'class="nav-link {dropdown_toggle} {a_xtra or ""} active active_page" ' \
-                 f'aria-current="page"'
+        a_attr = f'class="nav-link {dropdown_toggle} {a_xtra or ""} ' \
+                 f'active active_page" aria-current="page"'
         span_attr = f'class="{span_xtra or ""}"'
     else:
         a_attr = f'class="nav-link {dropdown_toggle} {a_xtra or ""}"'

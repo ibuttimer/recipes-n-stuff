@@ -442,6 +442,7 @@ class RecipeIngredient(ModelMixin, models.Model):
     def __str__(self):
         return f'{self.index} {self.ingredient.name} - {self.recipe.name}'
 
+
 class Image(ModelMixin, models.Model):
     """
     Image model
