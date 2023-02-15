@@ -50,11 +50,12 @@ def random_string_generator(
 
 def is_boolean_true(text: str) -> bool:
     """
-    Check if `text` represents a boolean True value
+    Check if `text` represents a boolean True value;
+    'true', 'on', 'ok', 'y', 'yes', '1'
     :param text: string to check
     :return: True if represents a boolean True value, otherwise False
     """
-    return text.lower() in environ.Env.BOOLEAN_TRUE_STRINGS
+    return str(text).lower() in environ.Env.BOOLEAN_TRUE_STRINGS
 
 
 class Crud(Enum):

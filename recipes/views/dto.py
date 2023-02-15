@@ -21,16 +21,16 @@
 #  DEALINGS IN THE SOFTWARE.
 from dataclasses import dataclass, field
 from datetime import timedelta
-from typing import List
+from typing import List, Union
 
 from django.utils.text import slugify
 
 from base.dto import BaseDto
 from recipes.views.recipe_queries import (
-    get_recipe_instructions, get_recipe_ingredients_list, get_recipe
+    get_recipe_instructions, get_recipe
 )
 from recipes.models import (
-    Recipe, RecipeIngredient
+    Recipe, RecipeIngredient, Instruction
 )
 
 
@@ -56,11 +56,30 @@ class IngredientDto(BaseDto):
 
 
 @dataclass
+class InstructionDto(BaseDto):
+    """ Recipe instruction data transfer object """
+
+    @staticmethod
+    def from_model(instruction: Instruction):
+        """
+        Generate a DTO from the specified `instruction`
+        :param instruction: model instance to populate DTO from
+        :return: DTO instance
+        """
+        dto = BaseDto.from_model_to_obj(instruction, IngredientDto())
+        # custom handling for specific attributes
+        return dto
+
+
+@dataclass
 class RecipeDto(BaseDto):
     """ Recipe data transfer object """
 
     _total_time: timedelta = timedelta()
-    _alternatives: list[bool] = field(default_factory=list)
+    _ingredient_alts: list[bool] = field(default_factory=list)
+    """ Ingredient alternatives flags """
+    _instruction_alts: list[bool] = field(default_factory=list)
+    """ Instruction alternatives flags """
 
     @staticmethod
     def from_model(recipe: Recipe, *args, all_attrib: bool = True):
@@ -81,17 +100,12 @@ class RecipeDto(BaseDto):
                          list(recipe.recipeingredient_set.order_by(
                               RecipeIngredient.INDEX_FIELD).all()))
                      )
-            num_ingredients = len(dto.ingredients)
-            dto._alternatives = list(
-                map(lambda _: False, range(num_ingredients)))
-            for idx in range(len(dto.ingredients) - 1):
-                alt_idx = idx + 1
-                dto._alternatives[alt_idx] = \
-                    dto.ingredients[alt_idx].index == \
-                    dto.ingredients[idx].index
-
+            dto._ingredient_alts = scan_alternatives(
+                dto.ingredients, RecipeIngredient.INDEX_FIELD)
         if all_attrib or Recipe.INSTRUCTIONS_FIELD in args:
             dto.instructions = get_recipe_instructions(dto.id)
+            dto._instruction_alts = scan_alternatives(
+                dto.instructions, Instruction.INDEX_FIELD)
         if all_attrib or Recipe.IMAGES_FIELD in args:
             dto.images = list(recipe.image_set.all())
         if all_attrib or Recipe.AUTHOR_FIELD in args:
@@ -124,12 +138,20 @@ class RecipeDto(BaseDto):
         self._total_time = time
 
     @property
-    def alternatives(self) -> List[bool]:
+    def ingredient_alts(self) -> List[bool]:
         """
         Alternative ingredients flags; True if entry is alternative for
         previous entry in ingredient list
         """
-        return self._alternatives
+        return self._ingredient_alts
+
+    @property
+    def instruction_alts(self) -> List[bool]:
+        """
+        Alternative instructions flags; True if entry is alternative for
+        previous entry in instruction list
+        """
+        return self._instruction_alts
 
     @property
     def display_order(self):
@@ -139,14 +161,6 @@ class RecipeDto(BaseDto):
                 Recipe.NAME_FIELD
             ]
         ]
-        # amt = RecipeForm.quantise_amount(
-        #     getattr(self, Recipe.AMOUNT_FIELD))
-        # code = getattr(self, Recipe.BASE_CURRENCY_FIELD)
-        # freq_type = getattr(self, Recipe.FREQUENCY_TYPE_FIELD)
-        # freq = getattr(self, Recipe.FREQUENCY_FIELD)
-        # assert freq_type is not None
-        # order.append(f'{amt} {code} per {freq} {freq_type.value.name}')
-
         return order
 
     @property
@@ -165,3 +179,23 @@ class RecipeDto(BaseDto):
         """
         return f'https://www.food.com/recipe/' \
                f'{slugify(self.name)}-{self.food_id}'
+
+
+def scan_alternatives(entities: List[Union[Instruction, RecipeIngredient]],
+                      attrib: str) -> List[bool]:
+    """
+    Scan a list for alternatives
+    :param entities: list to scan
+    :param attrib: attrib to compare
+    :return: list of alternatives
+    """
+    num_entities = len(entities)
+    alts = list(
+        map(lambda _: False, range(num_entities)))
+    for idx in range(num_entities - 1):
+        alt_idx = idx + 1
+        alts[alt_idx] = \
+            getattr(entities[alt_idx], attrib) == \
+            getattr(entities[idx], attrib)
+
+    return alts

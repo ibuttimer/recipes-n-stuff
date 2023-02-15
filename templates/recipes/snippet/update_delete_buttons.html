@@ -1,0 +1,27 @@
+<!-- update_delete_buttons.html start -->
+{# --- update_delete_buttons.html template variable defines for includes --- #}
+{# update/delete buttons form template expects: 'entity' as entity name #}
+{#                                              'delete_url' as url to delete an entity #}
+{#                                              'delete_identifier' as entity delete identifier for delete button class & id #}
+{#                                                  e.g. class="a--delete_identifier", id="id--delete_identifier-a-1 #}
+
+{% load i18n %}
+{% load static %}
+{% load form_submit_btn_id  a_id %}
+
+<button id="{% form_submit_btn_id entity forloop.counter %}"
+        class="btn btn-primary primaryAction me-2"
+        data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Save {{ entity | lower }}"
+        type="submit">
+    <i class="fa-solid fa-cloud-arrow-up"></i>
+    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" hidden></span>
+</button>
+<span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Delete {{ entity | lower }}">
+    <a href="{{ delete_url }}" aria-label="Delete {{ entity | lower }}"
+       id="{% a_id delete_identifier forloop.counter %}"
+       class="btn btn-danger a--{{ delete_identifier }}">
+        <i class="fa-solid fa-trash-arrow-up"></i>
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" hidden></span>
+    </a>
+</span>
+<!-- update_delete_buttons.html end -->

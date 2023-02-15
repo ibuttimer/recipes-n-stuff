@@ -19,31 +19,42 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from dataclasses import dataclass
 from typing import Union, Tuple
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import BadRequest
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.views import View
 
+from utils.content_list_mixin import get_query_args
 from .dto import RecipeDto
 from .recipe_queries import get_recipe, get_recipe_ingredients_list
 from ..constants import (
-    THIS_APP, INGREDIENTS_CTX, INGREDIENT_FORM_CTX, INGREDIENT_NAME_CTX,
-    MEASURE_NAME_CTX, NEW_INGREDIENT_FORM_CTX,
+    THIS_APP, INGREDIENTS_CTX, NEW_INGREDIENT_FORM_CTX,
     RECIPE_ID_INGREDIENT_NEW_ROUTE_NAME, RECIPE_ID_UPDATE_ROUTE_NAME,
-    REFRESH_URL_CTX, NEW_URL_CTX
+    REFRESH_URL_CTX, NEW_URL_CTX, INGREDIENTS_QUERY, INSTRUCTIONS_QUERY,
+    INSTRUCTIONS_CTX, NEW_INSTRUCTION_FORM_CTX,
+    RECIPE_ID_INSTRUCTION_NEW_ROUTE_NAME
 )
 from utils import (
-    Crud, SUBMIT_URL_CTX, app_template_path, reverse_q,
-    namespaced_url, PAGE_HEADING_CTX, TITLE_CTX
+    Crud, app_template_path, reverse_q,
+    namespaced_url, PAGE_HEADING_CTX, TITLE_CTX, QueryOption
 )
 from .utils import recipe_permission_check
 from ..constants import RECIPE_ID_ROUTE_NAME, RECIPE_DTO_CTX
-from ..forms import RecipeIngredientForm, RecipeIngredientNewForm
-from ..models import Recipe, RecipeIngredient
+from ..forms import (
+    RecipeIngredientForm, RecipeIngredientNewForm, RecipeInstructionForm
+)
+from ..models import Recipe, Instruction
 
 TITLE_UPDATE = 'Update Recipe'
+
+UPDATE_QUERY_ARGS = [
+    QueryOption.of_no_cls_dflt(INGREDIENTS_QUERY),
+    QueryOption.of_no_cls_dflt(INSTRUCTIONS_QUERY),
+]
 
 
 class RecipeDetail(LoginRequiredMixin, View):
@@ -167,6 +178,20 @@ class RecipeDetail(LoginRequiredMixin, View):
         )
 
 
+@dataclass
+class IngredientInfo:
+    """ Data class of ingredient info for editing """
+    form: RecipeIngredientForm
+    name: str
+    measure: str
+
+
+@dataclass
+class InstructionInfo:
+    """ Data class of instruction info for editing """
+    form: RecipeInstructionForm
+
+
 class RecipeDetailUpdate(LoginRequiredMixin, View):
     """
     Class-based view for recipe get/update/delete
@@ -182,21 +207,36 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
         :param kwargs: additional keyword arguments
         :return: http response
         """
-        recipe_permission_check(request, Crud.READ)
+        recipe_permission_check(request, Crud.UPDATE)
 
-        template, context = self.render_update_info(request, pk)
+        query_args = get_query_args(request, UPDATE_QUERY_ARGS)
+
+        for query, field in [
+            (INGREDIENTS_QUERY, Recipe.INGREDIENTS_FIELD),
+            (INSTRUCTIONS_QUERY, Recipe.INSTRUCTIONS_FIELD),
+        ]:
+            if query_args[query].was_set_to_boolean_true():
+                field_name = field
+                break
+        else:
+            raise BadRequest(f'Malformed request; query not specified')
+
+        if field_name == Recipe.INGREDIENTS_FIELD:
+            template, context = self.render_update_ingredients(request, pk)
+        else:
+            template, context = self.render_update_instructions(request, pk)
 
         return render(request, template, context=context)
 
     @staticmethod
-    def render_update_info(
+    def render_update_ingredients(
             request: HttpRequest, recipe: Union[int, Recipe],
             new_form: RecipeIngredientNewForm = None) -> Tuple[str, dict]:
         """
         Get the template & context for a recipe ingredients update
         :param request: http request
         :param recipe: id of recipe or recipe object
-        :param new_form:
+        :param new_form: form to add new entity; default None
         :return: tuple of template and context
         """
         recipe_permission_check(request, Crud.UPDATE)
@@ -215,26 +255,69 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
             TITLE_CTX: 'Update Ingredients',
             PAGE_HEADING_CTX: f'Update {recipe.name} Ingredients',
             INGREDIENTS_CTX: list(
-                map(lambda ingredient: {
-                    INGREDIENT_FORM_CTX: RecipeIngredientForm(
-                        instance=ingredient),
-                    INGREDIENT_NAME_CTX: ingredient.ingredient.name,
-                    MEASURE_NAME_CTX: ingredient.ingredient.measure.name
-                }, ingredients)
+                map(lambda entity: IngredientInfo(
+                    form=RecipeIngredientForm(instance=entity),
+                    name=entity.ingredient.name,
+                    measure=entity.ingredient.measure.name),
+                    ingredients)
             ),
             NEW_INGREDIENT_FORM_CTX: new_form,
             NEW_URL_CTX: reverse_q(
                 namespaced_url(THIS_APP, RECIPE_ID_INGREDIENT_NEW_ROUTE_NAME),
                 args=[recipe.id]
             ),
-            REFRESH_URL_CTX: reverse_q(
-                namespaced_url(THIS_APP, RECIPE_ID_UPDATE_ROUTE_NAME),
-                args=[recipe.id]
-            ),
+            REFRESH_URL_CTX: RecipeDetailUpdate.url(
+                recipe.id, INGREDIENTS_QUERY),
             RECIPE_DTO_CTX: RecipeDto.from_model(recipe, all_attrib=False)
         }
 
         return app_template_path(THIS_APP, 'ingredients_form.html'), context
+
+
+    @staticmethod
+    def render_update_instructions(
+            request: HttpRequest, recipe: Union[int, Recipe],
+            new_form: RecipeInstructionForm = None) -> Tuple[str, dict]:
+        """
+        Get the template & context for a recipe instructions update
+        :param request: http request
+        :param recipe: id of recipe or recipe object
+        :param new_form: form to add new entity; default None
+        :return: tuple of template and context
+        """
+        recipe_permission_check(request, Crud.UPDATE)
+
+        if isinstance(recipe, int):
+            recipe, _ = get_recipe(recipe)
+
+        instructions = list(
+            recipe.instructions.order_by(Instruction.INDEX_FIELD).all())
+
+        if not new_form:
+            new_form = RecipeInstructionForm()
+            new_form.initial[RecipeInstructionForm.INDEX_FF] = \
+                instructions[-1].index + 1
+
+        context = {
+            TITLE_CTX: 'Update Instructions',
+            PAGE_HEADING_CTX: f'Update {recipe.name} Instructions',
+            INSTRUCTIONS_CTX: list(
+                map(lambda entity: InstructionInfo(
+                    form=RecipeInstructionForm(instance=entity)
+                ), instructions)
+            ),
+            NEW_INSTRUCTION_FORM_CTX: new_form,
+            NEW_URL_CTX: reverse_q(
+                namespaced_url(
+                    THIS_APP, RECIPE_ID_INSTRUCTION_NEW_ROUTE_NAME),
+                args=[recipe.id]
+            ),
+            REFRESH_URL_CTX: RecipeDetailUpdate.url(
+                recipe.id, INSTRUCTIONS_QUERY),
+            RECIPE_DTO_CTX: RecipeDto.from_model(recipe, all_attrib=False)
+        }
+
+        return app_template_path(THIS_APP, 'instructions_form.html'), context
 
     # def post(self, request: HttpRequest, pk: int,
     #          *args, **kwargs) -> HttpResponse:
@@ -319,13 +402,16 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
     #     return JsonResponse(payload, status=status)
 
     @staticmethod
-    def url(pk: int) -> str:
+    def url(pk: int, query: str) -> str:
         """
         Get url for address update/delete
         :param pk: id of entity
+        :param query: query field
         :return: url
         """
         return reverse_q(
             namespaced_url(THIS_APP, RECIPE_ID_UPDATE_ROUTE_NAME),
-            args=[pk]
+            args=[pk], query_kwargs={
+                query: 'y'
+            }
         )

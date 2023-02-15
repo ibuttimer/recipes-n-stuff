@@ -23,6 +23,8 @@ from .recipe_list import RecipeList
 from .recipe_by import RecipeDetail, RecipeDetailUpdate
 from .recipe_ingredient_by import RecipeIngredientDetail
 from .recipe_ingredient_create import create_recipe_ingredient
+from .recipe_instruction_by import InstructionDetail
+from .recipe_instruction_create import create_recipe_instruction
 
 
 __all__ = [
@@ -34,4 +36,8 @@ __all__ = [
     'RecipeIngredientDetail',
 
     'create_recipe_ingredient',
+
+    'InstructionDetail',
+
+    'create_recipe_instruction',
 ]

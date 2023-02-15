@@ -77,10 +77,14 @@ RECIPE_NEW_URL = url_path(RECIPES_URL, "new")
 RECIPE_ID_URL = url_path(RECIPES_URL, f"<int:{PK_PARAM_NAME}>")
 RECIPE_ID_UPDATE_URL = url_path(RECIPE_ID_URL, "update")
 RECIPE_ID_INGREDIENT_NEW_URL = url_path(RECIPE_ID_URL, "ingredient", "new")
+RECIPE_ID_INSTRUCTION_NEW_URL = url_path(RECIPE_ID_URL, "instruction", "new")
 
-RECIPE_INGREDIENTS_URL = "recipe_ingredients"
-RECIPE_INGREDIENTS_ID_URL = \
+RECIPE_INGREDIENTS_URL = "ingredients"
+RECIPE_INGREDIENT_ID_URL = \
     url_path(RECIPE_INGREDIENTS_URL, f"<int:{PK_PARAM_NAME}>")
+RECIPE_INSTRUCTIONS_URL = "instructions"
+RECIPE_INSTRUCTION_ID_URL = \
+    url_path(RECIPE_INSTRUCTIONS_URL, f"<int:{PK_PARAM_NAME}>")
 
 # convention is recipes route names begin with 'recipe'
 RECIPES_ROUTE_NAME = "recipes"
@@ -88,18 +92,24 @@ RECIPE_NEW_ROUTE_NAME = "recipe_new"
 RECIPE_ID_ROUTE_NAME = "recipe_id"
 RECIPE_ID_UPDATE_ROUTE_NAME = "recipe_id_update"
 RECIPE_ID_INGREDIENT_NEW_ROUTE_NAME = "recipe_id_ingredient_new"
+RECIPE_ID_INSTRUCTION_NEW_ROUTE_NAME = "recipe_id_instruction_new"
 
 RECIPE_INGREDIENTS_ROUTE_NAME = "recipe_ingredients"
-RECIPE_INGREDIENTS_ID_ROUTE_NAME = "recipe_ingredients_id"
+RECIPE_INGREDIENT_ID_ROUTE_NAME = "recipe_ingredient_id"
+RECIPE_INSTRUCTIONS_ROUTE_NAME = "recipe_instructions"
+RECIPE_INSTRUCTION_ID_ROUTE_NAME = "recipe_instruction_id"
 
 # context related
 RECIPE_FORM_CTX = 'recipe_form'
 RECIPE_LIST_CTX = 'recipe_list'
 RECIPE_DTO_CTX = 'recipe_dto'
 INGREDIENTS_CTX = 'ingredients'
-INGREDIENT_NAME_CTX = 'ingredient_name'
-MEASURE_NAME_CTX = 'measure_name'
-INGREDIENT_FORM_CTX = 'form'
-NEW_INGREDIENT_FORM_CTX = 'new_form'
+NEW_INGREDIENT_FORM_CTX = 'new_ingred_form'
+INSTRUCTIONS_CTX = 'instructions'
+NEW_INSTRUCTION_FORM_CTX = 'new_instruct_form'
 NEW_URL_CTX = 'new_url'
 REFRESH_URL_CTX = 'refresh_url'
+
+# query related
+INGREDIENTS_QUERY = 'ingredients'
+INSTRUCTIONS_QUERY = 'instructions'

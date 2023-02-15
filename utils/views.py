@@ -176,10 +176,12 @@ def entity_delete_result_payload(
     :param extra: extra payload content; default None
     :return: response
     """
+    from recipesnstuff import BASE_APP_NAME
+
     return replace_inner_html_payload(
         selector, render_to_string(
             app_template_path(
-                "snippet", "entity_delete_result.html"),
+                BASE_APP_NAME, "snippet", "entity_delete_result.html"),
             context={
                 STATUS_CTX: status,
                 ENTITY_CTX: entity

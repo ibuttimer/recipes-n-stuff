@@ -20,10 +20,10 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 from dataclasses import dataclass
-from enum import Enum, auto
-from typing import TypeVar, Any, Callable, Optional, Type, Union, Tuple, List
+from enum import Enum
+from typing import TypeVar, Any, Callable, Optional, Type, Union, List
 
-from .misc import ensure_list
+from .misc import ensure_list, is_boolean_true
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
 TypeChoiceArg = TypeVar("TypeChoiceArg", bound="ChoiceArg")
@@ -145,22 +145,32 @@ class QueryArg:
 
     def was_set_to_one_of(self, values: List[Any], attrib: str = None):
         """
-        Check if value was to set one of the specified `values`
+        Check if value was set to one of the specified `values`
         :param values: values to check
         :param attrib: attribute of set value to check; default None
-        :return: True if value was to set the specified `value`
+        :return: True if value was set to one of the specified values
         """
         chk_value = self.value if not attrib else getattr(self.value, attrib)
         return self.was_set and chk_value in values
 
     def was_set_to(self, value: Any, attrib: str = None):
         """
-        Check if value was to the specified `value`
+        Check if value was set to the specified `value`;
+        'true', 'on', 'ok', 'y', 'yes', '1'
         :param value: value to check
         :param attrib: attribute of set value to check; default None
-        :return: True if value was to set the specified `value`
+        :return: True if value was set to the specified `value`
         """
         return self.was_set_to_one_of(ensure_list(value), attrib=attrib)
+
+    def was_set_to_boolean_true(self, attrib: str = None):
+        """
+        Check if value was set to a boolean true value
+        :param attrib: attribute of set value to check; default None
+        :return: True if value was set to boolean true
+        """
+        chk_value = self.value if not attrib else getattr(self.value, attrib)
+        return is_boolean_true(str(chk_value))
 
     @property
     def as_tuple(self) -> tuple[Any, bool]:

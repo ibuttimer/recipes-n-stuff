@@ -280,19 +280,32 @@ class Instruction(ModelMixin, models.Model):
     """
     # field names
     TEXT_FIELD = TEXT_FIELD
+    INDEX_FIELD = INDEX_FIELD
 
     INSTRUCTION_ATTRIB_TEXT_MAX_LEN: int = 3000
+    INSTRUCTION_ATTRIB_INDEX_MIN: int = 1
+    INSTRUCTION_ATTRIB_INDEX_MAX: int = 32767
 
     text = models.CharField(
         _('text'), max_length=INSTRUCTION_ATTRIB_TEXT_MAX_LEN,
         blank=False)
 
+    index = models.PositiveSmallIntegerField(
+        _('index in instruction list'),
+        default=INSTRUCTION_ATTRIB_INDEX_MIN,
+        validators=[
+            MinValueValidator(INSTRUCTION_ATTRIB_INDEX_MIN),
+            MaxValueValidator(INSTRUCTION_ATTRIB_INDEX_MAX)
+        ]
+    )
+
     @dataclass
     class Meta:
         """ Model metadata """
+        ordering = [INDEX_FIELD]
 
     def __str__(self):
-        return f'{self.text}'
+        return f'{self.index} {self.text}'
 
 
 class Recipe(ModelMixin, models.Model):

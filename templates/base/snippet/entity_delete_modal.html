@@ -1,0 +1,76 @@
+<!-- entity_delete_modal.html start -->
+{# --- entity_delete_modal.html template variable defines for includes --- #}
+{# entity delete modal template expects: 'confirm_id' as id of the delete confirmation modal #}
+{#                                       'deleted_id' as id of the deleted modal #}
+{#                                       'delete_btn_id' as id of delete button of the delete confirmation modal #}
+{#                                       'cancel_btn_id' as id of cancel button of the delete confirmation modal #}
+{#                                       'close_btn_id' as id of close button of the delete confirmation modal #}
+{#                                       'url_var_id' as id of var to hold the entity delete url #}
+{#                                       'entity' as entity name #}
+{#                                       'refresh_url' as url to goto after deletion complete #}
+
+{% load i18n  delete_modal_ids %}
+
+{% delete_modal_ids entity as ids %}
+
+<!-- Confirm delete entity modal -->
+<div id="{{ids.confirm_id}}" class="modal fade" tabindex="-1" aria-labelledby="{{ids.confirm_id_label}}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <var id="{{ ids.url_var_id }}" hidden>
+                {# content replaced by click event handler for button #}
+            </var>
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="{{ids.confirm_id_label}}">{{ entity }} Delete Confirm</h5>
+                <button id="{{ids.close_btn_id}}" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this {{ entity|lower }}?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="{{ids.cancel_btn_id}}" class="btn btn-dark btn__text" type="button" data-bs-dismiss="modal">Cancel</button>
+                <button id="{{ids.delete_btn_id}}" class="btn btn-outline-danger btn__text" type="button" data-bs-dismiss="modal">
+                    {% trans "Delete" %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ingredient deleted modal -->
+<div id="{{ids.deleted_id}}" class="modal fade" tabindex="-1" aria-labelledby="{{ids.deleted_id_label}}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="{{ids.deleted_id_label}}">{{ entity }} Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="{{ids.deleted_id_body}}" class="modal-body">
+                {# --- entity_delete_result.html template variable defines for includes --- #}
+                {# entity delete template expects: 'status' as success/failure status #}
+                {#                                 'entity' as entity name #}
+                {% include 'base/snippet/entity_delete_result.html' %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-dark btn__text" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        setupDeleteModalHandlers(
+            "a[class*='a--{{ ids.entity_conjoin }}-del']",  // delLinkSelector,
+            "#{{ ids.url_var_id }}",                        // delUrlSelector
+            "#{{ ids.confirm_id }}",                        // delConfirmModalSelector
+            "#{{ ids.delete_btn_id }}",                     // delBtnSelector
+            "#{{ ids.deleted_id }}",                        // deletedModalSelector
+            "{{ refresh_url }}"                             // refreshUrl
+        );
+    });
+</script>
+<!-- entity_delete_modal.html end -->

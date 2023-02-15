@@ -28,9 +28,9 @@ from django.utils.translation import gettext_lazy as _
 from utils import error_messages, ErrorMsgs, update_field_widgets
 
 from .constants import (
-    INGREDIENT_FIELD, QUANTITY_FIELD, INDEX_FIELD
+    INGREDIENT_FIELD, QUANTITY_FIELD, INDEX_FIELD, TEXT_FIELD
 )
-from .models import RecipeIngredient, Ingredient
+from .models import RecipeIngredient, Ingredient, Instruction
 
 
 class RecipeIngredientForm(forms.ModelForm):
@@ -131,7 +131,7 @@ class RecipeIngredientNewForm(forms.ModelForm):
         """ Form metadata """
 
         @staticmethod
-        def extend() -> Tuple[List[str], dict]:
+        def extend() -> Tuple[List[str], dict, dict]:
             _fields = RecipeIngredientForm.Meta.fields.copy()
             _fields.append(INGREDIENT_FIELD)
 
@@ -169,4 +169,80 @@ class RecipeIngredientNewForm(forms.ModelForm):
         update_field_widgets(
             self,
             RecipeIngredientNewForm.Meta.select_fields,
+            {'class': 'form-select'})
+
+
+class RecipeInstructionForm(forms.ModelForm):
+    """
+    Form to update a recipe Instruction.
+    """
+
+    TEXT_FF = TEXT_FIELD
+    INDEX_FF = INDEX_FIELD
+
+    text = forms.CharField(
+        label=_("Text"),
+        max_length=Instruction.INSTRUCTION_ATTRIB_TEXT_MAX_LEN,
+        required=True)
+
+    index = forms.IntegerField(
+        label=_("Index"),
+        min_value=Instruction.INSTRUCTION_ATTRIB_INDEX_MIN,
+        max_value=Instruction.INSTRUCTION_ATTRIB_INDEX_MAX,
+        required=True)
+
+    @dataclass
+    class Meta:
+        """ Form metadata """
+        model = Instruction
+        fields = [
+            INDEX_FIELD,
+            TEXT_FIELD
+        ]
+        non_bootstrap_fields = []
+        select_fields = []
+        help_texts = {
+            TEXT_FIELD: 'Instruction text.',
+            INDEX_FIELD: 'Position in ingredient list, duplicates indicate '
+                         'alternatives.',
+        }
+
+        @staticmethod
+        def generate_error_messages():
+            msgs = error_messages(
+                Instruction.model_name_caps(),
+                *[ErrorMsgs(
+                    field, required=True,
+                    max_length=Instruction.INSTRUCTION_ATTRIB_TEXT_MAX_LEN
+                ) for field in (
+                    TEXT_FIELD,
+                )]
+            )
+            msgs.update(error_messages(
+                Instruction.model_name_caps(),
+                *[ErrorMsgs(
+                    field, required=True,
+                    max_value=Instruction.INSTRUCTION_ATTRIB_INDEX_MAX,
+                    min_value=Instruction.INSTRUCTION_ATTRIB_INDEX_MIN
+                ) for field in (
+                    INDEX_FIELD,
+                )]
+            ))
+            return msgs
+
+        error_messages = generate_error_messages()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # add the bootstrap class to the widget
+        update_field_widgets(
+            self,
+            # exclude non-bootstrap fields
+            [field for field in RecipeInstructionForm.Meta.fields
+             if field not in RecipeInstructionForm.Meta.non_bootstrap_fields
+             and field not in RecipeInstructionForm.Meta.select_fields],
+            {'class': 'form-control'})
+        update_field_widgets(
+            self,
+            RecipeInstructionForm.Meta.select_fields,
             {'class': 'form-select'})

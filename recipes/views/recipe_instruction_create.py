@@ -29,18 +29,18 @@ from utils import (
     POST
 )
 from . import RecipeDetailUpdate
+from .recipe_instruction_by import check_instruction_ordering
 from .recipe_queries import get_recipe
-from .recipe_ingredient_by import check_ingredient_ordering
 from .utils import recipe_permission_check
-from ..constants import INGREDIENTS_QUERY
-from ..forms import RecipeIngredientNewForm
+from ..constants import INSTRUCTIONS_QUERY
+from ..forms import RecipeInstructionForm
 
 
 @login_required
 @require_http_methods([POST])
-def create_recipe_ingredient(request: HttpRequest, pk: int) -> HttpResponse:
+def create_recipe_instruction(request: HttpRequest, pk: int) -> HttpResponse:
     """
-    View function to create a recipe ingredient
+    View function to create a recipe instruction
     :param request: http request
     :param pk: id of recipe
     :return: response
@@ -49,23 +49,25 @@ def create_recipe_ingredient(request: HttpRequest, pk: int) -> HttpResponse:
 
     recipe, _ = get_recipe(pk)
 
-    form = RecipeIngredientNewForm(data=request.POST)
+    form = RecipeInstructionForm(data=request.POST)
 
     if form.is_valid():
         # save object
         # django autocommits changes
         # https://docs.djangoproject.com/en/4.1/topics/db/transactions/#autocommit
-        form.instance.recipe = recipe
-        form.save()
+        instruction = form.save()
 
-        check_ingredient_ordering(recipe)
+        recipe.instructions.add(instruction)
 
-        redirect_to = RecipeDetailUpdate.url(recipe.id, INGREDIENTS_QUERY)
+        check_instruction_ordering(recipe)
+
+        redirect_to = RecipeDetailUpdate.url(recipe.id, INSTRUCTIONS_QUERY)
         template_path, context = None, None
     else:
         redirect_to = None
-        template_path, context = RecipeDetailUpdate.render_update_ingredients(
-            request, recipe, new_form=form)
+        template_path, context = \
+            RecipeDetailUpdate.render_update_instructions(
+                request, recipe, new_form=form)
 
     return redirect_on_success_or_render(
         request, redirect_to is not None, redirect_to=redirect_to,

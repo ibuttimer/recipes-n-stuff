@@ -383,15 +383,14 @@ def get_recipe_ingredient(pk: int) -> Tuple[RecipeIngredient, dict]:
     return entity, query_param
 
 
-# def get_recipe_ingredient(pk: int, ingredient_pk: int) -> Tuple[Union[Recipe, RecipeDto], dict]:
-#     """
-#     Get recipe by specified `id`
-#     :param pk: id of recipe
-#     :param as_dto: return as dto object flag; default False
-#     :return: tuple of object and query param
-#     """
-#     query_param = {
-#         f'{Recipe.id_field()}': pk
-#     }
-#     entity = get_object_or_404(Recipe, **query_param)
-#     return RecipeDto.from_model(entity) if as_dto else entity, query_param
+def get_recipe_instruction(pk: int) -> Tuple[Instruction, dict]:
+    """
+    Get recipe instruction by specified `id`
+    :param pk: id of recipe instruction
+    :return: tuple of object and query param
+    """
+    query_param = {
+        f'{Instruction.id_field()}': pk
+    }
+    entity = get_object_or_404(Instruction, **query_param)
+    return entity, query_param

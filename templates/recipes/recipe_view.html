@@ -49,7 +49,12 @@
         <div class="col-sm-6">
             <div class="row">
                 <div class="col-12">
-                    <p>{{ recipe_dto.author.username }}</p>
+                    <p>
+                        Submitted by
+                        <a class="text-decoration-none" href="{% url 'user:user_id' recipe_dto.author.id %}" aria-label="view profile of author">
+                            <img src="{{ avatar_url }}" alt="user avatar" width="32" height="32" class="rounded-2">&nbsp;{{ recipe_dto.author.username }}
+                        </a>
+                    </p>
                 </div>
             </div>
             <div class="row">
@@ -71,17 +76,19 @@
         </div>
     </div>
     <div class="row">
+        {% has_permission user 'recipe' 'update' as can_update %}
         <div class="col-sm-6">
             <div class="row">
-                {% has_permission user 'recipe' 'update' as can_update %}
                 <div class="col-sm-12 mb-3">
                     <h6 class="d-inline p-2">Ingredients</h6>
-                    <a class="btn btn-sm btn-outline-primary d-inline p-2" href="{% url 'recipes:recipe_id_update' recipe_dto.id %}"
-                       data-bs-toggle="tooltip" data-bs-placement="top"
-                       data-bs-title="Edit ingredients"
-                       id="id__edit-recipe-ingredients">
-                        <i class="fa-solid fa-pen"></i>
-                    </a>
+                    {% if can_update %}
+                        <a class="btn btn-sm btn-outline-primary d-inline p-2" href="{% url 'recipes:recipe_id_update' recipe_dto.id %}?ingredients=y"
+                           data-bs-toggle="tooltip" data-bs-placement="top"
+                           data-bs-title="Edit ingredients"
+                           id="id__edit-recipe-ingredients">
+                            <i class="fa-solid fa-pen"></i>
+                        </a>
+                    {% endif %}
                 </div>
             </div>
             {% for ingredient in recipe_dto.ingredients %}
@@ -92,7 +99,7 @@
                     <span>
                     {{ ingredient.ingredient }}
                     {% if not forloop.last %}
-                        {% lookup_value recipe_dto.alternatives forloop.counter as is_alt %}
+                        {% lookup_value recipe_dto.ingredient_alts forloop.counter as is_alt %}
                         {% if is_alt %}
                             <em><strong>, or</strong></em>
                         {% endif %}
@@ -103,11 +110,38 @@
             {% endfor %}
         </div>
         <div class="col-sm-6">
-            <h6>Instructions</h6>
+            <div class="row">
+                <div class="col-sm-12 mb-3">
+                    <h6 class="d-inline p-2">Instructions</h6>
+                    {% if can_update %}
+                    <a class="btn btn-sm btn-outline-primary d-inline p-2" href="{% url 'recipes:recipe_id_update' recipe_dto.id %}?instructions=y"
+                       data-bs-toggle="tooltip" data-bs-placement="top"
+                       data-bs-title="Edit instructions"
+                       id="id__edit-recipe-instructions">
+                        <i class="fa-solid fa-pen"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
             {% for instruction in recipe_dto.instructions %}
             <div class="row">
-                <div class="col-sm-1"><span>{{ forloop.counter }}.</span></div>
-                <div class="col-sm-11"><span>{{ instruction.text }}</span></div>
+                {% lookup_value recipe_dto.instruction_alts forloop.counter0 as is_alt %}
+                <div class="col-sm-1">
+                    {% if not is_alt %}
+                        <span>{{ instruction.index }}.</span>
+                    {% endif %}
+                </div>
+                <div class="col-sm-11">
+                    <span>
+                        {{ instruction.text }}
+                        {% if not forloop.last %}
+                            {% lookup_value recipe_dto.instruction_alts forloop.counter as is_alt %}
+                            {% if is_alt %}
+                                <em><strong>, or</strong></em>
+                            {% endif %}
+                        {% endif %}
+                    </span>
+                </div>
             </div>
             {% endfor %}
         </div>
