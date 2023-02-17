@@ -20,7 +20,6 @@ class Migration(migrations.Migration):
             field=models.PositiveSmallIntegerField(default=1, validators=[
                 django.core.validators.MinValueValidator(1),
                 django.core.validators.MaxValueValidator(32767)
-            ],
-            verbose_name='index in instruction list'),
+            ], verbose_name='index in instruction list'),
         ),
     ]

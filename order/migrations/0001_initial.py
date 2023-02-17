@@ -16,6 +16,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('subscription', '0004_remove_usersubscription_is_active_and_more'),
+        ('recipes', '0011_alter_instruction_options_instruction_index'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -37,6 +38,18 @@ class Migration(migrations.Migration):
                      blank=True, null=True,
                      on_delete=django.db.models.deletion.SET_NULL,
                      to='subscription.subscription')),
+                ('recipe', models.ForeignKey(
+                    blank=True, null=True,
+                    on_delete=django.db.models.deletion.SET_NULL,
+                    to='recipes.recipe')),
+                ('base_currency', models.CharField(
+                    default='EUR', max_length=3,
+                    verbose_name='base currency')),
+                ('unit_price', models.DecimalField(
+                    decimal_places=2, default=Decimal('0'), max_digits=19,
+                    verbose_name='unit price')),
+                ('description', models.CharField(default='', max_length=150,
+                                                 verbose_name='description')),
             ],
             options={
                 'ordering': ['type'],
@@ -95,14 +108,21 @@ class Migration(migrations.Migration):
             migrations.RunSQL(
                 sql=[
                     ("INSERT INTO order_orderproduct "
-                     "(type, sku, subscription_id) "
-                     "VALUES (%s, %s, %s);", [typ, sku, sub_id])
+                     "(type, sku, subscription_id, description, unit_price, "
+                     "base_currency) VALUES (%s, %s, %s, %s, %s, %s);", [
+                        ProductType.SUBSCRIPTION.choice, sku, sub_id, desc,
+                        price, ccy
+                     ])
                 ],
-                reverse_sql=[]
-            ) for typ, sku, sub_id in [
-                (ProductType.SUBSCRIPTION.choice,
-                 generate_sku(ProductType.SUBSCRIPTION, subscription=sub),
-                 sub.id) for sub in list(Subscription.objects.all())
+                reverse_sql=[
+                    ("DELETE FROM order_orderproduct WHERE "
+                     "subscription_id=%s;", [sub_id])
+                ]
+            ) for sku, sub_id, desc, price, ccy in [
+                (generate_sku(ProductType.SUBSCRIPTION, subscription=sub),
+                 sub.id, f"'{sub.name}' subscription", sub.amount,
+                 sub.base_currency
+                 ) for sub in list(Subscription.objects.all())
             ]
         ])
 

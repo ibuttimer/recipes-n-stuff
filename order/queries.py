@@ -19,7 +19,12 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from typing import Union
+
+from django.shortcuts import get_object_or_404
+
 from order.models import OrderProduct, ProductType
+from recipes.models import Recipe
 from subscription.models import Subscription
 
 
@@ -32,5 +37,22 @@ def get_subscription_product(subscription: Subscription) -> OrderProduct:
     order_prod = OrderProduct.objects.get(**{
         f'{OrderProduct.TYPE_FIELD}': ProductType.SUBSCRIPTION.choice,
         f'{OrderProduct.SUBSCRIPTION_FIELD}': subscription
+    })
+    return order_prod
+
+
+def get_ingredient_box_product(recipe: Union[Recipe, int]) -> OrderProduct:
+    """
+    Get the order product for `recipe`
+    :param recipe: recipe to search for or its id
+    :return: OrderProduct
+    """
+    if isinstance(recipe, int):
+        recipe = get_object_or_404(Recipe, **{
+            f'{Recipe.id_field()}': recipe
+        })
+    order_prod = OrderProduct.objects.get(**{
+        f'{OrderProduct.TYPE_FIELD}': ProductType.INGREDIENT_BOX.choice,
+        f'{OrderProduct.RECIPE_FIELD}': recipe
     })
     return order_prod

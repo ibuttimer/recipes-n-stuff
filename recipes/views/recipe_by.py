@@ -20,27 +20,36 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 from dataclasses import dataclass
-from typing import Union, Tuple
+from http import HTTPStatus
+from typing import Union, Tuple, TypeVar
 
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import BadRequest
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views import View
+from django.views.decorators.http import require_http_methods
 
+from checkout.basket import add_ingredient_box_to_basket
 from utils.content_list_mixin import get_query_args
 from .dto import RecipeDto
-from .recipe_queries import get_recipe, get_recipe_ingredients_list
+from .recipe_queries import (
+    get_recipe, get_recipe_ingredients_list, get_recipe_box_product
+)
 from ..constants import (
     THIS_APP, INGREDIENTS_CTX, NEW_INGREDIENT_FORM_CTX,
     RECIPE_ID_INGREDIENT_NEW_ROUTE_NAME, RECIPE_ID_UPDATE_ROUTE_NAME,
     REFRESH_URL_CTX, NEW_URL_CTX, INGREDIENTS_QUERY, INSTRUCTIONS_QUERY,
     INSTRUCTIONS_CTX, NEW_INSTRUCTION_FORM_CTX,
-    RECIPE_ID_INSTRUCTION_NEW_ROUTE_NAME
+    RECIPE_ID_INSTRUCTION_NEW_ROUTE_NAME, COUNT_OPTIONS_CTX,
+    SELECTED_COUNT_CTX, CUSTOM_COUNT_CTX, CCY_SYMBOL_CTX, UNIT_PRICE_CTX,
+    QUANTITY_FIELD, NEXT_QUERY
 )
 from utils import (
     Crud, app_template_path, reverse_q,
-    namespaced_url, PAGE_HEADING_CTX, TITLE_CTX, QueryOption
+    namespaced_url, PAGE_HEADING_CTX, TITLE_CTX, QueryOption, PATCH,
+    redirect_payload
 )
 from .utils import recipe_permission_check
 from ..constants import RECIPE_ID_ROUTE_NAME, RECIPE_DTO_CTX
@@ -55,6 +64,16 @@ UPDATE_QUERY_ARGS = [
     QueryOption.of_no_cls_dflt(INGREDIENTS_QUERY),
     QueryOption.of_no_cls_dflt(INSTRUCTIONS_QUERY),
 ]
+
+MAX_PRESET_BOX_COUNT = 10
+CUSTOM_BOX_COUNT = MAX_PRESET_BOX_COUNT + 1
+BOX_COUNT_OPTIONS = [
+    (cnt, 'Count' if cnt == 0 else 'Custom'
+        if cnt == CUSTOM_BOX_COUNT else f'{cnt}')
+    for cnt in range(CUSTOM_BOX_COUNT + 1)
+]
+
+TypeRedirectNext = TypeVar("TypeRedirectNext", bound="RedirectNext")
 
 
 class RecipeDetail(LoginRequiredMixin, View):
@@ -76,11 +95,18 @@ class RecipeDetail(LoginRequiredMixin, View):
 
         recipe_dto = RecipeDto.from_id(pk)
 
+        box_product, currency = get_recipe_box_product(pk)
+
         return render(
             request, app_template_path(THIS_APP, 'recipe_view.html'),
             context={
                 TITLE_CTX: recipe_dto.name,
-                RECIPE_DTO_CTX: recipe_dto
+                RECIPE_DTO_CTX: recipe_dto,
+                COUNT_OPTIONS_CTX: BOX_COUNT_OPTIONS,
+                SELECTED_COUNT_CTX: 0,
+                CUSTOM_COUNT_CTX: CUSTOM_BOX_COUNT,
+                CCY_SYMBOL_CTX: currency.symbol,
+                UNIT_PRICE_CTX: box_product.unit_price,
             }
         )
 
@@ -219,7 +245,7 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
                 field_name = field
                 break
         else:
-            raise BadRequest(f'Malformed request; query not specified')
+            raise BadRequest('Malformed request; query not specified')
 
         if field_name == Recipe.INGREDIENTS_FIELD:
             template, context = self.render_update_ingredients(request, pk)
@@ -273,7 +299,6 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
 
         return app_template_path(THIS_APP, 'ingredients_form.html'), context
 
-
     @staticmethod
     def render_update_instructions(
             request: HttpRequest, recipe: Union[int, Recipe],
@@ -319,88 +344,6 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
 
         return app_template_path(THIS_APP, 'instructions_form.html'), context
 
-    # def post(self, request: HttpRequest, pk: int,
-    #          *args, **kwargs) -> HttpResponse:
-    #     """
-    #     POST method to update Recipe
-    #     :param request: http request
-    #     :param pk: id of address
-    #     :param args: additional arbitrary arguments
-    #     :param kwargs: additional keyword arguments
-    #     :return: http response
-    #     """
-    #     subscription_permission_check(request, Crud.UPDATE)
-    #
-    #     subscription, query_param = get_subscription(pk)
-    #
-    #     form = RecipeForm(data=request.POST, instance=subscription)
-    #
-    #     if form.is_valid():
-    #         # update object
-    #         # django autocommits changes
-    #         # https://docs.djangoproject.com/en/4.1/topics/db/transactions/#autocommit
-    #         form.save()
-    #
-    #         redirect_to = reverse_q(
-    #             namespaced_url(THIS_APP, SUBSCRIPTIONS_ROUTE_NAME)
-    #         )
-    #         template_path, context = None, None
-    #     else:
-    #         redirect_to = None
-    #         template_path, context = self.render_info(form)
-    #
-    #     return redirect_on_success_or_render(
-    #         request, redirect_to is not None, redirect_to=redirect_to,
-    #         template_path=template_path, context=context)
-
-    # def render_info(self, form: RecipeForm) -> tuple[
-    #         str, dict[str, Recipe | list[str] | RecipeForm | bool]
-    # ]:
-    #     """
-    #     Get info to render a subscription entry
-    #     :param form: form to use
-    #     :return: tuple of template path and context
-    #     """
-    #     return for_subscription_form_render(
-    #         TITLE_UPDATE, Crud.UPDATE, **{
-    #             SUBMIT_URL_CTX: self.url(form.instance.pk),
-    #             SUBSCRIPTION_FORM_CTX: RecipeCreate.init_form(form)
-    #         })
-    #
-    # def delete(self, request: HttpRequest, pk: int,
-    #            *args, **kwargs) -> HttpResponse:
-    #     """
-    #     DELETE method to delete Recipe
-    #     :param request: http request
-    #     :param pk: id of address
-    #     :param args: additional arbitrary arguments
-    #     :param kwargs: additional keyword arguments
-    #     :return: http response
-    #     """
-    #     subscription_permission_check(request, Crud.UPDATE)
-    #
-    #     address, _ = get_subscription(pk)
-    #
-    #     # TODO refactor delete modals to single template
-    #
-    #     status = HTTPStatus.OK
-    #     # delete address
-    #     count, _ = address.delete()
-    #     payload = replace_inner_html_payload(
-    #         "#id--subscription-deleted-modal-body",
-    #         render_to_string(
-    #             app_template_path(
-    #                 THIS_APP, "snippet", "subscription_delete.html"),
-    #             context={
-    #                 STATUS_CTX: count > 0
-    #             },
-    #             request=request)
-    #     )
-    #     if count == 0:
-    #         status = HTTPStatus.BAD_REQUEST
-    #
-    #     return JsonResponse(payload, status=status)
-
     @staticmethod
     def url(pk: int, query: str) -> str:
         """
@@ -415,3 +358,32 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
                 query: 'y'
             }
         )
+
+
+@login_required
+@require_http_methods([PATCH])
+def add_recipe_to_basket(request: HttpRequest, pk: int) -> HttpResponse:
+    """
+    View function to add an ingredient box to the basket
+    :param request: http request
+    :param pk: id of recipe
+    :return: response
+    """
+    recipe_permission_check(request, Crud.READ)
+
+    recipe, _ = get_recipe(pk)
+
+    redirect = request.GET.get(NEXT_QUERY, None)
+
+    count = 1
+    if QUANTITY_FIELD in request.GET:
+        count = int(request.GET[QUANTITY_FIELD])
+
+    payload = add_ingredient_box_to_basket(request, recipe, count=count)
+    if redirect:
+        payload.update(redirect_payload(
+            redirect
+        ))
+
+    return JsonResponse(
+        payload, status=HTTPStatus.OK if payload else HTTPStatus.BAD_REQUEST)

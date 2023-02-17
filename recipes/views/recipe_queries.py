@@ -29,6 +29,8 @@ from decimal import Decimal, InvalidOperation
 from django.db.models import Q, QuerySet, Prefetch
 from django.shortcuts import get_object_or_404
 
+from checkout.models import Currency
+from order.models import OrderProduct
 from recipes.models import (
     Recipe, Ingredient, Instruction, RecipeIngredient
 )
@@ -38,7 +40,7 @@ from utils import (
     regex_matchers, regex_date_matchers, QuerySetParams,
     TERM_GROUP, KEY_TERM_GROUP, DATE_QUERY_GROUP, DATE_KEY_TERM_GROUP,
     DATE_QUERY_YR_GROUP, DATE_QUERY_MTH_GROUP,
-    DATE_QUERY_DAY_GROUP, USER_QUERY, YesNo, get_object_and_related_or_404
+    DATE_QUERY_DAY_GROUP, USER_QUERY, get_object_and_related_or_404
 )
 
 NON_DATE_QUERIES = [
@@ -267,7 +269,8 @@ def get_date_query(query_set_params: QuerySetParams,
 
 
 def _get_recipe_contents(
-        recipe_id: int, field: str) -> Optional[List[Ingredient | Instruction]]:
+        recipe_id: int,
+        field: str) -> Optional[List[Ingredient | Instruction]]:
     """
     Get the list of contents
     :param recipe_id: id of recipe
@@ -304,26 +307,6 @@ def get_recipe_instructions(recipe_id: int) -> Optional[List[Instruction]]:
     return _get_recipe_contents(recipe_id, Recipe.INSTRUCTIONS_FIELD)
 
 
-# def get_ingredient(ingredient_id: int) -> Optional[List[Ingredient | Instruction]]:
-#     """
-#     Get the list of contents
-#     :param ingredient_id: id of ingredient
-#     :return: list of contents or None if recipe not found
-#     """
-#     recipe = Recipe.objects.prefetch_related(
-#         field).get(**{
-#         f'{Recipe.id_field()}': recipe_id
-#     })
-#     if recipe:
-#         contents = recipe.ingredients if field == Recipe.INGREDIENTS_FIELD \
-#             else recipe.instructions if field == Recipe.INSTRUCTIONS_FIELD \
-#             else recipe.keywords if field == Recipe.KEYWORDS_FIELD else None
-#     else:
-#         contents = None
-#
-#     return list(contents.all()) if contents else None
-
-
 def get_recipe(
         pk: int, related: Optional[List[str]] = None) -> Tuple[Recipe, dict]:
     """
@@ -331,6 +314,7 @@ def get_recipe(
     :param pk: id of recipe
     :param related: list of related fields to prefetch; default None
     :return: tuple of object and query param
+    :raises Http404 if not found
     """
     query_param = {
         f'{Recipe.id_field()}': pk
@@ -394,3 +378,19 @@ def get_recipe_instruction(pk: int) -> Tuple[Instruction, dict]:
     }
     entity = get_object_or_404(Instruction, **query_param)
     return entity, query_param
+
+
+def get_recipe_box_product(pk: int) -> Tuple[OrderProduct, Currency]:
+    """
+    Get the ingredient box product for a recipe
+    :param pk: id of recipe
+    :return: tuple of order product and base currency
+    """
+    query_param = {
+        f'{OrderProduct.RECIPE_FIELD}': pk
+    }
+    entity = get_object_or_404(OrderProduct, **query_param)
+    currency = Currency.objects.get(**{
+        f'{Currency.CURRENCY_CODE_FIELD}': entity.base_currency
+    })
+    return entity, currency

@@ -45,6 +45,10 @@ html {
     width: calc(var(--std-btn-width) * 2);
 }
 
+.span__basket-items-count {
+    font-size: 0.4em;
+}
+
 /* bootstrap xxl breakpoint, 1400px wide or less */
 @media screen and (max-width: 1400px) {
 }

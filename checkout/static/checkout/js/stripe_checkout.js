@@ -142,8 +142,7 @@ const setItemUnitsChangeHandler = () => $(basketItemUnitsSelector).on('change', 
         // warn about invalid and reset to min
         $(`#${event.currentTarget.id}`).val("1");
 
-        const toast = new bootstrap.Toast(minUnitToast)
-        toast.show()
+        showInfoToast('Minimum unit count is 1.');
     } else {
         // update basket
         $.ajax({

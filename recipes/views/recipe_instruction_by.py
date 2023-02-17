@@ -149,13 +149,6 @@ class InstructionDetail(LoginRequiredMixin, View):
         :return: url
         """
         return RecipeDetailUpdate.url(pk, INSTRUCTIONS_QUERY)
-        #
-        # return reverse_q(
-        #     namespaced_url(THIS_APP, RECIPE_ID_UPDATE_ROUTE_NAME),
-        #     args=[pk], query_kwargs={
-        #
-        #     }
-        # )
 
 
 def check_instruction_ordering(recipe: Union[int, Recipe]):

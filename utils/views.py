@@ -32,8 +32,10 @@ from .enums import QueryArg
 from .url_path import app_template_path
 
 REDIRECT_CTX = "redirect"                   # redirect url
+REDIRECT_PAUSE_CTX = "pause"                # msec to wait before redirect
 REWRITES_PROP_CTX = 'rewrites'              # multiple html rewrites
 ELEMENT_SELECTOR_CTX = 'element_selector'   # element jquery selector
+TOOLTIPS_SELECTOR_CTX = 'tooltips_selector'     # tooltips jquery selector
 HTML_CTX = 'html'                           # html for rewrite
 INNER_HTML_CTX = 'inner_html'               # inner html for rewrite
 ENTITY_CTX = 'entity'                       # entity name
@@ -90,16 +92,20 @@ def resolve_req(
     return match
 
 
-def redirect_payload(url: str, extra: Optional[dict] = None) -> dict:
+def redirect_payload(url: str, pause: int = 0,
+                     extra: Optional[dict] = None) -> dict:
     """
     Generate payload for a redirect response.
     :param url: url to redirect to
+    :param pause: msec pause before redirect; default None
     :param extra: extra payload content; default None
     :return: response
     """
     payload = {
         REDIRECT_CTX: url
     }
+    if pause > 0:
+        payload[REDIRECT_PAUSE_CTX] = pause
     if isinstance(extra, dict):
         payload.update(extra)
 
@@ -107,11 +113,13 @@ def redirect_payload(url: str, extra: Optional[dict] = None) -> dict:
 
 
 def _html_payload(selector: str, html: str, key: str,
+                  tooltips_selector: Optional[str] = None,
                   extra: Optional[dict] = None) -> dict:
     """
     Generate payload for a replace html response.
     :param selector: element jquery selector
     :param html: replacement html
+    :param tooltips_selector: tooltips jquery selector; default None
     :param extra: extra payload content; default None
     :return: response
     """
@@ -119,6 +127,8 @@ def _html_payload(selector: str, html: str, key: str,
         ELEMENT_SELECTOR_CTX: selector,
         key: html
     }
+    if tooltips_selector:
+        payload[TOOLTIPS_SELECTOR_CTX] = tooltips_selector
     if isinstance(extra, dict):
         payload.update(extra)
 
@@ -126,27 +136,33 @@ def _html_payload(selector: str, html: str, key: str,
 
 
 def replace_html_payload(selector: str, html: str,
+                         tooltips_selector: Optional[str] = None,
                          extra: Optional[dict] = None) -> dict:
     """
     Generate payload for a replace html response.
     :param selector: element jquery selector
     :param html: replacement html
+    :param tooltips_selector: tooltips jquery selector; default None
     :param extra: extra payload content; default None
     :return: response
     """
-    return _html_payload(selector, html, HTML_CTX, extra=extra)
+    return _html_payload(selector, html, HTML_CTX,
+                         tooltips_selector=tooltips_selector, extra=extra)
 
 
 def replace_inner_html_payload(selector: str, html: str,
+                               tooltips_selector: Optional[str] = None,
                                extra: Optional[dict] = None) -> dict:
     """
     Generate payload for a replace inner html response.
     :param selector: element jquery selector
     :param html: replacement html
+    :param tooltips_selector: tooltips jquery selector; default None
     :param extra: extra payload content; default None
     :return: response
     """
-    return _html_payload(selector, html, INNER_HTML_CTX, extra=extra)
+    return _html_payload(selector, html, INNER_HTML_CTX,
+                         tooltips_selector=tooltips_selector, extra=extra)
 
 
 def rewrite_payload(*args, extra: Optional[dict] = None) -> dict:

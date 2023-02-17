@@ -104,9 +104,12 @@ def permission_name(
     perm = f'{app_label}.' if app_label else ''
     if not isinstance(model, str):
         model = model._meta.model_name
-    permission_code = f'{perm_op.value}_{model}' \
-        if isinstance(perm_op, Crud) else perm_op
-    return f'{perm}{permission_code}'
+    if isinstance(perm_op, Crud):
+        perm_val = perm_op.value[0] if isinstance(perm_op.value, tuple) \
+            else perm_op.value
+    else:
+        perm_val = perm_op
+    return f'{perm}{perm_val}_{model}'
 
 
 def permission_check(

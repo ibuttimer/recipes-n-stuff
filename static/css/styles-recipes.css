@@ -12,6 +12,14 @@
     opacity: 0.5;
 }
 
+.select__num-boxes {
+    width: 100px;
+}
+
+.a__add_to_basket_menu:hover {
+    background-color: var(--bs-primary);
+}
+
 .a__recipe-card {
     text-decoration: none;
     color: var(--bs-card-color);

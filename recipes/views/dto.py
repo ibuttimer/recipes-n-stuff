@@ -21,17 +21,20 @@
 #  DEALINGS IN THE SOFTWARE.
 from dataclasses import dataclass, field
 from datetime import timedelta
-from typing import List, Union
+from typing import List, Union, TypeVar
 
 from django.utils.text import slugify
 
-from base.dto import BaseDto
+from base.dto import BaseDto, ImagePool
 from recipes.views.recipe_queries import (
     get_recipe_instructions, get_recipe
 )
 from recipes.models import (
     Recipe, RecipeIngredient, Instruction
 )
+from recipes.images import recipe_main_image
+
+TypeRecipeDto = TypeVar("TypeRecipeDto", bound="RecipeDto")
 
 
 @dataclass
@@ -164,12 +167,12 @@ class RecipeDto(BaseDto):
         return order
 
     @property
-    def main_image(self) -> str:
+    def main_image(self) -> ImagePool:
         """
-        The url for the main image
-        :return: url str or None
+        The main image pool
+        :return: ImagePool
         """
-        return self.images[0].url if len(self.images) > 0 else None
+        return recipe_main_image(self.images)
 
     @property
     def food_dot_com_url(self) -> str:

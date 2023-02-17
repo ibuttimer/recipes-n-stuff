@@ -41,4 +41,4 @@ def stock_image() -> str:
     Return the name of a random stock image
     :return: str image file name
     """
-    return choice(STOCK_IMAGES)
+    return f'img/{choice(STOCK_IMAGES)}'

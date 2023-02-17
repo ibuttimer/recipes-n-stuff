@@ -26,6 +26,7 @@
     {% endblock extra_css %}
 
     {% block extra_js_head %}
+        {% include "snippet/jquery.html" %}
     {% endblock extra_js_head %}
 
     <script src="{% static 'js/script.js' %}"></script>
@@ -98,6 +99,11 @@
                             <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
                             <button class="btn btn-outline-success" type="submit">Search</button>
                         </form>
+                        <span class="navbar-nav ms-auto mb-2 ms-2 me-2 mb-lg-0 d-flex align-items-center" id="id__navbar-basket-container">
+                            {# --- navbar_basket.html template variable defines for includes --- #}
+                            {# navbar basket template expects: 'basket_item_cnt' as number of basket items #}
+                            {% include 'base/snippet/navbar_basket.html' %}
+                        </span>
                         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                             {% if user.is_authenticated %}
                             <li class="nav-item dropdown">
@@ -216,6 +222,9 @@
         </ul>
     </footer>
 
+    {% include 'base/snippet/toast_info.html' %}
+    {% include 'base/snippet/toast_error.html' %}
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous"></script>
@@ -227,6 +236,7 @@
     <script src="{% static 'js/base.js' %}"></script>
     <script>
         const csrfToken = () => '{{ csrf_token }}';
+        const NAVBAR_BASKET_TOOLTIP_SELECTOR = '#id__navbar-basket-tooltip';
     </script>
 </body>
 </html>

@@ -28,7 +28,8 @@ from utils import ModelMixin
 
 from .constants import (
     CURRENCY_CODE_MAX_LEN, CURRENCY_CODE_FIELD, NUMERIC_CODE_FIELD,
-    DIGITS_CODE_FIELD, NAME_FIELD, TIMESTAMP_FIELD, BASE_FIELD, RATES_FIELD
+    DIGITS_CODE_FIELD, NAME_FIELD, TIMESTAMP_FIELD, BASE_FIELD, RATES_FIELD,
+    SYMBOL_FIELD
 )
 
 
@@ -41,9 +42,11 @@ class Currency(ModelMixin, models.Model):
     NUMERIC_CODE_FIELD = NUMERIC_CODE_FIELD
     DIGITS_CODE_FIELD = DIGITS_CODE_FIELD
     NAME_FIELD = NAME_FIELD
+    SYMBOL_FIELD = SYMBOL_FIELD
 
     CURRENCY_ATTRIB_CODE_MAX_LEN: int = CURRENCY_CODE_MAX_LEN
     CURRENCY_ATTRIB_NAME_MAX_LEN: int = 100
+    CURRENCY_ATTRIB_SYMBOL_MAX_LEN: int = 10
 
     code = models.CharField(
         _('currency code'), max_length=CURRENCY_ATTRIB_CODE_MAX_LEN,
@@ -58,6 +61,10 @@ class Currency(ModelMixin, models.Model):
     name = models.CharField(
         _('currency name'), max_length=CURRENCY_ATTRIB_NAME_MAX_LEN,
         blank=False)
+
+    symbol = models.CharField(
+        _('currency symbol'), max_length=CURRENCY_ATTRIB_SYMBOL_MAX_LEN,
+        blank=False, default='¤')
 
     @dataclass
     class Meta:

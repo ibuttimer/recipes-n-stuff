@@ -114,7 +114,7 @@ class QuerySetParams:
     def is_empty(self):
         """ Check if empty i.e. no query terms """
         return self.and_count + self.or_count + self.qs_func_count \
-            + self.annotations_count() + self.all_inclusive == 0
+            + self.annotations_count + self.all_inclusive == 0
 
     @property
     def is_free_search(self):

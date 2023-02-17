@@ -50,7 +50,6 @@ from utils import (
     READ_ONLY_CTX, AMOUNT_QUERY_ARGS, REPEAT_SEARCH_TERM_CTX, query_search_term
 )
 from utils.search import SEARCH_QUERY
-from .dto import RecipeDto
 # from opinions.views.opinion_queries import (
 #     FILTERS_ORDER, ALWAYS_FILTERS, get_lookup
 # )
@@ -62,16 +61,16 @@ from .dto import RecipeDto
 #     REVIEW_OPINION_LIST_QUERY_ARGS, CATEGORY_FEED_QUERY_ARGS
 # )
 
-from .utils import (
-    recipe_permission_check
-)
-from .recipe_queries import (
-    get_lookup, FILTERS_ORDER, ALWAYS_FILTERS
-)
 from recipes.constants import (
     THIS_APP, RECIPE_LIST_CTX
 )
-from recipes.views.dto import RecipeDto
+from recipes.views.utils import (
+    recipe_permission_check
+)
+from recipes.views.recipe_queries import (
+    get_lookup, FILTERS_ORDER, ALWAYS_FILTERS
+)
+from .dto import RecipeDto
 from ..enums import RecipeSortOrder, RecipeQueryType
 from ..models import Recipe
 

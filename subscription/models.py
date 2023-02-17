@@ -31,7 +31,10 @@ from django.utils.translation import gettext_lazy as _
 
 from dateutil.relativedelta import *
 
-from recipesnstuff.settings import DEFAULT_CURRENCY
+from checkout.constants import CURRENCY_CODE_MAX_LEN
+from recipesnstuff.settings import (
+    DEFAULT_CURRENCY, PRICING_FACTOR, PRICING_PLACES
+)
 from user.models import User
 from utils import ModelMixin, NameChoiceMixin
 
@@ -161,7 +164,7 @@ class SubscriptionFeature(ModelMixin, models.Model):
 
     FEATURE_ATTRIB_FEAT_TYPE_MAX_LEN: int = 3
     FEATURE_ATTRIB_DESCRIPTION_MAX_LEN: int = 250
-    FEATURE_ATTRIB_CURRENCY_CODE_MAX_LEN: int = 3
+    FEATURE_ATTRIB_CURRENCY_CODE_MAX_LEN: int = CURRENCY_CODE_MAX_LEN
 
     FEATURE_AMOUNT_TEMPLATE_MARK = f'{{{AMOUNT_FIELD}}}'
     FEATURE_COUNT_TEMPLATE_MARK = f'{{{COUNT_FIELD}}}'
@@ -177,8 +180,8 @@ class SubscriptionFeature(ModelMixin, models.Model):
     )
 
     amount = models.DecimalField(
-        _('amount'), default=Decimal.from_float(0), decimal_places=2,
-        max_digits=19)
+        _('amount'), default=Decimal.from_float(0),
+        decimal_places=PRICING_FACTOR, max_digits=PRICING_PLACES)
 
     base_currency = models.CharField(
         _('base currency'),
@@ -252,8 +255,7 @@ class Subscription(ModelMixin, models.Model):
     SUBSCRIPTION_ATTRIB_FREQ_TYPE_MAX_LEN: int = 2
     SUBSCRIPTION_ATTRIB_NAME_MAX_LEN: int = 50
     SUBSCRIPTION_ATTRIB_DESCRIPTION_MAX_LEN: int = 250
-    SUBSCRIPTION_ATTRIB_CURRENCY_CODE_MAX_LEN: int = \
-        SubscriptionFeature.FEATURE_ATTRIB_CURRENCY_CODE_MAX_LEN
+    SUBSCRIPTION_ATTRIB_CURRENCY_CODE_MAX_LEN: int = CURRENCY_CODE_MAX_LEN
     SUBSCRIPTION_ATTRIB_CALL_TO_PICK_MAX_LEN: int = 50
 
     SUBSCRIPTION_FREQUENCY_DEFAULT: int = 1
@@ -272,8 +274,8 @@ class Subscription(ModelMixin, models.Model):
         _('frequency'), default=SUBSCRIPTION_FREQUENCY_DEFAULT)
 
     amount = models.DecimalField(
-        _('amount'), default=Decimal.from_float(0), decimal_places=2,
-        max_digits=19)
+        _('amount'), default=Decimal.from_float(0),
+        decimal_places=PRICING_FACTOR, max_digits=PRICING_PLACES)
 
     base_currency = models.CharField(
         _('base currency'),

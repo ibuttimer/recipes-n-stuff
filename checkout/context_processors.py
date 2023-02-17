@@ -19,29 +19,18 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from .recipe_list import RecipeList
-from .recipe_by import RecipeDetail, RecipeDetailUpdate, add_recipe_to_basket
-from .recipe_ingredient_by import RecipeIngredientDetail
-from .recipe_ingredient_create import create_recipe_ingredient
-from .recipe_instruction_by import InstructionDetail
-from .recipe_instruction_create import create_recipe_instruction
-from .dto import RecipeDto
+#
+
+from django.http import HttpRequest
+
+from .basket import get_session_basket, navbar_basket_context
 
 
-__all__ = [
-    'RecipeList',
-
-    'RecipeDetail',
-    'RecipeDetailUpdate',
-    'add_recipe_to_basket',
-
-    'RecipeIngredientDetail',
-
-    'create_recipe_ingredient',
-
-    'InstructionDetail',
-
-    'create_recipe_instruction',
-
-    'RecipeDto',
-]
+def checkout_context(request: HttpRequest) -> dict:
+    """
+    Add base-specific context entries
+    :param request: http request
+    :return: dictionary to add to template context
+    """
+    basket, _ = get_session_basket(request)
+    return navbar_basket_context(basket)

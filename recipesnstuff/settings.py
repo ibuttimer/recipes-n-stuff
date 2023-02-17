@@ -216,8 +216,8 @@ TEMPLATES = [
 
                 # app-specific context processors
                 f'{MAIN_APP}.context_processors.footer_context',
-                # f'{MAIN_APP}.context_processors.test_context',
                 f'{BASE_APP_NAME}.context_processors.base_context',
+                f'{CHECKOUT_APP_NAME}.context_processors.checkout_context',
                 f'{USER_APP_NAME}.context_processors.user_context',
                 f'{SUBSCRIPTION_APP_NAME}.context_processors'
                 f'.subscription_context',
@@ -451,6 +451,9 @@ STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='')
 DEFAULT_CURRENCY = 'eur'
 # number of decimal places to use during financial calculations
 FINANCIAL_FACTOR = 6
+# number of decimal places and digits to use for prices
+PRICING_FACTOR = 2
+PRICING_PLACES = 19
 
 # Exchange Rates Data API
 EXCHANGERATES_DATA_KEY = env('EXCHANGERATES_DATA_KEY', default='')

@@ -26,6 +26,8 @@ class Migration(migrations.Migration):
                                      verbose_name='number of digits')),
                 ('name', models.CharField(max_length=100,
                                           verbose_name='currency name')),
+                ('symbol', models.CharField(default='¤', max_length=10,
+                                            verbose_name='currency symbol')),
             ],
             bases=(utils.models.ModelMixin, models.Model),
         ),

@@ -30,7 +30,9 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_http_methods
 
+from base.views import info_toast_payload, InfoModalTemplate
 from order.persist import save_order
+from recipesnstuff import HOME_ROUTE_NAME
 from recipesnstuff.settings import (
     STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY
 )
@@ -39,9 +41,9 @@ from subscription.middleware import subscription_payment_completed
 from utils import (
     GET, POST, PATCH, namespaced_url, app_template_path,
     replace_inner_html_payload, TITLE_CTX, PAGE_HEADING_CTX, DELETE,
-    rewrite_payload, entity_delete_result_payload
+    rewrite_payload, entity_delete_result_payload, reverse_q, redirect_payload
 )
-from .basket import Basket
+from .basket import Basket, navbar_basket_html
 
 from .constants import (
     THIS_APP, STRIPE_PUBLISHABLE_KEY_CTX, STRIPE_RETURN_URL_CTX,
@@ -154,11 +156,13 @@ def update_basket(request: HttpRequest) -> HttpResponse:
     redraw_basket = False
     redraw_msg = False
     if request.method == PATCH and BASKET_CCY_QUERY in request.GET:
+        # change currency
         new_ccy = request.GET[BASKET_CCY_QUERY]
         if is_valid_code(new_ccy):
             basket.currency = new_ccy
             redraw_basket = True
     elif ITEM_QUERY in request.GET:
+        # add/remove item from basket
         item = int(request.GET[ITEM_QUERY])
         if request.method == DELETE:
             # remove item
@@ -174,20 +178,56 @@ def update_basket(request: HttpRequest) -> HttpResponse:
 
     if redraw_basket or redraw_msg:
         # need to update serialised basket in request
-        set_basket(request, basket)
+        basket.add_to_request(request)
 
         if redraw_basket:
-            redraw_basket = replace_inner_html_payload(
-                "#id__basket-div", render_to_string(
-                    app_template_path(
-                        THIS_APP, "snippet", "basket.html"),
-                    context=basket_context(basket))
-            )
+            redraw_basket = redraw_basket_payload(basket)
         payload = rewrite_payload(
             redraw_basket or None, redraw_msg or None
         )
     else:
         payload = {}
+
+    return JsonResponse(
+        payload, status=HTTPStatus.OK if payload else HTTPStatus.BAD_REQUEST)
+
+
+def redraw_basket_payload(basket: Basket) -> dict:
+    """
+    Generate basket redraw payload
+    :param basket: basket to redraw
+    :return: payload
+    """
+    return rewrite_payload(
+        # redraw on screen basket
+        replace_inner_html_payload(
+            "#id__basket-div", render_to_string(
+                app_template_path(
+                    THIS_APP, "snippet", "basket.html"),
+                context=basket_context(basket))
+        ),
+        # redraw navbar basket icon
+        navbar_basket_html(basket)
+    )
+
+
+@login_required
+@require_http_methods([DELETE])
+def clear_basket(request: HttpRequest) -> HttpResponse:
+    """
+    Clear the basket
+    :param request: http request
+    :return: response
+    """
+    basket = get_basket(request)
+
+    basket.close(request=request)
+
+    payload = redirect_payload(reverse_q(HOME_ROUTE_NAME), pause=2000)
+    payload.update(
+        info_toast_payload(InfoModalTemplate(app_template_path(
+            THIS_APP, "messages", "basket_cleared.html")))
+    )
 
     return JsonResponse(
         payload, status=HTTPStatus.OK if payload else HTTPStatus.BAD_REQUEST)
@@ -203,6 +243,8 @@ def payment_complete(request: HttpRequest) -> HttpResponse:
     """
     basket = get_basket(request)
     save_order(basket)
+
+    basket.close(request=request)
 
     subscription_payment_completed(request)
 

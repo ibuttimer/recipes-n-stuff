@@ -72,9 +72,10 @@ CURRENCY_CODE_COL = 'code'              # currency code column
 CURRENCY_NUMERIC_COL = 'numeric_code'   # currency numeric code column
 CURRENCY_DIGITS_COL = 'digits'          # currency num of digits column
 CURRENCY_NAME_COL = 'name'              # currency name column
+CURRENCY_SYMBOL_COL = 'symbol'          # currency symbol column
 CURRENCY_FIELDS = [
     CURRENCY_CODE_COL, CURRENCY_NUMERIC_COL, CURRENCY_DIGITS_COL,
-    CURRENCY_NAME_COL
+    CURRENCY_NAME_COL, CURRENCY_SYMBOL_COL
 ]
 
 # currency csv
@@ -85,9 +86,11 @@ CURRENCY_CODE = 0
 CURRENCY_NUMERIC_CODE = 1
 CURRENCY_DIGITS = 2
 CURRENCY_NAME = 3
-CURRENCY_NUM_COLS = 4
+CURRENCY_SYMBOL = 4
+CURRENCY_NUM_COLS = 5
 # char used to indicate not supported by Amex
 NO_AMEX = '*'
+GENERIC_CURRENCY_SYMBOL = '¤'
 
 
 DEFAULT_HOST = 'http://127.0.0.1:8000/'

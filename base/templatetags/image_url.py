@@ -1,6 +1,6 @@
 #  MIT License
 #
-#  Copyright (c) 2023 Ian Buttimer
+#  Copyright (c) 2022 Ian Buttimer
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to
@@ -19,29 +19,21 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from .recipe_list import RecipeList
-from .recipe_by import RecipeDetail, RecipeDetailUpdate, add_recipe_to_basket
-from .recipe_ingredient_by import RecipeIngredientDetail
-from .recipe_ingredient_create import create_recipe_ingredient
-from .recipe_instruction_by import InstructionDetail
-from .recipe_instruction_create import create_recipe_instruction
-from .dto import RecipeDto
+#
+from django import template
+from django.templatetags.static import static
+
+from base.dto import ImagePool
+
+register = template.Library()
+
+# https://docs.djangoproject.com/en/4.1/howto/custom-template-tags/#simple-tags
 
 
-__all__ = [
-    'RecipeList',
-
-    'RecipeDetail',
-    'RecipeDetailUpdate',
-    'add_recipe_to_basket',
-
-    'RecipeIngredientDetail',
-
-    'create_recipe_ingredient',
-
-    'InstructionDetail',
-
-    'create_recipe_instruction',
-
-    'RecipeDto',
-]
+@register.simple_tag
+def image_url(image: ImagePool) -> str:
+    url = None
+    image_tuple = image.get_image()
+    if image_tuple is not None:
+        url = static(image_tuple[0]) if image_tuple[1] else image_tuple[0]
+    return url

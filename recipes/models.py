@@ -28,6 +28,8 @@ import html
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+
+from base.dto import ImagePool
 from user.models import User
 from utils import ModelMixin
 
@@ -43,6 +45,7 @@ from .constants import (
     SUGAR_CONTENT_FIELD, PROTEIN_CONTENT_FIELD, INGREDIENT_FIELD,
     QUANTITY_FIELD, INDEX_FIELD
 )
+from recipes.images import recipe_main_image
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
 TypeMeasure = TypeVar("TypeMeasure", bound="Measure")
@@ -416,6 +419,14 @@ class Recipe(ModelMixin, models.Model):
             Recipe.CARBOHYDRATE_CONTENT_FIELD, Recipe.FIBRE_CONTENT_FIELD,
             Recipe.SUGAR_CONTENT_FIELD, Recipe.PROTEIN_CONTENT_FIELD
         ]
+
+    @property
+    def main_image(self) -> ImagePool:
+        """
+        The url for the main image
+        :return: url str or None
+        """
+        return recipe_main_image(list(self.image_set.all()))
 
     def __str__(self):
         return f'{self.name}'

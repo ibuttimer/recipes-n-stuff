@@ -1,0 +1,42 @@
+{% with toast_id="id__error-toast" toast_body_id="id__error-toast-body" %}
+<div class="toast-container position-absolute top-0 start-50 translate-middle-x p-3">
+    <div id="{{ toast_id }}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">
+                {# info modal title template expects: 'title' as modal title #}
+                {#                                    'title_class' as class for title text #}
+                {#                                    'modal_level' as modal level; one of 'danger', 'warn', 'info', 'question' or 'none' #}
+                {% with title='Error' title_class='' modal_level='warn' %}
+                    {% include 'base/snippet/info_title.html' %}
+                {% endwith %}
+            </strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="{{ toast_body_id }}">
+            {# replaced by display function #}
+        </div>
+    </div>
+</div>
+
+<script>
+    /**
+     * Display the information toast
+     * @param body - content to display
+     * @param onClose - on close event handler; default none
+     */
+    function showErrorToast(body, onClose = undefined) {
+
+        const toastBodyId = "{{ toast_body_id }}";
+        $(`#${toastBodyId}`).html(body);
+
+        const toastElement = document.getElementById('{{ toast_id }}');
+
+        if (onClose !== undefined) {
+            toastElement.addEventListener('hidden.bs.toast', onClose);
+        }
+
+        const toast = new bootstrap.Toast(toastElement)
+        toast.show()
+    }
+</script>
+{% endwith %}

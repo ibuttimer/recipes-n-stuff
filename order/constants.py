@@ -36,6 +36,9 @@ ORDER_NUM_FIELD = 'order_num'
 ITEMS_FIELD = 'items'
 TYPE_FIELD = 'type'
 SUBSCRIPTION_FIELD = 'subscription'
+RECIPE_FIELD = 'recipe'
+UNIT_PRICE_FIELD = 'unit_price'
 SKU_FIELD = 'sku'
+DESCRIPTION_FIELD = 'description'
 
 # context related
