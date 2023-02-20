@@ -62,3 +62,17 @@ def add_navbar_attr(context: dict, key: str, is_active: bool = False,
         active=is_active, disabled=disabled)
 
     return context
+
+
+def html_tag(tag_name: str, tag_content: str = '', **kwargs):
+    """
+    Generate a html tag
+    :param tag_name: tag name
+    :param tag_content: tag content; default ''
+    :param kwargs: tag attributes
+    :return: html tag text
+    """
+    attrib = ' '.join([
+        f'{key}="{val}"' for key, val in kwargs.items()
+    ])
+    return f'<{tag_name} {attrib}>{tag_content}</{tag_name}>'

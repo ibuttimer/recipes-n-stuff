@@ -116,6 +116,13 @@
                     </div>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#id__nutrition-info-modal">
+                        Nutritional information
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
     <div class="row">
@@ -187,6 +194,50 @@
                 </div>
             </div>
             {% endfor %}
+        </div>
+    </div>
+
+    <div id="id__nutrition-info-modal" class="modal fade" tabindex="-1" aria-labelledby="id__nutrition-info-modal-label" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="id__nutrition-info-modal-label">Nutritional information<strong><sup>**</sup></strong></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="id__nutrition-info-modal-body">
+                    <p><strong>Servings per recipe</strong>: {{ recipe_dto.servings }}</p>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th scope="col"><strong>Amt. per serving</strong></th>
+                                <th scope="col"><strong>% Daily Value<sup>*</sup></strong></th>
+                            </tr>
+                        </thead>
+                        <tbody class="table-group-divider">
+                            {% for nutri in recipe_dto.nutrition_list %}
+                            <tr>
+                                <td>{{ nutri.0 | safe }}</td>
+                                <td>{{ nutri.1 | safe }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row>">
+                    <div class="col-10 offset-1">
+                        <p><small>
+                            <strong><sup>*</sup></strong> The % Daily Value (DV) tells you how much a nutrient in a serving of food contributes to a daily diet.
+                            {{ recipe_dto.daily_values.calories }} calories a day is used for general nutrition advice.
+                        </small></p>
+                        <p><small><strong><sup>**</sup></strong> All data is indicative only, and should not be considered factual.</small></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="id__nutrition-info-modal-ok-btn" class="btn btn-outline-primary btn__text" type="button" data-bs-dismiss="modal">
+                        {% trans "OK" %}
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </article>

@@ -411,14 +411,20 @@ class Recipe(ModelMixin, models.Model):
         ]
 
     @classmethod
-    def numeric_fields(cls) -> list[str]:
+    def nutritional_fields(cls) -> list[str]:
         return [
-            Recipe.SERVINGS_FIELD, Recipe.CALORIES_FIELD,
-            Recipe.FAT_CONTENT_FIELD, Recipe.SATURATED_FAT_CONTENT_FIELD,
+            Recipe.CALORIES_FIELD, Recipe.FAT_CONTENT_FIELD,
+            Recipe.SATURATED_FAT_CONTENT_FIELD,
             Recipe.CHOLESTEROL_CONTENT_FIELD, Recipe.SODIUM_CONTENT_FIELD,
             Recipe.CARBOHYDRATE_CONTENT_FIELD, Recipe.FIBRE_CONTENT_FIELD,
             Recipe.SUGAR_CONTENT_FIELD, Recipe.PROTEIN_CONTENT_FIELD
         ]
+
+    @classmethod
+    def numeric_fields(cls) -> list[str]:
+        fields = cls.nutritional_fields()
+        fields.append(Recipe.SERVINGS_FIELD)
+        return fields
 
     @property
     def main_image(self) -> ImagePool:

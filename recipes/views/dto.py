@@ -22,6 +22,7 @@
 from dataclasses import dataclass, field
 from datetime import timedelta
 from typing import List, Union, TypeVar
+import re
 
 from django.utils.text import slugify
 
@@ -33,6 +34,7 @@ from recipes.models import (
     Recipe, RecipeIngredient, Instruction
 )
 from recipes.images import recipe_main_image
+from utils import html_tag
 
 TypeRecipeDto = TypeVar("TypeRecipeDto", bound="RecipeDto")
 
@@ -75,6 +77,54 @@ class InstructionDto(BaseDto):
 
 
 @dataclass
+class AverageRequirement:
+    """
+    Class representing average daily nutritional requirements
+    ** Note: field names match Recipe model's field names **
+    """
+    calories: int
+    fat_content: float
+    saturated_fat_content: float
+    cholesterol_content: float
+    sodium_content: float
+    carbohydrate_content: float
+    fibre_content: float
+    sugar_content: float
+    protein_content: float
+
+
+# Based on data from,
+# 'Daily Value on the New Nutrition and Supplement Facts Labels'
+# https://www.fda.gov/food/new-nutrition-facts-label/daily-value-new-nutrition-and-supplement-facts-labels
+# U.S. Food and Drug Administration, https://www.fda.gov/
+ADULT_DV = AverageRequirement(
+    calories=2000, fat_content=78, saturated_fat_content=20,
+    cholesterol_content=300, sodium_content=2300,
+    carbohydrate_content=275, fibre_content=28, sugar_content=50,
+    protein_content=50
+)
+
+NUTRI_FIELDS = {
+    Recipe.CALORIES_FIELD: f'{html_tag("strong", "Calories")}: <<calories>>',
+    Recipe.FAT_CONTENT_FIELD: 'Total Fat: <<fat_content>> g',
+    Recipe.SATURATED_FAT_CONTENT_FIELD:
+        'Saturated Fat: <<saturated_fat_content>> g',
+    Recipe.CHOLESTEROL_CONTENT_FIELD:
+        f'{html_tag("strong", "Cholesterol")}: <<cholesterol_content>> mg',
+    Recipe.SODIUM_CONTENT_FIELD:
+        f'{html_tag("strong", "Sodium")}: <<sodium_content>> mg',
+    Recipe.CARBOHYDRATE_CONTENT_FIELD:
+        f'{html_tag("strong", "Total Carbohydrate")}: '
+        f'<<carbohydrate_content>> g',
+    Recipe.FIBRE_CONTENT_FIELD: 'Dietary Fibre: <<fibre_content>> g',
+    Recipe.SUGAR_CONTENT_FIELD: 'Sugars: <<sugar_content>> g',
+    Recipe.PROTEIN_CONTENT_FIELD:
+        f'{html_tag("strong", "Protein")}: <<protein_content>> g'
+}
+NUTRI_REGEX = re.compile(r'<<.*>>', re.IGNORECASE)
+
+
+@dataclass
 class RecipeDto(BaseDto):
     """ Recipe data transfer object """
 
@@ -85,13 +135,15 @@ class RecipeDto(BaseDto):
     """ Instruction alternatives flags """
 
     @staticmethod
-    def from_model(recipe: Recipe, *args, all_attrib: bool = True):
+    def from_model(recipe: Recipe, *args, all_attrib: bool = True,
+                   nutri_text: bool = False):
         """
         Generate a DTO from the specified `recipe`
         :param recipe: model instance to populate DTO from
         :param args: list of Recipe.xxx_FIELD names to populate in addition
                     to basic fields
         :param all_attrib: populate all attributes flag; default True
+        :param nutri_text: generate nutritional info texts; default False
         :return: DTO instance
         """
         dto = BaseDto.from_model_to_obj(recipe, RecipeDto())
@@ -114,20 +166,35 @@ class RecipeDto(BaseDto):
         if all_attrib or Recipe.AUTHOR_FIELD in args:
             dto.author = recipe.author
 
+        if nutri_text:
+            dto.daily_values = ADULT_DV
+            dto.nutrition_list = []
+            for fld in Recipe.nutritional_fields():
+                nutri = round(getattr(dto, fld))
+                nutri_text = re.sub(NUTRI_REGEX, str(nutri),
+                                    NUTRI_FIELDS[fld])
+                percent = round(nutri * 100 / getattr(ADULT_DV, fld))
+                dto.nutrition_list.append(
+                    (nutri_text, f'<strong>{percent}%</strong>')
+                )
+
         return dto
 
     @staticmethod
-    def from_id(pk: int, *args, all_attrib: bool = True):
+    def from_id(pk: int, *args, all_attrib: bool = True,
+                nutri_text: bool = False):
         """
         Generate a DTO from the specified recipe `id`
         :param pk: recipe id to populate DTO from
         :param args: list of Recipe.xxx_FIELD names to populate in addition
                     to basic fields
         :param all_attrib: populate all attributes flag; default True
+        :param nutri_text: generate nutritional info texts; default False
         :return: DTO instance
         """
         recipe, _ = get_recipe(pk)
-        return RecipeDto.from_model(recipe, *args, all_attrib=all_attrib)
+        return RecipeDto.from_model(recipe, *args, all_attrib=all_attrib,
+                                    nutri_text=nutri_text)
 
     @property
     def total_time(self) -> timedelta:

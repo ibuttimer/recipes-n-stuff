@@ -93,7 +93,7 @@ class RecipeDetail(LoginRequiredMixin, View):
         """
         recipe_permission_check(request, Crud.READ)
 
-        recipe_dto = RecipeDto.from_id(pk)
+        recipe_dto = RecipeDto.from_id(pk, nutri_text=True)
 
         box_product, currency = get_recipe_box_product(pk)
 
