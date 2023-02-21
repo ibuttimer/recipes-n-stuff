@@ -379,4 +379,4 @@ class UserSubscription(ModelMixin, models.Model):
 
     def __str__(self):
         return f'{self.user} {self.subscription} {self.start_date} ' \
-               f'{self.end_date} {self.is_active}'
+               f'{self.end_date}'

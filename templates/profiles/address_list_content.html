@@ -12,22 +12,30 @@
     <var id="var--repeat-search-term" hidden>{{ repeat_search_term }}</var>
 
     <div class="row">
-        <div class="col-12 mt-2">
-            <div class="row d-flex align-items-center">
-                {% for address_dto in address_list %}
+        {% for address_dto in address_list %}
 
-                    {# address dto template expects: 'address_dto' as AddressDto #}
-                    {#                               'identifier' as individual identifier #}
-                    {% with identifier=address_dto.id %}
-                        {% include "profiles/address_dto.html" %}
-                    {% endwith %}
-            {% if forloop.counter|divisibleby:2 %}
-            </div>
-            <div class="row d-flex align-items-center">
-                    {% endif %}
-            {% endfor %}
-            </div>
-        </div>
+            {# address dto template expects: 'address_dto' as AddressDto #}
+            {#                               'identifier' as individual identifier #}
+            {% with identifier=address_dto.id %}
+                {% include "profiles/address_dto.html" %}
+            {% endwith %}
+
+            {# --- card-row-separator.html template variable defines for includes --- #}
+            {# card row separator template expects: 'margin_b' as bottom margin class #}
+            {#                                      'row1' as row breakpoints for 1 cards per row #}
+            {#                                      'hide1' as hide above flag for 1 cards per row #}
+            {#                                      'row2' as row breakpoints for 2 cards per row #}
+            {#                                      'hide2' as hide above flag for 2 cards per row #}
+            {#                                      'row3' as row breakpoints for 3 cards per row #}
+            {#                                      'hide3' as hide above flag for 3 cards per row #}
+            {#                                      'row4' as row breakpoints for 4 cards per row #}
+            {#                                      'hide4' as hide above flag for 4 cards per row #}
+            {# margin_b and row/hide settings to match card from address_dto.html #}
+            {# https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing #}
+            {% with margin_b='mb-4' row1='xs-sm' hide1='y' row2='md-lg' hide2='y' row3='xl' hide3='' row4='' hide4='' %}
+                {% include 'snippet/card-row-separator.html' %}
+            {% endwith %}
+        {% endfor %}
     </div>
 
     {# per page and page selection #}

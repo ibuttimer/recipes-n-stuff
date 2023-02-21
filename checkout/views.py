@@ -36,6 +36,7 @@ from recipesnstuff import HOME_ROUTE_NAME
 from recipesnstuff.settings import (
     STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY
 )
+from subscription.constants import USER_SUB_ID_SES
 from subscription.forms import get_currency_choices
 from subscription.middleware import subscription_payment_completed
 from utils import (
@@ -246,7 +247,8 @@ def payment_complete(request: HttpRequest) -> HttpResponse:
 
     basket.close(request=request)
 
-    subscription_payment_completed(request)
+    if USER_SUB_ID_SES in request.session:
+        subscription_payment_completed(request)
 
     return render(request, app_template_path(
         THIS_APP, 'payment_complete.html'

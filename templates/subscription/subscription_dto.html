@@ -8,6 +8,8 @@
 {% load attr_append %}
 {% load countries %}
 
+{# below lg: 1 per row #}
+{# lg+: 2 per row #}
 <div class="col-lg-6">
     {% attr_append 'class="card rounded-3 mb-4 h-100"' 'card--new-subscription' subscription_dto.add_new as card_class %}
     <div {{card_class | safe}}>

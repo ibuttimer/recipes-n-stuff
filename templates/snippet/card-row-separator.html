@@ -1,0 +1,40 @@
+<!-- card-row-separator.html start -->
+{# --- card-row-separator.html template variable defines for includes --- #}
+{# card row separator template expects: 'margin_b' as bottom margin class #}
+{#                                      'row1' as row breakpoints for 1 cards per row #}
+{#                                      'hide1' as hide above flag for 1 cards per row #}
+{#                                      'row2' as row breakpoints for 2 cards per row #}
+{#                                      'hide2' as hide above flag for 2 cards per row #}
+{#                                      'row3' as row breakpoints for 3 cards per row #}
+{#                                      'hide3' as hide above flag for 3 cards per row #}
+{#                                      'row4' as row breakpoints for 4 cards per row #}
+{#                                      'hide4' as hide above flag for 4 cards per row #}
+{# row breakpoints can be a bit mask (e.g. '0x02'), number (e.g. 2), tag (e.g. 'sm') or tag range (e.g. 'sm-md') #}
+
+{# bottom margin class should match card bottom margin, see https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing #}
+
+{# based on code from https://github.com/Code-Institute-Solutions/boutique_ado_v1/blob/0a5335f2e95f58b10207ea57cedcdd063251a3ff/products/templates/products/products.html #}
+
+{% load card_row_separator_classes %}
+
+{% if forloop.counter|divisibleby:1 %}
+    {# full width column every 2nd loop when counter divisible by 1 but only visible below sm breakpoint, i.e. 1 card per row #}
+    {% card_row_separator_classes 1 row1 hide1 margin_b as card_class %}
+    <div {{card_class | safe}}></div>
+{% endif %}
+{% if forloop.counter|divisibleby:2 and row2 %}
+    {# full width column every 3rd loop when counter divisible by 2 but only visible for breakpoints sm & md i.e. 2 cards per row  #}
+    {% card_row_separator_classes 2 row2 hide2 margin_b as card_class %}
+    <div {{card_class | safe}}></div>
+{% endif %}
+{% if forloop.counter|divisibleby:3 and row3 %}
+    {# full width column every 4th loop when counter divisible by 3 but only visible for breakpoint lg i.e. 3 cards per row  #}
+    {% card_row_separator_classes 3 row3 hide3 margin_b as card_class %}
+    <div {{card_class | safe}}></div>
+{% endif %}
+{% if forloop.counter|divisibleby:4 and row4 %}
+    {# full width column every 5th loop when counter divisible by 4 but only visible for breakpoint xl i.e. 4 cards per row  #}
+    {% card_row_separator_classes 4 row4 hide4 margin_b as card_class %}
+    <div {{card_class | safe}}></div>
+{% endif %}
+<!-- card-row-separator.html end -->

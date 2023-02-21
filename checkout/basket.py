@@ -162,6 +162,7 @@ class Basket:
     subtotals: List[float]
     _total: Decimal
     order_num: str = ''
+    closed: bool = True
     user: User
 
     def __init__(self, currency: str = None, request: HttpRequest = None):
@@ -183,13 +184,16 @@ class Basket:
         Start a new order
         :param request: http request
         """
-        if not self.order_num:
+        if not self.order_num or self.closed:
             if request and request.user.is_authenticated:
                 self.order_num = generate_order_num(request)
                 self.user = request.user
+                self.closed = False
+                self._initialise(self.currency)
             else:
                 self.order_num = ''
                 self.user = None
+                self.closed = True
 
     def add(self, request: HttpRequest, amount: Union[int, float, Decimal],
             description: str, count: int = 1, sku: str = None,
@@ -295,9 +299,7 @@ class Basket:
         """
         Close the basket
         """
-        self._initialise(DEFAULT_CURRENCY)
-        self.order_num = ''
-        self.user = None
+        self.closed = True
         self.add_to_request(request)
 
     def add_to_request(self, request: HttpRequest):
@@ -437,8 +439,12 @@ def get_session_basket(request: HttpRequest) -> Tuple[Basket, bool]:
     :return tuple of basket and new basket flag
     """
     new_order = BASKET_SES not in request.session
-    basket = Basket(request=request) if new_order else \
-        Basket.from_jsonable(request.session[BASKET_SES])
+    if new_order:
+        basket = Basket(request=request)
+    else:
+        session_attrib = request.session[BASKET_SES]
+        basket = session_attrib if isinstance(session_attrib, Basket) else \
+            Basket.from_jsonable(session_attrib)
     request.session[BASKET_SES] = basket
     return basket, new_order
 
@@ -528,7 +534,7 @@ def navbar_basket_context(basket: Basket) -> dict:
     :return: context
     """
     return {
-        BASKET_ITEM_COUNT_CTX: basket.num_items
+        BASKET_ITEM_COUNT_CTX: 0 if basket.closed else basket.num_items
         if basket.num_items <= MAX_DISPLAY_COUNT else f'{MAX_DISPLAY_COUNT}+',
         BASKET_TOTAL_CTX: basket.format_total_str(with_symbol=True)
     }
