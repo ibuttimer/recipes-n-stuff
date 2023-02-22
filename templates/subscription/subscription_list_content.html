@@ -9,35 +9,16 @@
 {% block subscription_list_content %}
     <var id="var--repeat-search-term" hidden>{{ repeat_search_term }}</var>
 
-    <div class="row">
-        <div class="col-12 mt-2">
-            <div class="row d-flex align-items-center">
-                {% for subscription_dto in subscription_list %}
+    {# below lg: 1 per row  lg+: 2 per row #}
+    <div class="row row-cols-1 row-cols-lg-2 mb-3">
+        {% for subscription_dto in subscription_list %}
 
-                    {# subscription dto template expects: 'subscription_dto' as SubscriptionDto #}
-                    {#                                    'identifier' as individual identifier #}
-                    {% with identifier=subscription_dto.id %}
-                        {% include "subscription/subscription_dto.html" %}
-                    {% endwith %}
-
-                    {# --- card-row-separator.html template variable defines for includes --- #}
-                    {# card row separator template expects: 'margin_b' as bottom margin class #}
-                    {#                                      'row1' as row breakpoints for 1 cards per row #}
-                    {#                                      'hide1' as hide above flag for 1 cards per row #}
-                    {#                                      'row2' as row breakpoints for 2 cards per row #}
-                    {#                                      'hide2' as hide above flag for 2 cards per row #}
-                    {#                                      'row3' as row breakpoints for 3 cards per row #}
-                    {#                                      'hide3' as hide above flag for 3 cards per row #}
-                    {#                                      'row4' as row breakpoints for 4 cards per row #}
-                    {#                                      'hide4' as hide above flag for 4 cards per row #}
-                    {# margin_b and row/hide settings to match card from subscription_dto.html #}
-                    {# https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing #}
-                    {% with margin_b='mb-4' row1='xs-md' hide1='y' row2='lg' hide2='' row3='' hide3='' row4='' hide4='' %}
-                        {% include 'snippet/card-row-separator.html' %}
-                    {% endwith %}
-            {% endfor %}
-            </div>
-        </div>
+            {# subscription dto template expects: 'subscription_dto' as SubscriptionDto #}
+            {#                                    'identifier' as individual identifier #}
+            {% with identifier=subscription_dto.id %}
+                {% include "subscription/subscription_dto.html" %}
+            {% endwith %}
+        {% endfor %}
     </div>
 
     {# per page and page selection #}

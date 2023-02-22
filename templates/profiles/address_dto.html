@@ -8,10 +8,8 @@
 {% load attr_append %}
 {% load countries %}
 
-{# below md: 1 per row #}
-{# md-lg: 2 per row #}
-{# xl+: 3 per row #}
-<div class="col-md-6 col-xl-4">
+{# below md: 1 per row  md-lg: 2 per row  xl+: 3 per row #}
+<div class="col-md-6 col-xl-4 mb-4">
     {% attr_append 'class="card rounded-3 mb-4 h-100"' 'card--new-address' address_dto.add_new as card_class %}
     <div {{card_class | safe}}>
         <div {% if address_dto.add_new %} id="id--address-new" {% else %} id="id--address-{{identifier}}" {% endif %} class="card-body">
