@@ -7,13 +7,10 @@
 {% load static %}
 {% load image_url  human_readable_timedelta  attr_append %}
 
-{# below sm: 1 per row #}
-{# sm-md: 2 per row #}
-{# lg: 3 per row #}
-{# xl+: 4 per row #}
-<div class="col-sm-6 col-md-6 col-lg-4 col-xl-3">
+{# below sm: 1 per row  sm-md: 2 per row  lg: 3 per row  xl+: 4 per row #}
+<div class="col-sm-6 col-md-6 col-lg-4 col-xl-3 mb-4">
     <a href="{% url 'recipes:recipe_id' recipe_dto.id %}" class="a__recipe-card" aria-label="view recipe">
-        <div class="card rounded-3 mb-4 h-100">
+        <div class="card rounded-3 h-100">
             {% attr_append 'class="card-img-top"' 'img__stock-image' recipe_dto.main_image.is_static_image as img_class %}
             <img {{ img_class | safe }}
                  alt="{{ recipe_dto.name }} image" src="{% image_url recipe_dto.main_image %}">

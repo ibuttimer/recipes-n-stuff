@@ -19,30 +19,14 @@
 {% block recipe_list_content %}
     <var id="var--repeat-search-term" hidden>{{ repeat_search_term }}</var>
 
-    <div class="row">
+    {# below sm: 1 per row  sm-md: 2 per row  lg: 3 per row  xl+: 4 per row #}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 mb-3">
         {% for recipe_dto in recipe_list %}
-
             {# --- recipe_dto.html template variable defines for includes --- #}
             {# recipe dto template expects: 'recipe_dto' as RecipeDto #}
             {#                              'identifier' as individual identifier #}
             {% with identifier=recipe_dto.id %}
                 {% include "recipes/recipe_dto.html" %}
-            {% endwith %}
-
-            {# --- card-row-separator.html template variable defines for includes --- #}
-            {# card row separator template expects: 'margin_b' as bottom margin class #}
-            {#                                      'row1' as row breakpoints for 1 cards per row #}
-            {#                                      'hide1' as hide above flag for 1 cards per row #}
-            {#                                      'row2' as row breakpoints for 2 cards per row #}
-            {#                                      'hide2' as hide above flag for 2 cards per row #}
-            {#                                      'row3' as row breakpoints for 3 cards per row #}
-            {#                                      'hide3' as hide above flag for 3 cards per row #}
-            {#                                      'row4' as row breakpoints for 4 cards per row #}
-            {#                                      'hide4' as hide above flag for 4 cards per row #}
-            {# margin_b and row/hide settings to match card from recipe_dto.html #}
-            {# https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing #}
-            {% with margin_b='mb-4' row1='xs' hide1='y' row2='sm-md' hide2='y' row3='lg' hide3='y' row4='xl' hide4='' %}
-                {% include 'snippet/card-row-separator.html' %}
             {% endwith %}
         {% endfor %}
     </div>
