@@ -44,8 +44,6 @@ urlpatterns = [
     path(CHECKOUT_URL, include(f'{CHECKOUT_APP_NAME}.urls')),
     path(RECIPES_URL, include(f'{RECIPES_APP_NAME}.urls')),
 
-    path('__debug__/', include('debug_toolbar.urls')),
-
     path('', include(f'{BASE_APP_NAME}.root_urls')),
 ]
 
@@ -77,3 +75,8 @@ if settings.DEBUG or settings.DEVELOPMENT:
                           document_root=settings.MEDIA_ROOT)
     # serve the site.webmanifest images
     urlpatterns += static('/', document_root=STATIC_URL)
+
+if settings.DBG_TOOLBAR:
+    urlpatterns.append(
+        path('__debug__/', include('debug_toolbar.urls'))
+    )
