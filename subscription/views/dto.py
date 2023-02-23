@@ -22,7 +22,7 @@
 from dataclasses import dataclass
 
 from base.dto import BaseDto
-from subscription.forms import SubscriptionForm
+from subscription.mixin import QuantiseMixin
 from subscription.models import (
     Subscription, FrequencyType, FeatureType, SubscriptionFeature
 )
@@ -30,7 +30,7 @@ from subscription.views.subscription_queries import get_subscription_features
 
 
 @dataclass
-class SubscriptionDto(BaseDto):
+class SubscriptionDto(QuantiseMixin, BaseDto):
     """ Subscription data transfer object """
 
     @staticmethod
@@ -70,8 +70,7 @@ class SubscriptionDto(BaseDto):
                 Subscription.NAME_FIELD, Subscription.DESCRIPTION_FIELD,
             ]
         ]
-        amt = SubscriptionForm.quantise_amount(
-            getattr(self, Subscription.AMOUNT_FIELD))
+        amt = self.quantise_amount(getattr(self, Subscription.AMOUNT_FIELD))
         code = getattr(self, Subscription.BASE_CURRENCY_FIELD)
         freq_type = getattr(self, Subscription.FREQUENCY_TYPE_FIELD)
         freq = getattr(self, Subscription.FREQUENCY_FIELD)
@@ -96,7 +95,7 @@ FEATURE_TEXT_WITH_COUNT = [
 
 
 @dataclass
-class SubscriptionFeatureDto(BaseDto):
+class SubscriptionFeatureDto(QuantiseMixin, BaseDto):
     """ SubscriptionFeature data transfer object """
 
     @staticmethod
@@ -120,7 +119,7 @@ class SubscriptionFeatureDto(BaseDto):
         if self.feature_type in FEATURE_TEXT_WITH_AMOUNT:
             text = text.replace(
                 SubscriptionFeature.FEATURE_AMOUNT_TEMPLATE_MARK,
-                f'{str(SubscriptionForm.quantise_amount(self.amount))} '
+                f'{str(self.quantise_amount(self.amount))} '
                 f'{self.base_currency}'
             )
         if self.feature_type in FEATURE_TEXT_WITH_COUNT:

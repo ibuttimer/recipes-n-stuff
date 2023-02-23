@@ -1,6 +1,6 @@
 #  MIT License
 #
-#  Copyright (c) 2023 Ian Buttimer
+#  Copyright (c) 2022 Ian Buttimer
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to
@@ -19,3 +19,23 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+#
+from typing import Union
+
+from django import template
+
+from profiles.dto import AddressDto
+
+register = template.Library()
+
+# https://docs.djangoproject.com/en/4.1/howto/custom-template-tags/#simple-tags
+
+ID_PREFIX = 'id__address'
+
+
+@register.simple_tag
+def address_element_id(address_dto: Union[AddressDto, str], element: str):
+    element = f'-{element}' if element else ''
+    return f"{ID_PREFIX}{element}-new" \
+        if address_dto == 'new' or address_dto.add_new else \
+        f"{ID_PREFIX}{element}-{address_dto.id}"

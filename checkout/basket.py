@@ -34,6 +34,9 @@ from base.views import info_toast_payload, InfoModalTemplate
 from order.misc import generate_order_num
 from order.models import OrderProduct
 from order.queries import get_subscription_product, get_ingredient_box_product
+from profiles.enums import AddressType
+from profiles.models import Address
+from profiles.views import addresses_query
 from recipes.constants import RECIPE_ID_ROUTE_NAME
 from recipes.models import Recipe
 from recipesnstuff import BASE_APP_NAME, RECIPES_APP_NAME
@@ -164,6 +167,7 @@ class Basket:
     order_num: str = ''
     closed: bool = True
     user: User
+    address: Address = None
 
     def __init__(self, currency: str = None, request: HttpRequest = None):
         self._initialise(currency)
@@ -178,6 +182,7 @@ class Basket:
         self.items = []
         self.subtotals = []
         self._total = Decimal.from_float(0)
+        self.address = None
 
     def _new_order(self, request: HttpRequest):
         """
@@ -186,10 +191,12 @@ class Basket:
         """
         if not self.order_num or self.closed:
             if request and request.user.is_authenticated:
+                self._initialise(self.currency)
                 self.order_num = generate_order_num(request)
                 self.user = request.user
+                self.address = addresses_query(
+                    user=self.user, address_type=AddressType.DEFAULT).first()
                 self.closed = False
-                self._initialise(self.currency)
             else:
                 self.order_num = ''
                 self.user = None

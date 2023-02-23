@@ -32,7 +32,6 @@ from subscription.constants import (
     BASE_CURRENCY_FIELD, AMOUNT_FIELD
 )
 from subscription.forms import SubscriptionForm
-from subscription.models import FrequencyType
 
 TEXTS_DISPLAY_ORDER = [
     NAME_FIELD, DESCRIPTION_FIELD
@@ -73,9 +72,8 @@ class TestSubscriptionDto(unittest.TestCase):
 
         # subscription details line; e.g. '5.00 EUR per 1 Weekly'
         details_line = display_order[len(TEXTS_DISPLAY_ORDER)]
-        self.assertIn(FrequencyType.from_choice(
-            getattr(self.dto, FREQUENCY_TYPE_FIELD)
-        ).value.name, details_line)
+        self.assertIn(getattr(self.dto, FREQUENCY_TYPE_FIELD).value.name,
+                      details_line)
         self.assertIn(
             str(getattr(self.dto, FREQUENCY_FIELD)), details_line)
         self.assertIn(

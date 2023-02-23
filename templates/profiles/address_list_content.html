@@ -5,8 +5,7 @@
 {#                                        'content_status' as a list of ContentStatus in order corresponding to opinion_list #}
 {#                                        'popularity' as a dict with 'opinion_<id>' as the key and PopularityLevel value #}
 
-{% load i18n %}
-{% load static %}
+{% load i18n  static  address_element_id %}
 
 {% block address_list_content %}
     <var id="var--repeat-search-term" hidden>{{ repeat_search_term }}</var>
@@ -17,7 +16,8 @@
 
             {# address dto template expects: 'address_dto' as AddressDto #}
             {#                               'identifier' as individual identifier #}
-            {% with identifier=address_dto.id %}
+            {#                               'content_format' as card content format; one of 'list'/'select' #}
+            {% with identifier=address_dto.id  content_format='list' %}
                 {% include "profiles/address_dto.html" %}
             {% endwith %}
         {% endfor %}
@@ -30,8 +30,10 @@
 {% endblock address_list_content %}
 
 {% block extra_js_body %}
+    {% address_element_id 'new' '' as addr_id %}
     <script>
         const ADD_ADDRESS_URL = "{% url 'profiles:address_new' %}";
+        const ADD_ADDRESS_SELECTOR = "#{{ addr_id }}";
     </script>
     <script src="{% static 'js/address_dto.js' %}"></script>
 {% endblock extra_js_body %}

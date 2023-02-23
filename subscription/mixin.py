@@ -19,3 +19,16 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from decimal import Decimal
+
+class QuantiseMixin:
+    """
+    Decimal quantise mixin.
+    """
+
+    # e.g. Decimal(10) ** -2       # same as Decimal('0.01')
+    AMOUNT_EXP = Decimal(10) ** -2
+
+    @staticmethod
+    def quantise_amount(amount: Decimal):
+        return amount.quantize(QuantiseMixin.AMOUNT_EXP)

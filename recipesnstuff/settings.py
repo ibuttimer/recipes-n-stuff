@@ -246,20 +246,22 @@ DATABASES = {
     #
     # The db() method is an alias for db_url().
     'default': env.db(),
-
-    # read os.environ['REMOTE_DATABASE_URL']
-    'remote': env.db_url(
-        'REMOTE_DATABASE_URL',
-        default=f'sqlite:///{os.path.join(BASE_DIR, "temp-remote.sqlite3")}'
-    ),
-
-    # read os.environ['SQLITE_URL']
-    'extra': env.db_url(
-        'SQLITE_URL',
-        default=f'sqlite:///{os.path.join(BASE_DIR, "temp-sqlite.sqlite3")}'
-    )
 }
+if not TEST:
+    # only need default database in test mode
+    DATABASES.update({
+        # read os.environ['REMOTE_DATABASE_URL']
+        'remote': env.db_url(
+            'REMOTE_DATABASE_URL',
+            default=f'sqlite:///{os.path.join(BASE_DIR, "temp-remote.sqlite3")}'
+        ),
 
+        # read os.environ['SQLITE_URL']
+        'extra': env.db_url(
+            'SQLITE_URL',
+            default=f'sqlite:///{os.path.join(BASE_DIR, "temp-sqlite.sqlite3")}'
+        )
+    })
 
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-user-model
 AUTH_USER_MODEL = f'{USER_APP_NAME}.User'

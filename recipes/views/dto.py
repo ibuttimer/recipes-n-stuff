@@ -59,6 +59,9 @@ class IngredientDto(BaseDto):
 
         return dto
 
+    def __str__(self) -> str:
+        return f'{self.ingredient} {self.quantity} {self.measure}'
+
 
 @dataclass
 class InstructionDto(BaseDto):

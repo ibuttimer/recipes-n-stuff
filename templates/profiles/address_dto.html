@@ -1,18 +1,19 @@
 <!-- address_dto.html start -->
-{# --- template variable defines for includes --- #}
+{# --- address_dto.html template variable defines for includes --- #}
 {# address dto template expects: 'address_dto' as AddressDto #}
 {#                               'identifier' as individual identifier #}
+{#                               'content_format' as card content format; one of 'list'/'select' #}
 
-{% load i18n %}
-{% load static %}
-{% load attr_append %}
-{% load countries %}
+{% load i18n  static  attr_append  countries  address_element_id %}
 
+{% address_element_id address_dto 'div' as div_id %}
 {# below md: 1 per row  md-lg: 2 per row  xl+: 3 per row #}
-<div class="col-md-6 col-xl-4 mb-4">
+<div id="{{ div_id }}" class="col-md-6 col-xl-4 mb-4">
     {% attr_append 'class="card rounded-3 mb-4 h-100"' 'card--new-address' address_dto.add_new as card_class %}
-    <div {{card_class | safe}}>
-        <div {% if address_dto.add_new %} id="id--address-new" {% else %} id="id--address-{{identifier}}" {% endif %} class="card-body">
+    {% address_element_id address_dto 'card' as card_id %}
+    {% address_element_id address_dto '' as addr_id %}
+    <div id="{{ card_id }}" {{card_class | safe}}>
+        <div id="{{ addr_id }}" class="card-body">
             {% if address_dto.add_new %}
                 <div class="row mb-3">
                     <div class="col-12 text-center">
@@ -21,34 +22,11 @@
                     </div>
                 </div>
             {% else %}
-                <div class="row mb-3">
-                    <div class="col-12 text-center">
-                        {% for field in address_dto.display_order_ex_country %}
-                            {% if field %}
-                                <p class="mb-0">{{ field }}</p>
-                            {% endif %}
-                        {% endfor %}
-
-                        {% get_country address_dto.country as country %}
-                        <p class="mb-0">{{ country.name }}</p>
-
-                        {% for field in address_dto.display_order_ex_country %}
-                            {% if not field %}
-                                <p class="mb-0"></p>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="row mb-0">
-                    <div {% if address_dto.is_default %} class="col-sm-6" {% else %} class="col-sm-12" {% endif %}>
-                        <a class="a--addr-edit" href="{% url 'profiles:address_id' address_dto.id %}">{% trans "Edit" %}</a>{% if not address_dto.is_default %}&ensp;&ensp;&VerticalLine;&ensp;&ensp;<a class="a--addr-del" href="{% url 'profiles:address_id' address_dto.id %}">{% trans "Delete" %}</a>&ensp;&ensp;&VerticalLine;&ensp;&ensp;<a class="a--addr-dflt" href="{% url 'profiles:address_id_default' address_dto.id %}">{% trans "Make Default" %}</a>{% endif %}
-                    </div>
-                    {% if address_dto.is_default %}
-                        <div class="col-sm-6 text-end">
-                            <h6 class="h6--default-addr">Default</h6>
-                        </div>
-                    {% endif %}
-                </div>
+                {% if content_format == 'list' %}
+                    {% include 'profiles/address_list_item.html' %}
+                {% elif content_format == 'select' %}
+                    {% include 'profiles/address_select_item.html' %}
+                {% endif %}
             {% endif %}
         </div>
     </div>

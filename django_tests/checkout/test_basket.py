@@ -107,8 +107,7 @@ class TestForexFixtures(BaseCheckoutTest):
                 expected_total += 1
                 expected_items += 1
             self.verify_basket_attributes(
-                basket, total=expected_total, items=1)
-            self.assertEqual(basket.items[0].count, expected_items)
+                basket, total=expected_total, items=expected_items)
             sku += 1
 
         with self.subTest('basket clear'):
@@ -137,7 +136,7 @@ class TestForexFixtures(BaseCheckoutTest):
                 basket.add(
                     request, idx, f'item {idx}', count=idx, sku=str(sku))
                 expected_total += (idx * idx)
-                expected_items += 1
+                expected_items += idx
                 sku += 1
             self.verify_basket_attributes(
                 basket, total=expected_total, items=expected_items)

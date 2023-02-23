@@ -22,14 +22,8 @@ and [Jest Unit Testing](#jest-unit-testing).
 **It is necessary to specify a number of environment variables prior to running tests.**
 The [.test-env](.test-env) configuration file provides the necessary settings, and may be utilised by setting the `ENV_FILE` environment variable.
 ```shell
-Powershell
-> $env:ENV_FILE='.test-env'
-
-Windows
-> set ENV_FILE=.test-env
-
-Linux
-> export ENV_FILE='.test-env'
+Powershell                     Windows                      Linux
+> $env:ENV_FILE='.test-env'    > set ENV_FILE=.test-env    > export ENV_FILE='.test-env'
 ```
 In addition, see [PEP8 Testing](#pep8-testing) for details of how to skip PEP8 testing.
 
@@ -128,8 +122,8 @@ The basic pycodestyle configuration is contained in [setup.cfg](../../setup.cfg)
 > When running unit tests from the terminal, it may be disabled by setting the `SKIP_PEP8` environment variable to `y` or `n`.
 
 ```shell
-For Linux and Mac:                            For Windows:
-$ export SKIP_PEP8=y                          > set SKIP_PEP8=y
+Powershell                     Windows                      Linux and Mac
+> $env:SKIP_PEP8='y'           > set SKIP_PEP8=y            > export SKIP_PEP8='y'
 ```
 
 ## Manual

@@ -19,7 +19,6 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-import json
 from http import HTTPStatus
 
 import stripe
@@ -32,7 +31,11 @@ from django.views.decorators.http import require_http_methods
 
 from base.views import info_toast_payload, InfoModalTemplate
 from order.persist import save_order
-from recipesnstuff import HOME_ROUTE_NAME
+from profiles.dto import AddressDto
+from profiles.templatetags.address_element_id import address_element_id
+from profiles.views.address_by import get_address
+from profiles.views.address_queries import addresses_query
+from recipesnstuff import HOME_ROUTE_NAME, PROFILES_APP_NAME
 from recipesnstuff.settings import (
     STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY
 )
@@ -42,14 +45,16 @@ from subscription.middleware import subscription_payment_completed
 from utils import (
     GET, POST, PATCH, namespaced_url, app_template_path,
     replace_inner_html_payload, TITLE_CTX, PAGE_HEADING_CTX, DELETE,
-    rewrite_payload, entity_delete_result_payload, reverse_q, redirect_payload
+    rewrite_payload, entity_delete_result_payload, reverse_q,
+    redirect_payload, replace_html_payload
 )
 from .basket import Basket, navbar_basket_html
 
 from .constants import (
     THIS_APP, STRIPE_PUBLISHABLE_KEY_CTX, STRIPE_RETURN_URL_CTX,
     CHECKOUT_PAID_ROUTE_NAME, BASKET_SES, BASKET_CTX, CURRENCIES_CTX,
-    BASKET_CCY_QUERY, ITEM_QUERY, UNITS_QUERY, ORDER_NUM_CTX
+    BASKET_CCY_QUERY, ITEM_QUERY, UNITS_QUERY, ORDER_NUM_CTX,
+    ADDRESS_LIST_CTX, ADDRESS_DTO_CTX, CONTENT_FORMAT_CTX
 )
 from .currency import is_valid_code
 
@@ -92,13 +97,19 @@ def checkout(request: HttpRequest) -> HttpResponse:
 
     title = "Checkout"
 
+    addresses = [
+        AddressDto.from_model(address, is_selected=address == basket.address)
+        for address in addresses_query(user=request.user)
+    ]
+
     context = {
         TITLE_CTX: title,
         PAGE_HEADING_CTX: title,
         STRIPE_PUBLISHABLE_KEY_CTX: STRIPE_PUBLISHABLE_KEY,
         STRIPE_RETURN_URL_CTX: namespaced_url(
             THIS_APP, CHECKOUT_PAID_ROUTE_NAME
-        )
+        ),
+        ADDRESS_LIST_CTX: addresses
     }
     context.update(
         basket_context(basket)
@@ -202,7 +213,7 @@ def redraw_basket_payload(basket: Basket) -> dict:
     return rewrite_payload(
         # redraw on screen basket
         replace_inner_html_payload(
-            "#id__basket-div", render_to_string(
+            "#id__div-basket", render_to_string(
                 app_template_path(
                     THIS_APP, "snippet", "basket.html"),
                 context=basket_context(basket))
@@ -210,6 +221,44 @@ def redraw_basket_payload(basket: Basket) -> dict:
         # redraw navbar basket icon
         navbar_basket_html(basket)
     )
+
+
+@login_required
+@require_http_methods([PATCH])
+def set_address(request: HttpRequest, pk: int) -> HttpResponse:
+    """
+    Update the basket
+    :param request: http request
+    :param pk: id of address to set
+    :return: response
+    """
+    basket = get_basket(request)
+
+    old_address = basket.address
+    new_address, _ = get_address(pk)
+    basket.address = new_address
+    # need to update serialised basket in request
+    basket.add_to_request(request)
+
+    addresses = [
+        AddressDto.from_model(address, is_selected=address == basket.address)
+        for address in [old_address, new_address]
+    ]
+
+    payload = rewrite_payload(*[
+        replace_html_payload(
+            f"#{address_element_id(address_dto, 'div')}", render_to_string(
+                app_template_path(
+                    PROFILES_APP_NAME, "address_dto.html"),
+                context={
+                    ADDRESS_DTO_CTX: address_dto,
+                    CONTENT_FORMAT_CTX: 'select'
+                }
+            )
+        ) for address_dto in addresses
+    ])
+
+    return JsonResponse(payload, status=HTTPStatus.OK)
 
 
 @login_required

@@ -29,15 +29,19 @@ from profiles.models import Address
 class AddressDto(BaseDto):
     """ Address data transfer object """
 
+    is_selected: bool = False
+
     @staticmethod
-    def from_model(address: Address):
+    def from_model(address: Address, is_selected: bool = False):
         """
         Generate a DTO from the specified `model`
         :param address: model instance to populate DTO from
+        :param is_selected: is selected state: default False
         :return: DTO instance
         """
         dto = BaseDto.from_model_to_obj(address, AddressDto())
         # custom handling for specific attributes
+        dto.is_selected = is_selected
         return dto
 
     @staticmethod
@@ -65,3 +69,6 @@ class AddressDto(BaseDto):
         fields = self.display_order_ex_country
         fields.append(getattr(self, Address.COUNTRY_FIELD))
         return fields
+
+    def __str__(self):
+        return f'{self.street} {self.country} {str(self.user)}'

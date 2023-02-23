@@ -182,7 +182,7 @@ class AddressDetail(LoginRequiredMixin, View):
             # delete address
             count, _ = address.delete()
             payload = entity_delete_result_payload(
-                "#id--address-deleted-modal-body", count > 0, 'address')
+                "#id__address-deleted-modal-body", count > 0, 'address')
 
             if count == 0:
                 status = HTTPStatus.BAD_REQUEST
