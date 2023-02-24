@@ -27,8 +27,9 @@ from recipesnstuff.constants import (
 )
 from utils import resolve_req, add_navbar_attr, Crud
 from .constants import (
-    RECIPES_ROUTE_NAME, RECIPE_ID_ROUTE_NAME
+    RECIPES_ROUTE_NAME, RECIPE_ID_ROUTE_NAME, KEYWORDS_CTX
 )
+from .models import Keyword
 from .views.utils import recipe_permission_check
 
 
@@ -52,4 +53,8 @@ def recipe_context(request: HttpRequest) -> dict:
                     request, Crud.READ, raise_ex=False),
                 is_dropdown_toggle=is_dropdown_toggle
             )
+
+    context[KEYWORDS_CTX] = [
+        word.name for word in Keyword.objects.all()
+    ]
     return context

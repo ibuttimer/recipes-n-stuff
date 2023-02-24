@@ -19,22 +19,26 @@
 {% block recipe_list_content %}
     <var id="var--repeat-search-term" hidden>{{ repeat_search_term }}</var>
 
-    {# below sm: 1 per row  sm-md: 2 per row  lg: 3 per row  xl+: 4 per row #}
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 mb-3">
-        {% for recipe_dto in recipe_list %}
-            {# --- recipe_dto.html template variable defines for includes --- #}
-            {# recipe dto template expects: 'recipe_dto' as RecipeDto #}
-            {#                              'identifier' as individual identifier #}
-            {% with identifier=recipe_dto.id %}
-                {% include "recipes/recipe_dto.html" %}
-            {% endwith %}
-        {% endfor %}
-    </div>
+    {% if paginator.count == 0 %}
+        {% include "recipes/snippet/no_content.html" %}
+    {% else %}
+        {# below sm: 1 per row  sm-md: 2 per row  lg: 3 per row  xl+: 4 per row #}
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 mb-3">
+            {% for recipe_dto in recipe_list %}
+                {# --- recipe_dto.html template variable defines for includes --- #}
+                {# recipe dto template expects: 'recipe_dto' as RecipeDto #}
+                {#                              'identifier' as individual identifier #}
+                {% with identifier=recipe_dto.id %}
+                    {% include "recipes/recipe_dto.html" %}
+                {% endwith %}
+            {% endfor %}
+        </div>
 
-    {# per page and page selection #}
-    {% with "Recipes per page" as per_page_aria %}
-        {% include "snippet/per_page_pagination_select.html" %}
-    {% endwith %}
+        {# per page and page selection #}
+        {% with "Recipes per page" as per_page_aria %}
+            {% include "snippet/per_page_pagination_select.html" %}
+        {% endwith %}
+    {% endif %}
 {% endblock recipe_list_content %}
 
 <!-- recipe_list_content.html end -->

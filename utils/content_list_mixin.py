@@ -39,7 +39,7 @@ from .search import (
 from .misc import Crud
 from .models import DESC_LOOKUP
 from .query_params import QuerySetParams
-from .enums import QueryOption, QueryArg, SortOrder, PerPage
+from .enums import QueryOption, QueryArg, SortOrder, PerPage6, ChoiceArg
 
 # general context keys
 TITLE_CTX = 'title'                             # page title
@@ -281,7 +281,14 @@ class ContentListMixin(generic.ListView):
         :return: SortOrder enum
         """
         raise NotImplementedError(
-            "'url' method must be overridden by sub classes")
+            "'get_sort_order_enum' method must be overridden by sub classes")
+
+    def get_per_page_enum(self) -> Type[ChoiceArg]:
+        """
+        Get the subclass-specific PerPage enum
+        :return: PerPage enum
+        """
+        return PerPage6
 
     def set_pagination(
             self, query_params: dict[str, QueryArg]):
@@ -327,7 +334,7 @@ class ContentListMixin(generic.ListView):
                 filter(lambda order: order.order == main_order,
                        self.get_sort_order_enum())
             )[0],
-            PER_PAGE_CTX: list(PerPage),
+            PER_PAGE_CTX: list(self.get_per_page_enum()),
             SELECTED_PER_PAGE_CTX: self.paginate_by,
             PAGE_LINKS_CTX: [{
                 PAGE_NUM_CTX: page,
@@ -344,6 +351,16 @@ class ContentListMixin(generic.ListView):
             ]
         })
         return context
+
+    @staticmethod
+    def has_no_content(context: dict, key: str = "object_list") -> bool:
+        """
+        Check if response has no content
+        :param context: response context
+        :param key: object list key in context; default "object_list"
+        :return: True if no content
+        """
+        return len(context[key]) == 0
 
     def select_template(self, query_params: dict[str, QueryArg]):
         """

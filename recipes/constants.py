@@ -73,6 +73,7 @@ INDEX_FIELD = 'index'
 PK_PARAM_NAME = "pk"
 INGREDIENT_PK_PARAM_NAME = "ingredient_pk"
 RECIPES_URL = ""
+RECIPE_SEARCH_URL = url_path(RECIPES_URL, "search")
 RECIPE_NEW_URL = url_path(RECIPES_URL, "new")
 RECIPE_ID_URL = url_path(RECIPES_URL, f"<int:{PK_PARAM_NAME}>")
 RECIPE_ID_UPDATE_URL = url_path(RECIPE_ID_URL, "update")
@@ -89,6 +90,7 @@ RECIPE_INSTRUCTION_ID_URL = \
 
 # convention is recipes route names begin with 'recipe'
 RECIPES_ROUTE_NAME = "recipes"
+RECIPE_SEARCH_ROUTE_NAME = "recipe_search"
 RECIPE_NEW_ROUTE_NAME = "recipe_new"
 RECIPE_ID_ROUTE_NAME = "recipe_id"
 RECIPE_ID_UPDATE_ROUTE_NAME = "recipe_id_update"
@@ -114,6 +116,8 @@ INSTRUCTIONS_CTX = 'instructions'
 NEW_INSTRUCTION_FORM_CTX = 'new_instruct_form'
 NEW_URL_CTX = 'new_url'
 REFRESH_URL_CTX = 'refresh_url'
+KEYWORDS_CTX = 'keywords'
+TIME_CTX = 'time'
 
 COUNT_OPTIONS_CTX = 'count_options'
 SELECTED_COUNT_CTX = 'selected_count'
@@ -125,3 +129,5 @@ SKU_CTX = 'sku'
 # query related
 INGREDIENTS_QUERY = 'ingredients'
 INSTRUCTIONS_QUERY = 'instructions'
+AUTHOR_QUERY = 'author'
+KEYWORD_QUERY = 'key'              # keyword

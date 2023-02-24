@@ -37,6 +37,7 @@ class Measures(Enum):
     """ Enum represent measures """
     GALLON = ("gallon", "gal.")
     QUART = ("quart", "qt.")
+    FLUID_CAN = ("can (14 oz.)", "can (14 oz.)")
     PINT = ("pint", "pt.")
     CUP = ("cup", "C")
     TEACUP = ("teacup", "tcf.")
@@ -61,6 +62,7 @@ class Measures(Enum):
 
     DRAM = ("dram", "dr.")
     OUNCE = ("ounce", "oz.")
+    PACKAGE = ("package (14 oz.)", "pack (14 oz.)")
     POUND = ("pound", "lb.")
     STONE = ("stone", "st.")
 
@@ -69,6 +71,7 @@ class Measures(Enum):
     MILLIGRAM = ("milligram", "mg")
 
     UNIT = ("unit", "")
+    CAN = ("can", "can")
 
 
 @dataclass

@@ -25,6 +25,7 @@ from django.urls import path
 
 from .constants import (
     THIS_APP, RECIPES_URL, RECIPES_ROUTE_NAME,
+    RECIPE_SEARCH_URL, RECIPE_SEARCH_ROUTE_NAME,
     RECIPE_NEW_URL, RECIPE_NEW_ROUTE_NAME,
     RECIPE_ID_URL, RECIPE_ID_ROUTE_NAME,
     RECIPE_ID_UPDATE_URL, RECIPE_ID_UPDATE_ROUTE_NAME,
@@ -37,7 +38,8 @@ from .constants import (
 )
 from .views import (
     # RecipeCreate,
-    RecipeList, RecipeDetail, RecipeDetailUpdate, add_recipe_to_basket,
+    RecipeList, SearchRecipeList,
+    RecipeDetail, RecipeDetailUpdate, add_recipe_to_basket,
     RecipeIngredientDetail, create_recipe_ingredient,
     InstructionDetail, create_recipe_instruction,
 )
@@ -47,6 +49,8 @@ app_name = THIS_APP
 
 urlpatterns = [
     path(RECIPES_URL, RecipeList.as_view(), name=RECIPES_ROUTE_NAME),
+    path(RECIPE_SEARCH_URL, SearchRecipeList.as_view(),
+         name=RECIPE_SEARCH_ROUTE_NAME),
     # path(RECIPE_NEW_URL, AddressCreate.as_view(),
     #      name=RECIPE_NEW_ROUTE_NAME),
     path(RECIPE_ID_URL, RecipeDetail.as_view(), name=RECIPE_ID_ROUTE_NAME),

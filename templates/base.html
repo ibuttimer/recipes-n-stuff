@@ -95,9 +95,15 @@
                                 </a>
                             </li>
                         </ul>
-                        <form class="d-flex" role="search">
-                            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                            <button class="btn btn-outline-success" type="submit">Search</button>
+                        <form class="d-flex" role="search" method="get" action="{% url 'recipes:recipe_search' %}">
+                            <input class="form-control me-2" type="search" placeholder="Type to search..." aria-label="Search" list="id__keyword-datalist"
+                                   name="search">
+                            <datalist id="id__keyword-datalist">
+                                {% for word in keywords %}
+                                    <option value="{{ word }}">
+                                {% endfor %}
+                            </datalist>
+                            <button class="btn btn-outline-success" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
                         </form>
                         <span class="navbar-nav ms-auto mb-2 ms-2 me-2 mb-lg-0 d-flex align-items-center" id="id__navbar-basket-container">
                             {# --- navbar_basket.html template variable defines for includes --- #}

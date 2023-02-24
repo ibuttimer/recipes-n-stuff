@@ -27,7 +27,7 @@ from .content_list_mixin import (
     SNIPPETS_CTX, ContentListMixin
 )
 from .enums import (
-    ChoiceArg, QueryArg, SortOrder, PerPage, QueryOption, YesNo
+    ChoiceArg, QueryArg, SortOrder, PerPage6, PerPage8, QueryOption, YesNo
 )
 from .file import find_parent_of_folder
 from .forms import (
@@ -80,7 +80,8 @@ __all__ = [
     'ChoiceArg',
     'QueryArg',
     'SortOrder',
-    'PerPage',
+    'PerPage6',
+    'PerPage8',
     'QueryOption',
     'YesNo',
 

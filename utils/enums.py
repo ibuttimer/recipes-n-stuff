@@ -250,8 +250,8 @@ class SortOrder(ChoiceArg):
         self.order = order
 
 
-class PerPage(ChoiceArg):
-    """ Enum representing opinions per page """
+class PerPage6(ChoiceArg):
+    """ Enum representing items per page, initial 6/pg step 3 """
     SIX = 6
     NINE = 9
     TWELVE = 12
@@ -261,7 +261,21 @@ class PerPage(ChoiceArg):
         super().__init__(f'{count} per page', count)
 
 
-PerPage.DEFAULT = PerPage.SIX
+PerPage6.DEFAULT = PerPage6.SIX
+
+
+class PerPage8(ChoiceArg):
+    """ Enum representing items per page, initial 8/pg step 4 """
+    EIGHT = 8
+    TWELVE = 12
+    SIXTEEN = 16
+    TWENTY = 20
+
+    def __init__(self, count: int):
+        super().__init__(f'{count} per page', count)
+
+
+PerPage8.DEFAULT = PerPage8.EIGHT
 
 
 class YesNo(ChoiceArg):

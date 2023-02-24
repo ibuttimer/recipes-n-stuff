@@ -144,8 +144,8 @@
             {% for ingredient in recipe_dto.ingredients %}
             <div class="row">
                 <div class="col-sm-2 text-center"><span>{{ ingredient.quantity }}</span></div>
-                <div class="col-sm-1"><span>{% if ingredient.quantity %}{{ ingredient.measure}}{% endif %}</span></div>
-                <div class="col-sm-9">
+                <div class="col-sm-3"><span>{% if ingredient.quantity %}{{ ingredient.measure}}{% endif %}</span></div>
+                <div class="col-sm-7">
                     <span>
                     {{ ingredient.ingredient }}
                     {% if not forloop.last %}

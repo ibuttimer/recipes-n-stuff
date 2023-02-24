@@ -31,8 +31,9 @@ from django.shortcuts import get_object_or_404
 
 from checkout.models import Currency
 from order.models import OrderProduct
+from recipes.constants import KEYWORD_QUERY
 from recipes.models import (
-    Recipe, Ingredient, Instruction, RecipeIngredient
+    Recipe, Ingredient, Instruction, RecipeIngredient, Keyword
 )
 from user.models import User
 from utils import (
@@ -42,9 +43,11 @@ from utils import (
     DATE_QUERY_YR_GROUP, DATE_QUERY_MTH_GROUP,
     DATE_QUERY_DAY_GROUP, USER_QUERY, get_object_and_related_or_404
 )
+from utils.query_params import SearchType, QueryTerm
+from utils.search import MARKER_CHARS
 
 NON_DATE_QUERIES = [
-    USER_QUERY
+    KEYWORD_QUERY, USER_QUERY
 ]
 REGEX_MATCHERS = regex_matchers(NON_DATE_QUERIES)
 REGEX_MATCHERS.update(regex_date_matchers())
@@ -52,6 +55,7 @@ REGEX_MATCHERS.update(regex_date_matchers())
 FIELD_LOOKUPS = {
     # query param: filter lookup
     SEARCH_QUERY: '',
+    KEYWORD_QUERY: f'{Recipe.KEYWORDS_FIELD}__in',
     # STATUS_QUERY: f'{Opinion.STATUS_FIELD}__{Status.NAME_FIELD}',
     # TITLE_QUERY: f'{Opinion.TITLE_FIELD}__icontains',
     # CONTENT_QUERY: f'{Opinion.CONTENT_FIELD}__icontains',
@@ -119,6 +123,8 @@ def get_lookup(
     if query == SEARCH_QUERY:
         query_set_params = get_search_term(
             value, user, query_set_params=query_set_params)
+    elif query == KEYWORD_QUERY:
+        add_keyword_query(query_set_params, value)
     elif query not in NON_LOOKUP_ARGS and value:
         query_set_params.add_and_lookup(query, FIELD_LOOKUPS[query], value)
     # else no value or complex query term handled elsewhere
@@ -145,11 +151,8 @@ def get_search_term(
         match = regex.match(value)
         if match:
             success = True
-            # if query == CATEGORY_QUERY:
-            #     # need inner queryset to get list of categories with names
-            #     # like the search term and then look for opinions with those
-            #     # categories
-            #     get_category_query(query_set_params, match.group(group))
+            if query == KEYWORD_QUERY:
+                add_keyword_query(query_set_params, match.group(group))
             # elif query == STATUS_QUERY:
             #     # need inner queryset to get list of statuses with names
             #     # like the search term and then look for opinions with those
@@ -169,7 +172,7 @@ def get_search_term(
             #     # pinned
             #     pinned = Pinned.from_arg(match.group(group).lower())
             #     success = get_pinned_query(query_set_params, pinned, user)
-            if query in DATE_QUERIES:
+            elif query in DATE_QUERIES:
                 success = get_date_query(query_set_params, query, *[
                     match.group(idx) for idx in [
                         DATE_QUERY_YR_GROUP, DATE_QUERY_MTH_GROUP,
@@ -187,59 +190,90 @@ def get_search_term(
                 else query_set_params.add_invalid_term
             save_term_func(match.group(key_val_group))
 
-    # if query_set_params.is_empty and value:
-    #     query_set_params.search_type = SearchType.FREE if not any(
-    #         list(
-    #             map(lambda x: x in value, MARKER_CHARS)
-    #         )
-    #     ) else SearchType.UNKNOWN
-    #
-    #     if query_set_params.search_type == SearchType.FREE:
-    #         # no delimiting chars, so search title & content for
-    #         # any of the search terms
-    #         to_query = [TITLE_QUERY, CONTENT_QUERY]
-    #         or_q = {}
-    #         for term in value.split():
-    #             if len(or_q) == 0:
-    #                 or_q = {q: [term] for q in to_query}
-    #             else:
-    #                 or_q[TITLE_QUERY].append(term)
-    #                 or_q[CONTENT_QUERY].append(term)
-    #
-    #         # https://docs.djangoproject.com/en/4.1/topics/db/queries/#complex-lookups-with-q
-    #
-    #         # OR queries of title and content contains terms
-    #         # e.g. [
-    #         #   "WHERE ("title") LIKE '<term>'",
-    #         #   "WHERE ("content") LIKE '<term>'"
-    #         # ]
-    #         for qry in to_query:
-    #             query_set_params.add_or_lookup(
-    #                 '-'.join(to_query),
-    #                 Q(_connector=Q.OR, **{
-    #                     FIELD_LOOKUPS[qry]: term for term in or_q[qry]
-    #                 })
-    #             )
+    if query_set_params.is_empty and value:
+        query_set_params.search_type = SearchType.FREE if not any(
+            list(
+                map(lambda x: x in value, MARKER_CHARS)
+            )
+        ) else SearchType.UNKNOWN
+
+        if query_set_params.search_type == SearchType.FREE:
+            # no delimiting chars, so search keyword for
+            # any of the search terms
+            to_query = [KEYWORD_QUERY]
+            or_q = {}
+            for term in value.split():
+                if len(or_q) == 0:
+                    or_q = {q: [term] for q in to_query}
+                else:
+                    for q in to_query:
+                        or_q[q].append(term)
+
+            # https://docs.djangoproject.com/en/4.1/topics/db/queries/#complex-lookups-with-q
+
+            # OR queries of keyword and content contains terms
+            # e.g. [
+            #   "WHERE ("keyword") LIKE '<term>'",
+            #   "WHERE ("content") LIKE '<term>'"
+            # ]
+            for qry in to_query:
+                key = '-'.join(to_query)
+                if qry == KEYWORD_QUERY:
+                    add_keyword_query(
+                        query_set_params, or_q[qry], query_type=QueryTerm.OR,
+                        key=key)
+                else:
+                    # simple lookup
+                    query_set_params.add_or_lookup(key, Q(_connector=Q.OR, **{
+                        FIELD_LOOKUPS[qry]: term for term in or_q[qry]
+                    }))
 
     return query_set_params
 
 
-# def get_category_query(query_set_params: QuerySetParams,
-#                        name: str) -> None:
-#     """
-#     Get the category query
-#     :param query_set_params: query params to update
-#     :param name: category name or part thereof
-#     """
-#     # need inner queryset to get list of categories with names
-#     # like the search term and then look for opinions with those
-#     # categories
-#     # https://docs.djangoproject.com/en/4.1/ref/models/querysets/#icontains
-#     inner_qs = Category.objects.filter(**{
-#         f'{Category.NAME_FIELD}__icontains': name
-#     })
-#     query_set_params.add_and_lookup(
-#         CATEGORY_QUERY, FIELD_LOOKUPS[CATEGORY_QUERY], inner_qs)
+def add_keyword_query(query_set_params: QuerySetParams, name: Union[str, list],
+                      query_type: QueryTerm = QueryTerm.AND,
+                      key: str = KEYWORD_QUERY) -> None:
+    """
+    Get the keyword query
+    :param query_set_params: query params to update
+    :param query_type: query type to add; default QueryTerm.AND
+    :param name: keyword name or part thereof
+    :param key: query key
+    """
+    # need inner queryset to get list of keywords with names
+    # like the search term and then look for recipes with those
+    # keywords
+    # https://docs.djangoproject.com/en/4.1/ref/models/querysets/#icontains
+    if query_type == QueryTerm.OR:
+        # queryset to get list of keywords with names like any of the
+        # parts of the search term
+        words_qs = Keyword.objects.filter(
+            Q(_connector=Q.OR, **{
+                f'{Keyword.NAME_FIELD}__icontains': term for term in name
+            })
+        )
+        inner_qs = Q(_connector=Q.OR, **{
+            FIELD_LOOKUPS[KEYWORD_QUERY]: words_qs
+        })
+    else:
+        # queryset to get list of keywords with names like the search term
+        inner_qs = Keyword.objects.filter(**{
+            f'{Keyword.NAME_FIELD}__icontains': name
+        })
+
+    query_set_params.add_query_term(
+        query_type, key, value=inner_qs, term=FIELD_LOOKUPS[KEYWORD_QUERY])
+
+    # query_set_params.add_and_lookup(
+    #     KEYWORD_QUERY, FIELD_LOOKUPS[KEYWORD_QUERY], inner_qs)
+
+    # query_set_params.add_or_lookup(
+    #     KEYWORD_QUERY,
+    #     Q(_connector=Q.OR, **{
+    #         FIELD_LOOKUPS[qry]: term for term in or_q[qry]
+    #     })
+    # )
 
 
 def get_date_query(query_set_params: QuerySetParams,

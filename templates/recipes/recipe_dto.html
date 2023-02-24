@@ -24,7 +24,10 @@
                                 <p class="card-text">{{ recipe_dto.author.username }}</p>
                             </div>
                             <div class="col-sm-6">
-                                <p class="card-text"><i class="fa-regular fa-clock"></i> {% human_readable_timedelta recipe_dto.total_time %}</p>
+                                <p class="card-text">
+                                    {% if time == 'prep' %}<i class="fa-solid fa-mortar-pestle"></i>{% elif time == 'cook' %}<i class="fa-solid fa-kitchen-set"></i>{% else %}<i class="fa-solid fa-calculator"></i>{% endif %}
+                                    {% if time == 'prep' %}{% human_readable_timedelta recipe_dto.prep_time %}{% elif time == 'cook' %}{% human_readable_timedelta recipe_dto.cook_time %}{% else %}{% human_readable_timedelta recipe_dto.total_time %}{% endif %}
+                                </p>
                             </div>
                         </div>
                     </div>
