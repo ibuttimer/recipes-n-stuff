@@ -46,16 +46,17 @@ class IngredientDto(BaseDto):
     measure: str = ''
 
     @staticmethod
-    def from_model(ingredient: RecipeIngredient):
+    def from_model(recipe_ingredient: RecipeIngredient):
         """
-        Generate a DTO from the specified `ingredient`
-        :param ingredient: model instance to populate DTO from
+        Generate a DTO from the specified `recipe_ingredient`
+        :param recipe_ingredient: model instance to populate DTO from
         :return: DTO instance
         """
-        dto = BaseDto.from_model_to_obj(ingredient, IngredientDto())
+        dto = BaseDto.from_model_to_obj(recipe_ingredient, IngredientDto())
         # custom handling for specific attributes
-        dto.ingredient = ingredient.ingredient.name
-        dto.measure = ingredient.ingredient.measure.abbrev
+        dto.ingredient = recipe_ingredient.ingredient.name
+        # Note: using measure from RecipeIngredient NOT Ingredient
+        dto.measure = recipe_ingredient.measure.abbrev
 
         return dto
 

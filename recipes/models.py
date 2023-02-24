@@ -447,6 +447,7 @@ class RecipeIngredient(ModelMixin, models.Model):
     INGREDIENT_FIELD = INGREDIENT_FIELD
     QUANTITY_FIELD = QUANTITY_FIELD
     INDEX_FIELD = INDEX_FIELD
+    MEASURE_FIELD = MEASURE_FIELD
 
     RECIPE_INGREDIENT_ATTRIB_QUANTITY_MAX_LEN: int = 30
     RECIPE_INGREDIENT_ATTRIB_INDEX_MIN: int = 1
@@ -463,6 +464,11 @@ class RecipeIngredient(ModelMixin, models.Model):
             MinValueValidator(RECIPE_INGREDIENT_ATTRIB_INDEX_MIN),
             MaxValueValidator(RECIPE_INGREDIENT_ATTRIB_INDEX_MAX)
         ]
+    )
+    measure = models.ForeignKey(
+        Measure, on_delete=models.CASCADE, help_text=_(
+            "Designates the measure for the ingredient."
+        )
     )
 
     @dataclass

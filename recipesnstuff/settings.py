@@ -253,13 +253,15 @@ if not TEST:
         # read os.environ['REMOTE_DATABASE_URL']
         'remote': env.db_url(
             'REMOTE_DATABASE_URL',
-            default=f'sqlite:///{os.path.join(BASE_DIR, "temp-remote.sqlite3")}'
+            default=f'sqlite:'
+                    f'///{os.path.join(BASE_DIR, "temp-remote.sqlite3")}'
         ),
 
         # read os.environ['SQLITE_URL']
         'extra': env.db_url(
             'SQLITE_URL',
-            default=f'sqlite:///{os.path.join(BASE_DIR, "temp-sqlite.sqlite3")}'
+            default=f'sqlite:'
+                    f'///{os.path.join(BASE_DIR, "temp-sqlite.sqlite3")}'
         )
     })
 

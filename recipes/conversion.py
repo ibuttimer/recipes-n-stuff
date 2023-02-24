@@ -59,6 +59,7 @@ class Measures(Enum):
     MILLILITRE = ("millilitre", "ml")
     CENTILITRE = ("centilitre", "cl")
     DECILITRE = ("decilitre", "dl")
+    BOTTLE = ("bottle (750 ml)", "btl (750 ml)")
 
     DRAM = ("dram", "dr.")
     OUNCE = ("ounce", "oz.")

@@ -38,8 +38,8 @@ from utils import (
     NO_CONTENT_HELP_CTX,
     Crud, app_template_path, ORDER_QUERY, PAGE_QUERY, PER_PAGE_QUERY, PerPage8,
     REORDER_QUERY, REORDER_REQ_QUERY_ARGS, YesNo,
-    READ_ONLY_CTX, AMOUNT_QUERY_ARGS, REPEAT_SEARCH_TERM_CTX, query_search_term,
-    LIST_SUB_HEADING_CTX, ChoiceArg
+    READ_ONLY_CTX, AMOUNT_QUERY_ARGS, REPEAT_SEARCH_TERM_CTX,
+    query_search_term, LIST_SUB_HEADING_CTX, ChoiceArg
 )
 from utils.content_list_mixin import SELECTED_SORT_CTX
 from utils.search import SEARCH_QUERY
@@ -406,7 +406,7 @@ class SearchRecipeList(RecipeList):
         if query_params[AUTHOR_QUERY].was_set_to(self.user.username):
             # no need for sort by author if only one author
             excludes.extend([
-                RecipeSortOrder.AUTHOR_AZ,RecipeSortOrder.AUTHOR_ZA
+                RecipeSortOrder.AUTHOR_AZ, RecipeSortOrder.AUTHOR_ZA
             ])
         self.sort_order = [
             so for so in RecipeSortOrder if so not in excludes
