@@ -34,7 +34,8 @@ from .constants import (
     RECIPE_ID_INGREDIENT_NEW_ROUTE_NAME,
     RECIPE_INSTRUCTION_ID_ROUTE_NAME, RECIPE_ID_INSTRUCTION_NEW_URL,
     RECIPE_ID_INSTRUCTION_NEW_ROUTE_NAME, RECIPE_INSTRUCTION_ID_URL,
-    RECIPE_ID_BUY_BOX_ROUTE_NAME, RECIPE_ID_BUY_BOX_URL
+    RECIPE_ID_BUY_BOX_ROUTE_NAME, RECIPE_ID_BUY_BOX_URL,
+    RECIPE_CATEGORIES_URL, CATEGORIES_ROUTE_NAME,
 )
 from .views import (
     # RecipeCreate,
@@ -42,6 +43,7 @@ from .views import (
     RecipeDetail, RecipeDetailUpdate, add_recipe_to_basket,
     RecipeIngredientDetail, create_recipe_ingredient,
     InstructionDetail, create_recipe_instruction,
+    CategoryList
 )
 
 # https://docs.djangoproject.com/en/4.1/topics/http/urls/#url-namespaces-and-included-urlconfs
@@ -68,4 +70,7 @@ urlpatterns = [
          name=RECIPE_INSTRUCTION_ID_ROUTE_NAME),
     path(RECIPE_ID_INSTRUCTION_NEW_URL, create_recipe_instruction,
          name=RECIPE_ID_INSTRUCTION_NEW_ROUTE_NAME),
+
+    path(RECIPE_CATEGORIES_URL, CategoryList.as_view(),
+         name=CATEGORIES_ROUTE_NAME),
 ]

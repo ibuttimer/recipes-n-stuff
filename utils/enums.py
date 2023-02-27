@@ -19,6 +19,7 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+import sys
 from dataclasses import dataclass
 from enum import Enum
 from typing import TypeVar, Any, Callable, Optional, Type, Union, List
@@ -250,7 +251,22 @@ class SortOrder(ChoiceArg):
         self.order = order
 
 
-class PerPage6(ChoiceArg):
+class PerPageMixin:
+    """ Mixin for enums representing items per page """
+
+    @staticmethod
+    def all_value():
+        return sys.maxsize
+
+    def __init__(self, count: int):
+        self.all = count == self.all_value()
+
+    @property
+    def is_all(self):
+        return self.count == self.all_value()
+
+
+class PerPage6(PerPageMixin, ChoiceArg):
     """ Enum representing items per page, initial 6/pg step 3 """
     SIX = 6
     NINE = 9
@@ -258,13 +274,18 @@ class PerPage6(ChoiceArg):
     FIFTEEN = 15
 
     def __init__(self, count: int):
-        super().__init__(f'{count} per page', count)
+        super().__init__(count)     # PerPageMixin __init__
+        # self.__class__.__mro__ = (
+        #   <enum 'PerPage6'>, <class 'utils.enums.PerPageMixin'>,
+        #   <enum 'ChoiceArg'>, <enum 'Enum'>, <class 'object'>
+        # ) so type for super is PerPageMixin to hit ChoiceArg
+        super(PerPageMixin, self).__init__(f'{count} per page', count)
 
 
 PerPage6.DEFAULT = PerPage6.SIX
 
 
-class PerPage8(ChoiceArg):
+class PerPage8(PerPageMixin, ChoiceArg):
     """ Enum representing items per page, initial 8/pg step 4 """
     EIGHT = 8
     TWELVE = 12
@@ -272,10 +293,32 @@ class PerPage8(ChoiceArg):
     TWENTY = 20
 
     def __init__(self, count: int):
-        super().__init__(f'{count} per page', count)
+        super().__init__(count)     # PerPageMixin __init__
+        # ChoiceArg __init__, see PerPage6.__init__ comment
+        super(PerPageMixin, self).__init__(f'{count} per page', count)
 
 
 PerPage8.DEFAULT = PerPage8.EIGHT
+
+
+class PerPage50(PerPageMixin, ChoiceArg):
+    """ Enum representing items per page, initial 50/pg step 50 """
+    FIFTY = 50
+    ONE_HUNDRED = 100
+    ONE_FIFTY = 150
+    TWO_HUNDRED = 200
+    TWO_FIFTY = 250
+    ALL = PerPageMixin.all_value()
+
+    def __init__(self, count: int):
+        super().__init__(count)     # PerPageMixin __init__
+        # ChoiceArg __init__, see PerPage6.__init__ comment
+        super(PerPageMixin, self).__init__(
+            f'{count} per page' if count != PerPageMixin.all_value() else
+            'All', count)
+
+
+PerPage50.DEFAULT = PerPage50.FIFTY
 
 
 class YesNo(ChoiceArg):

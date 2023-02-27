@@ -62,24 +62,32 @@
                                 </a>
                             </li>
                             {% if user.is_authenticated %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Link</a>
-                            </li>
                             <li class="nav-item dropdown">
                                 <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
-                                   {% with has_permission=recipes_menu.has_permission active=recipes_menu.active disabled=recipes_menu.disabled %}{% include "snippet/menu_dropdown_class.html" %}{% endwith %}
-                                >
+                                   {% with has_permission=recipes_menu.has_permission active=recipes_menu.active disabled=recipes_menu.disabled %}{% include "snippet/menu_dropdown_class.html" %}{% endwith %}>
                                     Recipes
                                 </a>
                                 <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'recipes:recipes' %}?category=Breakfast">Breakfast</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'recipes:recipes' %}?category=Lunch/Snacks">Lunch/Snacks</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'recipes:recipes' %}?category=Dessert">Dessert</a></li>
+                                    <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{% url 'recipes:recipes' %}">All</a></li>
                                 </ul>
                             </li>
-                                {% if user.is_superuser %}
+                            <li class="nav-item dropdown">
+                                <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                   {% with has_permission=categories_menu.has_permission active=categories_menu.active disabled=categories_menu.disabled %}{% include "snippet/menu_dropdown_class.html" %}{% endwith %}>
+                                    Categories
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'recipes:recipe_categories' %}">All</a></li>
+                                </ul>
+                            </li>
+                            {% if user.is_superuser %}
                                 <li class="nav-item dropdown">
                                     <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
-                                       {% with has_permission=subscription_menu.has_permission active=subscription_menu.active disabled=subscription_menu.disabled %}{% include "snippet/menu_dropdown_class.html" %}{% endwith %}
-                                    >
+                                       {% with has_permission=subscription_menu.has_permission active=subscription_menu.active disabled=subscription_menu.disabled %}{% include "snippet/menu_dropdown_class.html" %}{% endwith %}>
                                         Subscriptions
                                     </a>
                                     <ul class="dropdown-menu">

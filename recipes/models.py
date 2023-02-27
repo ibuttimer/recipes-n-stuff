@@ -28,6 +28,7 @@ import html
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.db.models import Field, Lookup
 
 from base.dto import ImagePool
 from user.models import User
@@ -501,3 +502,18 @@ class Image(ModelMixin, models.Model):
 
     def __str__(self):
         return f'{self.text}'
+
+
+@Field.register_lookup
+class INotSimilarTo(Lookup):
+    """
+    Case-insensitive custom lookup using SIMILAR TO Regular Expressions
+    https://www.postgresql.org/docs/14/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP
+    """
+    lookup_name = 'inotsimilarto'
+
+    def as_sql(self, compiler, connection):
+        lhs, lhs_params = self.process_lhs(compiler, connection)
+        rhs, rhs_params = self.process_rhs(compiler, connection)
+        params = lhs_params + rhs_params
+        return 'NOT LOWER(%s) SIMILAR TO %s' % (lhs, rhs), params

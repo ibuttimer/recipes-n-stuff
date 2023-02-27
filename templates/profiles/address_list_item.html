@@ -25,7 +25,7 @@
 </div>
 <div class="row mb-0">
     <div {% if address_dto.is_default %} class="col-sm-6" {% else %} class="col-sm-12" {% endif %}>
-        <a class="a--addr-edit" href="{% url 'profiles:address_id' address_dto.id %}">{% trans "Edit" %}</a>{% if not address_dto.is_default %}&ensp;&ensp;&VerticalLine;&ensp;&ensp;<a class="a--addr-del" href="{% url 'profiles:address_id' address_dto.id %}">{% trans "Delete" %}</a>&ensp;&ensp;&VerticalLine;&ensp;&ensp;<a class="a--addr-dflt" href="{% url 'profiles:address_id_default' address_dto.id %}">{% trans "Make Default" %}</a>{% endif %}
+        <a class="a--addr-edit" href="{% url 'profiles:address_id' address_dto.id %}">{% trans "Edit" %}</a>{% if not address_dto.is_default %}&emsp;&VerticalLine;&emsp;<a class="a--addr-del" href="{% url 'profiles:address_id' address_dto.id %}">{% trans "Delete" %}</a>&emsp;&VerticalLine;&emsp;<a class="a--addr-dflt" href="{% url 'profiles:address_id_default' address_dto.id %}">{% trans "Make Default" %}</a>{% endif %}
     </div>
     {% if address_dto.is_default %}
         <div class="col-sm-6 text-end">

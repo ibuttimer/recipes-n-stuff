@@ -22,7 +22,7 @@
 {% block content %}
 <div class="row mt-2 mb-2">
     <div class="col-12 text-center">
-        <h3>{{ recipe_dto.name }}</h3>
+        <h3>{{ recipe_dto.name | safe }}</h3>
     </div>
 </div>
 
@@ -33,7 +33,7 @@
         </div>
         <div class="col-sm-6">
             <div class="row">
-                <div class="col-12">
+                <div class="col-sm-8">
                     <p>
                         Submitted by
                         <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="view {{ recipe_dto.author.username }}'s profile">
@@ -48,6 +48,15 @@
                                 </a>
                             </span>
                         {% endif %}
+                    </p>
+                </div>
+                <div class="col-sm-4 text-center">
+                    <p>
+                        <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="view all {{ recipe_dto.category.name }} recipes">
+                            <a class="btn btn-outline-info" href="{% url 'recipes:recipes' %}?category={{ recipe_dto.category.name }}" aria-label="view all {{ recipe_dto.category.name }} recipes">
+                                {{ recipe_dto.category.name }}
+                            </a>
+                        </span>
                     </p>
                 </div>
             </div>

@@ -19,36 +19,18 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from typing import Union
+#
+from string import capwords as str_capwords
 
-from django.core.exceptions import PermissionDenied
-from django.http import HttpRequest
-from django.template.defaultfilters import pluralize
+from django import template
+from django.template.defaultfilters import stringfilter
 
-from utils import GET, PATCH, POST, DELETE, ModelMixin
+register = template.Library()
 
-ACTIONS = {
-    GET: 'viewed',
-    PATCH: 'updated',
-    POST: 'updated',
-    DELETE: 'deleted'
-}
+# https://docs.djangoproject.com/en/4.1/howto/custom-template-tags/#simple-tags
 
 
-def raise_permission_denied(
-        request: HttpRequest, model: Union[ModelMixin, str],
-        plural: str = 's'):
-    """
-    Raise a PermissionDenied exception
-    :param request: http request
-    :param model: model
-    :param plural: model name pluralising addition; default 's'
-        (https://docs.djangoproject.com/en/4.1/ref/templates/builtins/#pluralize)
-    :raises: PermissionDenied
-    """
-    if isinstance(model, ModelMixin):
-        model = model.model_name_caps()
-    action = ACTIONS[request.method.upper()]
-    raise PermissionDenied(
-        f"{model}{pluralize(2, arg=plural)} may only be {action} by "
-        f"their owners")
+@register.filter
+@stringfilter
+def capwords(value):
+    return str_capwords(value)

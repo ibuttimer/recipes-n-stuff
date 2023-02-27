@@ -88,6 +88,9 @@ RECIPE_INSTRUCTIONS_URL = "instructions"
 RECIPE_INSTRUCTION_ID_URL = \
     url_path(RECIPE_INSTRUCTIONS_URL, f"<int:{PK_PARAM_NAME}>")
 
+LETTER_PARAM_NAME = "letter"
+RECIPE_CATEGORIES_URL = url_path(RECIPES_URL, "categories")
+
 # convention is recipes route names begin with 'recipe'
 RECIPES_ROUTE_NAME = "recipes"
 RECIPE_SEARCH_ROUTE_NAME = "recipe_search"
@@ -103,8 +106,12 @@ RECIPE_INGREDIENT_ID_ROUTE_NAME = "recipe_ingredient_id"
 RECIPE_INSTRUCTIONS_ROUTE_NAME = "recipe_instructions"
 RECIPE_INSTRUCTION_ID_ROUTE_NAME = "recipe_instruction_id"
 
+CATEGORIES_ROUTE_NAME = "recipe_categories"
+
 # query related
 NEXT_QUERY = 'next'
+LETTER_QUERY = 'letter'
+CATEGORY_QUERY = 'category'
 
 # context related
 RECIPE_FORM_CTX = 'recipe_form'
@@ -118,6 +125,10 @@ NEW_URL_CTX = 'new_url'
 REFRESH_URL_CTX = 'refresh_url'
 KEYWORDS_CTX = 'keywords'
 TIME_CTX = 'time'
+CATEGORY_LIST_CTX = 'category_list'
+LETTERS_CTX = 'letters'
+LETTER_CTX = 'letter'
+CATEGORY_CTX = 'category'
 
 COUNT_OPTIONS_CTX = 'count_options'
 SELECTED_COUNT_CTX = 'selected_count'

@@ -20,94 +20,91 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 #
+import string
 from enum import Enum
-from typing import Type, Callable, Tuple, Optional, Union, List
+from typing import Type, Callable, Tuple, Optional, List
 from string import capwords
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import F
 from django.http import HttpRequest
 from django.template.loader import render_to_string
+from django.contrib import messages
 
-from profiles.constants import ADDRESS_LIST_CTX, NEW_ENTRY_CTX
-from profiles.enums import AddressQueryType, AddressSortOrder
-from profiles.views.address_queries import (
-    get_lookup, DEFAULT_ADDRESS_QUERY, FILTERS_ORDER, ALWAYS_FILTERS
-)
-# from opinions.constants import (
-#     STATUS_QUERY, AUTHOR_QUERY, SEARCH_QUERY, PINNED_QUERY,
-#     TEMPLATE_OPINION_REACTIONS, TEMPLATE_REACTION_CTRLS, CONTENT_STATUS_CTX,
-#     REPEAT_SEARCH_TERM_CTX, LIST_HEADING_CTX, PAGE_HEADING_CTX, TITLE_CTX,
-#     POPULARITY_CTX, OPINION_LIST_CTX, STATUS_BG_CTX, FILTER_QUERY,
-#     REVIEW_QUERY, IS_REVIEW_CTX, IS_FOLLOWING_FEED_CTX, IS_CATEGORY_FEED_CTX,
-#     FOLLOWED_CATEGORIES_CTX, CATEGORY_QUERY, ALL_CATEGORIES,
-#     NO_CONTENT_HELP_CTX, NO_CONTENT_MSG_CTX, USER_CTX, CATEGORY_CTX,
-#     LIST_SUB_HEADING_CTX, MESSAGE_CTX, IS_ALL_FEED_CTX
-# )
+from base.utils import raise_permission_denied
+from base.views import MESSAGE_CTX
 from utils import (
     QueryArg, SortOrder, QuerySetParams, QueryOption, ContentListMixin,
     TITLE_CTX, LIST_HEADING_CTX, PAGE_HEADING_CTX, NO_CONTENT_MSG_CTX,
     NO_CONTENT_HELP_CTX,
-    Crud, app_template_path, ORDER_QUERY, PAGE_QUERY, PER_PAGE_QUERY, PerPage6,
-    REORDER_QUERY, REORDER_REQ_QUERY_ARGS, USER_QUERY, SNIPPETS_CTX,
-    SEARCH_QUERY, REPEAT_SEARCH_TERM_CTX, query_search_term
+    Crud, app_template_path, ORDER_QUERY, PAGE_QUERY, PER_PAGE_QUERY,
+    PerPage50, REORDER_QUERY, REORDER_REQ_QUERY_ARGS, YesNo,
+    READ_ONLY_CTX, AMOUNT_QUERY_ARGS, REPEAT_SEARCH_TERM_CTX,
+    query_search_term, LIST_SUB_HEADING_CTX, ChoiceArg
 )
-# from opinions.views.opinion_queries import (
-#     FILTERS_ORDER, ALWAYS_FILTERS, get_lookup
-# )
-# from opinions.views.utils import (
-#      REORDER_REQ_QUERY_ARGS,
-#     query_search_term, OPINION_LIST_QUERY_ARGS,
-#     OPTION_SEARCH_QUERY_ARGS, STATUS_BADGES, add_content_no_show_markers,
-#     FOLLOWED_OPINION_LIST_QUERY_ARGS, QueryOption,
-#     REVIEW_OPINION_LIST_QUERY_ARGS, CATEGORY_FEED_QUERY_ARGS
-# )
+from utils.search import SEARCH_QUERY
 
-from recipesnstuff import PROFILES_APP_NAME
-from profiles.models import Address
-from .utils import (
-    address_permission_check, address_dflt_unmod_snippets
+from recipes.constants import (
+    THIS_APP, CATEGORY_LIST_CTX, LETTER_QUERY, LETTERS_CTX, LETTER_CTX,
 )
-from base.utils import raise_permission_denied
-from ..dto import AddressDto
+from recipes.views.utils import (
+    recipe_permission_check
+)
+from recipes.views.category_queries import (
+    get_lookup, FILTERS_ORDER, ALWAYS_FILTERS
+)
+from .dto import CategoryDto
+from ..enums import CategorySortOrder, CategoryQueryType
+from ..models import Category
 
-
-# args for an address reorder/next page/etc. request
+# args for a category reorder/next page/etc. request
 REORDER_QUERY_ARGS = [
-    QueryOption(ORDER_QUERY, AddressSortOrder, AddressSortOrder.DEFAULT),
+    QueryOption(
+        ORDER_QUERY, CategorySortOrder, CategorySortOrder.DEFAULT),
     QueryOption.of_no_cls(PAGE_QUERY, 1),
-    QueryOption(PER_PAGE_QUERY, PerPage6, PerPage6.DEFAULT),
+    QueryOption(PER_PAGE_QUERY, PerPage50, PerPage50.DEFAULT),
     QueryOption.of_no_cls(REORDER_QUERY, 0),
 ]
 assert REORDER_REQ_QUERY_ARGS == list(
     map(lambda query_opt: query_opt.query, REORDER_QUERY_ARGS)
 )
 
-# request arguments for an address list request
-ADDRESS_LIST_QUERY_ARGS = REORDER_QUERY_ARGS.copy()
-ADDRESS_LIST_QUERY_ARGS.extend([
+# request arguments for a category list request
+LIST_QUERY_ARGS = REORDER_QUERY_ARGS.copy()
+LIST_QUERY_ARGS.extend([
     # non-reorder query args
     QueryOption.of_no_cls_dflt(SEARCH_QUERY),
-    QueryOption.of_no_cls(USER_QUERY, None),
-    QueryOption.of_no_cls(DEFAULT_ADDRESS_QUERY, -1),
+    QueryOption.of_no_cls_dflt(LETTER_QUERY),
 ])
-# ADDRESS_LIST_QUERY_ARGS.extend(OPINION_APPLIED_DEFAULTS_QUERY_ARGS)
+
+LETTER_SEARCH = [
+    # display, query, aria
+    ('All', '', 'all'),
+    ('123', '1', 'not beginning with alphabetic characters'),
+]
+LETTER_SEARCH.extend([
+    # display, query, aria
+    (letter, letter, f'beginning with {letter}')
+    for letter in string.ascii_uppercase
+])
+
 
 
 class ListTemplate(Enum):
     """ Enum representing possible response template """
-    FULL_TEMPLATE = app_template_path(PROFILES_APP_NAME, 'address_list.html')
+    FULL_TEMPLATE = app_template_path(THIS_APP, 'categories_list.html')
     """ Whole page template """
     CONTENT_TEMPLATE = app_template_path(
-        PROFILES_APP_NAME, 'address_list_content.html')
+        THIS_APP, 'category_list_content.html')
     """ List-only template for requery """
 
 
-class AddressList(LoginRequiredMixin, ContentListMixin):
+class CategoryList(LoginRequiredMixin, ContentListMixin):
     """
-    Address list response
+    Class-based view for category list
     """
     # inherited from MultipleObjectMixin via ListView
-    model = Address
+    model = Category
 
     def __init__(self):
         super().__init__()
@@ -122,14 +119,14 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         Get the permission check function
         :return: permission check function
         """
-        return address_permission_check
+        return recipe_permission_check
 
     def valid_req_query_args(self) -> List[QueryOption]:
         """
         Get the valid request query args
         :return: dict of query args
         """
-        return ADDRESS_LIST_QUERY_ARGS
+        return LIST_QUERY_ARGS
 
     def additional_check_func(
             self, request: HttpRequest, query_params: dict[str, QueryArg],
@@ -142,10 +139,9 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         :param kwargs: additional keyword arguments
         """
         active = request.user.is_active
-        super_or_own = request.user.is_superuser or \
-            self.is_query_own(query_params)
-        if not (active and super_or_own):
-            raise_permission_denied(request, Address, plural='es')
+        is_super = request.user.is_superuser
+        if not (active or is_super):
+            raise_permission_denied(request, 'Categor', plural='y,ies')
 
     def validate_queryset(self, query_params: dict[str, QueryArg]):
         """
@@ -154,12 +150,13 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
          this function)
         :param query_params: request query
         """
-        self.query_type = AddressQueryType.UNKNOWN
-        if self.is_query_own(query_params):
-            self.query_type = AddressQueryType.MY_ADDRESSES
-        elif not self.query_param_was_set(query_params):
-            # no query params, basic all addresses query
-            self.query_type = AddressQueryType.ALL_ADDRESSES
+        self.query_type = CategoryQueryType.UNKNOWN
+        if not self.query_param_was_set(query_params):
+            # no query params, basic all categories query
+            self.query_type = CategoryQueryType.ALL_CATEGORIES
+        elif self.query_value_was_set(query_params, LETTER_QUERY):
+            self.query_type = CategoryQueryType.LETTER_CATEGORY
+            self.sub_query_type = query_params[LETTER_QUERY].value
 
     def set_extra_context(self, query_params: dict[str, QueryArg],
                           query_set_params: QuerySetParams):
@@ -172,13 +169,9 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         # inherited from ContextMixin via ListView
         self.extra_context = {
             REPEAT_SEARCH_TERM_CTX: query_search_term(
-                query_params, exclude_queries=REORDER_REQ_QUERY_ARGS)
+                query_params, exclude_queries=REORDER_REQ_QUERY_ARGS),
+            LETTERS_CTX: LETTER_SEARCH
         }
-
-        addr_count = query_params.get(DEFAULT_ADDRESS_QUERY).value
-        if addr_count >= 0:
-            self.extra_context[SNIPPETS_CTX] = \
-                address_dflt_unmod_snippets(addr_count)
 
         self.extra_context.update(
             self.get_title_heading(query_params))
@@ -188,11 +181,12 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         Get the title and page heading for context
         :param query_params: request query
         """
-        title = 'Address'
+        title = 'Categories'
 
         return {
             TITLE_CTX: title,
-            LIST_HEADING_CTX: capwords(title)
+            LIST_HEADING_CTX: capwords(title),
+            READ_ONLY_CTX: False
         }
 
     def set_queryset(
@@ -255,11 +249,11 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
                     get_lookup(key, value, self.user,
                                query_set_params=query_set_params)
 
-            self.queryset = query_set_params.apply(Address.objects)
+            self.queryset = query_set_params.apply(Category.objects)
 
         else:
             # invalid query term entered
-            self.queryset = Address.objects.none()
+            self.queryset = Category.objects.none()
 
     def set_sort_order_options(self, query_params: dict[str, QueryArg]):
         """
@@ -268,19 +262,8 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         :return:
         """
         # select sort order options to display
-        excludes = []
-        # if query_params[AUTHOR_QUERY].was_set_to(self.user.username):
-        #     # no need for sort by author if only one author
-        #     excludes.extend([
-        #         OpinionSortOrder.AUTHOR_AZ, OpinionSortOrder.AUTHOR_ZA
-        #     ])
-        # if not query_params[STATUS_QUERY].value == QueryStatus.ALL:
-        #     # no need for sort by status if only one status
-        #     excludes.extend([
-        #         OpinionSortOrder.STATUS_AZ, OpinionSortOrder.STATUS_ZA
-        #     ])
         self.sort_order = [
-            so for so in AddressSortOrder if so not in excludes
+            so for so in self.get_sort_order_enum()
         ]
 
     def get_sort_order_enum(self) -> Type[SortOrder]:
@@ -288,7 +271,14 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         Get the subclass-specific SortOrder enum
         :return: SortOrder enum
         """
-        return AddressSortOrder
+        return CategorySortOrder
+
+    def get_per_page_enum(self) -> Type[ChoiceArg]:
+        """
+        Get the subclass-specific PerPage enum
+        :return: PerPage enum
+        """
+        return PerPage50
 
     def select_template(
             self, query_params: dict[str, QueryArg]):
@@ -307,27 +297,24 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         """
         Get template context
         :param object_list:
-        :param kwargs: additional keyword arguments
+        :param kwargs: additional keyword arguments;
+                add_new: add new entity placeholder flag
         :return: context
         """
         context = super().get_context_data(object_list=object_list, **kwargs)
 
-        # self.context_std_elements(
-        #     add_content_no_show_markers(context=context)
-        # )
         self.context_std_elements(context=context)
 
-        if len(context[ADDRESS_LIST_CTX]) == 0:
+        if self.has_no_content(context):
             # move list heading to page heading as no content
             context[PAGE_HEADING_CTX] = context[LIST_HEADING_CTX]
             del context[LIST_HEADING_CTX]
 
-        dto_list = [AddressDto.add_new_obj()]
-        dto_list.extend([
-            AddressDto.from_model(address)
-            for address in context[ADDRESS_LIST_CTX]
-        ])
-        context[ADDRESS_LIST_CTX] = dto_list
+        dto_list = [
+            CategoryDto.from_model(category)
+            for category in context[CATEGORY_LIST_CTX]
+        ]
+        context[CATEGORY_LIST_CTX] = dto_list
 
         return self.add_no_content_context(context)
 
@@ -337,29 +324,22 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         :param context: context
         :return: context
         """
-        if len(context[ADDRESS_LIST_CTX]) == 0:
-            context[NO_CONTENT_MSG_CTX] = 'No addresses found.'
+        if self.has_no_content(context):
+            context[NO_CONTENT_MSG_CTX] = 'No categories found.'
 
-            # template = None
-            # template_ctx = None
-            # if self.query_type == QueryType.ALL_OPINIONS:
-            #     template = "all_opinions_no_content_msg.html"
-            # elif self.query_type == QueryType.ALL_USERS_OPINIONS:
-            #     template = "my_opinions_no_content_msg.html"
-            # elif self.query_type == QueryType.DRAFT_OPINIONS:
-            #     template = "draft_opinions_no_content_msg.html"
-            # elif self.query_type == QueryType.PREVIEW_OPINIONS:
-            #     template = "preview_opinions_no_content_msg.html"
-            #     template_ctx = {
-            #         USER_CTX: self.user
-            #     }
-            # elif self.query_type == QueryType.PINNED_OPINIONS:
-            #     template = "pinned_no_content.html"
-            #
-            # self.render_no_content_help(
-            #     context, app_template_path(
-            #       PROFILES_APP_NAME, "messages", template),
-            #       template_ctx=template_ctx)
+            template = None
+            template_ctx = None
+            if self.query_type == CategoryQueryType.ALL_CATEGORIES:
+                template = "all_recipes_no_content_msg.html"
+            elif self.query_type == CategoryQueryType.LETTER_CATEGORY:
+                template = 'category_begin_with_no_content_msg.html'
+                template_ctx = {
+                    LETTER_CTX: self.sub_query_type
+                }
+
+            self.render_no_content_help(
+                context, app_template_path(THIS_APP, "messages", template),
+                template_ctx=template_ctx)
 
         return context
 
@@ -369,3 +349,4 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
         :return: True if the list only template
         """
         return self.response_template == ListTemplate.CONTENT_TEMPLATE
+

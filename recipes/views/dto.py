@@ -169,6 +169,8 @@ class RecipeDto(BaseDto):
             dto.images = list(recipe.image_set.all())
         if all_attrib or Recipe.AUTHOR_FIELD in args:
             dto.author = recipe.author
+        if all_attrib or Recipe.CATEGORY_FIELD in args:
+            dto.category = recipe.category
 
         if nutri_text:
             dto.daily_values = ADULT_DV
@@ -273,3 +275,33 @@ def scan_alternatives(entities: List[Union[Instruction, RecipeIngredient]],
             getattr(entities[idx], attrib)
 
     return alts
+
+
+@dataclass
+class CategoryDto(BaseDto):
+    """ Recipe data transfer object """
+
+    @staticmethod
+    def from_model(recipe: Recipe, *args):
+        """
+        Generate a DTO from the specified `recipe`
+        :param recipe: model instance to populate DTO from
+        :param args: list of Recipe.xxx_FIELD names to populate in addition
+                    to basic fields
+        :return: DTO instance
+        """
+        dto = BaseDto.from_model_to_obj(recipe, CategoryDto())
+        # custom handling for specific attributes
+        return dto
+
+    @staticmethod
+    def from_id(pk: int, *args):
+        """
+        Generate a DTO from the specified recipe `id`
+        :param pk: recipe id to populate DTO from
+        :param args: list of Recipe.xxx_FIELD names to populate in addition
+                    to basic fields
+        :return: DTO instance
+        """
+        recipe, _ = get_recipe(pk)
+        return CategoryDto.from_model(recipe, *args,)

@@ -31,9 +31,9 @@ from django.shortcuts import get_object_or_404
 
 from checkout.models import Currency
 from order.models import OrderProduct
-from recipes.constants import KEYWORD_QUERY
+from recipes.constants import KEYWORD_QUERY, CATEGORY_QUERY
 from recipes.models import (
-    Recipe, Ingredient, Instruction, RecipeIngredient, Keyword
+    Recipe, Ingredient, Instruction, RecipeIngredient, Keyword, Category
 )
 from user.models import User
 from utils import (
@@ -47,7 +47,7 @@ from utils.query_params import SearchType, QueryTerm
 from utils.search import MARKER_CHARS
 
 NON_DATE_QUERIES = [
-    KEYWORD_QUERY, USER_QUERY
+    KEYWORD_QUERY, CATEGORY_QUERY, USER_QUERY
 ]
 REGEX_MATCHERS = regex_matchers(NON_DATE_QUERIES)
 REGEX_MATCHERS.update(regex_date_matchers())
@@ -56,9 +56,7 @@ FIELD_LOOKUPS = {
     # query param: filter lookup
     SEARCH_QUERY: '',
     KEYWORD_QUERY: f'{Recipe.KEYWORDS_FIELD}__in',
-    # STATUS_QUERY: f'{Opinion.STATUS_FIELD}__{Status.NAME_FIELD}',
-    # TITLE_QUERY: f'{Opinion.TITLE_FIELD}__icontains',
-    # CONTENT_QUERY: f'{Opinion.CONTENT_FIELD}__icontains',
+    CATEGORY_QUERY: f'{Recipe.CATEGORY_FIELD}__{Category.NAME_FIELD}__iexact',
     # AUTHOR_QUERY: f'{Opinion.USER_FIELD}__{User.USERNAME_FIELD}__icontains',
     # CATEGORY_QUERY: f'{Opinion.CATEGORIES_FIELD}__in',
     # ON_OR_AFTER_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date__gte',
@@ -264,16 +262,6 @@ def add_keyword_query(query_set_params: QuerySetParams, name: Union[str, list],
 
     query_set_params.add_query_term(
         query_type, key, value=inner_qs, term=FIELD_LOOKUPS[KEYWORD_QUERY])
-
-    # query_set_params.add_and_lookup(
-    #     KEYWORD_QUERY, FIELD_LOOKUPS[KEYWORD_QUERY], inner_qs)
-
-    # query_set_params.add_or_lookup(
-    #     KEYWORD_QUERY,
-    #     Q(_connector=Q.OR, **{
-    #         FIELD_LOOKUPS[qry]: term for term in or_q[qry]
-    #     })
-    # )
 
 
 def get_date_query(query_set_params: QuerySetParams,

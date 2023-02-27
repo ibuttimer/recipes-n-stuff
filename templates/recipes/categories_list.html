@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-<!-- recipe_list.html start -->
-{# --- recipe_list.html template variable defines for includes --- #}
-{# recipe list template expects: 'snippets' as list of extra html code blocks to include #}
-{#                             : 'paginator' as a Paginator #}
-{#                             : 'recipe_list' as a list of RecipeDto #}
+<!-- categories_list.html start -->
+{# --- categories_list.html template variable defines for includes --- #}
+{# category list template expects: 'snippets' as list of extra html code blocks to include #}
+{#                               : 'paginator' as a Paginator #}
+{#                               : 'category_list' as a list of CategoryDto #}
 
 {% load i18n %}
 {% load static %}
@@ -38,7 +38,7 @@
     {% include "snippet/sort_order_select.html" %}
 
     <article id="article-content" class="row d-flex justify-content-center">
-        {% include "recipes/recipe_list_content.html" %}
+        {% include "recipes/category_list_content.html" %}
     </article>
 </div>
 
@@ -52,4 +52,4 @@
     {{ block.super }}
     <script src="{% static 'js/page_content.js' %}"></script>
 {% endblock extra_js_body %}
-<!-- recipe_list.html end -->
+<!-- categories_list.html end -->

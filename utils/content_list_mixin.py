@@ -27,6 +27,7 @@ from typing import Type, Callable, Tuple, Optional, List, Any, Union
 from django.core.paginator import Paginator
 from django.db.models.functions import Lower
 from django.http import HttpRequest, HttpResponse
+from django.template.loader import render_to_string
 from django.views import generic
 
 from .search import (
@@ -39,7 +40,9 @@ from .search import (
 from .misc import Crud
 from .models import DESC_LOOKUP
 from .query_params import QuerySetParams
-from .enums import QueryOption, QueryArg, SortOrder, PerPage6, ChoiceArg
+from .enums import (
+    QueryOption, QueryArg, SortOrder, PerPage6, ChoiceArg, PerPageMixin
+)
 
 # general context keys
 TITLE_CTX = 'title'                             # page title
@@ -298,7 +301,10 @@ class ContentListMixin(generic.ListView):
         """
         # set pagination
         # inherited from MultipleObjectMixin via ListView
-        self.paginate_by = query_params[PER_PAGE_QUERY].value_arg_or_value
+        per_page = query_params[PER_PAGE_QUERY]
+        self.paginate_by = None \
+            if isinstance(per_page, PerPageMixin) and per_page.is_all else \
+            query_params[PER_PAGE_QUERY].value_arg_or_value
 
     def get_ordering(self):
         """ Get ordering of list """
@@ -362,6 +368,21 @@ class ContentListMixin(generic.ListView):
         """
         return len(context[key]) == 0
 
+    @staticmethod
+    def render_no_content_help(
+            context: dict, template: str, template_ctx: dict = None) -> dict:
+        """
+        Add no content-specific help to context
+        :param context: context
+        :param template: template path
+        :param template_ctx: template context
+        :return: context
+        """
+        if template:
+            context[NO_CONTENT_HELP_CTX] = render_to_string(
+                template, context=template_ctx)
+        return context
+
     def select_template(self, query_params: dict[str, QueryArg]):
         """
         Select the template for the response
@@ -407,6 +428,18 @@ class ContentListMixin(generic.ListView):
         return query_arg is not None and query_arg.was_set_to(value)
 
     @staticmethod
+    def query_value_was_set(
+            query_params: dict[str, QueryArg], query: str) -> bool:
+        """
+        Check if the specified query was set
+        :param query_params: query params
+        :param query: query to check
+        :return: True if query was set to the specified value
+        """
+        query_arg = query_params.get(query, None)
+        return query_arg is not None and query_arg.was_set
+
+    @staticmethod
     def query_value_was_set_as_one_of_values(
             query_params: dict[str, QueryArg], query: str,
             values: List[Any]) -> bool:
@@ -436,7 +469,6 @@ class ContentListMixin(generic.ListView):
         :param query_params: query params
         :return: True at least 1 query param was set
         """
-        was_set = True
         for query, query_arg in query_params.items():
             was_set = isinstance(query_arg, QueryArg) and query_arg.was_set
             if was_set:

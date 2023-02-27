@@ -45,7 +45,8 @@ from utils.content_list_mixin import SELECTED_SORT_CTX
 from utils.search import SEARCH_QUERY
 
 from recipes.constants import (
-    THIS_APP, RECIPE_LIST_CTX, AUTHOR_QUERY, KEYWORD_QUERY, TIME_CTX
+    THIS_APP, RECIPE_LIST_CTX, AUTHOR_QUERY, KEYWORD_QUERY, TIME_CTX,
+    CATEGORY_QUERY, CATEGORY_CTX
 )
 from recipes.views.utils import (
     recipe_permission_check
@@ -76,6 +77,7 @@ LIST_QUERY_ARGS.extend([
     # non-reorder query args
     QueryOption.of_no_cls_dflt(SEARCH_QUERY),
     QueryOption.of_no_cls_dflt(KEYWORD_QUERY),
+    QueryOption.of_no_cls_dflt(CATEGORY_QUERY),
 ])
 # request arguments for an opinion search request
 SEARCH_QUERY_ARGS = LIST_QUERY_ARGS.copy()
@@ -151,6 +153,9 @@ class RecipeList(LoginRequiredMixin, ContentListMixin):
         if not self.query_param_was_set(query_params):
             # no query params, basic all recipes query
             self.query_type = RecipeQueryType.ALL_RECIPES
+        elif self.query_value_was_set(query_params, CATEGORY_QUERY):
+            self.query_type = RecipeQueryType.RECIPES_BY_CATEGORY
+            self.sub_query_type = query_params[CATEGORY_QUERY].value
 
     def set_extra_context(self, query_params: dict[str, QueryArg],
                           query_set_params: QuerySetParams):
@@ -175,6 +180,8 @@ class RecipeList(LoginRequiredMixin, ContentListMixin):
         :param query_params: request query
         """
         title = 'Recipes'
+        if self.query_type == RecipeQueryType.RECIPES_BY_CATEGORY:
+            title = f'{self.sub_query_type} {title}'
 
         return {
             TITLE_CTX: title,
@@ -341,6 +348,12 @@ class RecipeList(LoginRequiredMixin, ContentListMixin):
             template_ctx = None
             if self.query_type == RecipeQueryType.ALL_RECIPES:
                 template = "all_recipes_no_content_msg.html"
+            elif self.query_type == RecipeQueryType.RECIPES_BY_CATEGORY:
+                template = 'recipes_by_category_no_content_msg.html'
+                template_ctx = {
+                    CATEGORY_CTX: self.sub_query_type
+                }
+
             # elif self.query_type == QueryType.ALL_USERS_OPINIONS:
             #     template = "my_opinions_no_content_msg.html"
             # elif self.query_type == QueryType.DRAFT_OPINIONS:
@@ -354,25 +367,9 @@ class RecipeList(LoginRequiredMixin, ContentListMixin):
             #     template = "pinned_no_content.html"
 
             self.render_no_content_help(
-                context, template, template_ctx=template_ctx)
+                context, app_template_path(THIS_APP, "messages", template),
+                template_ctx=template_ctx)
 
-        return context
-
-    @staticmethod
-    def render_no_content_help(
-            context: dict, template: str, template_ctx: dict = None) -> dict:
-        """
-        Add no content-specific help to context
-        :param context: context
-        :param template: template filename
-        :param template_ctx: template context
-        :return: context
-        """
-        if template:
-            context[NO_CONTENT_HELP_CTX] = render_to_string(
-                app_template_path(
-                    THIS_APP, "messages", template),
-                context=template_ctx)
         return context
 
     def is_list_only_template(self) -> bool:
