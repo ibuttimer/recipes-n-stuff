@@ -275,7 +275,7 @@ class Ingredient(ModelMixin, models.Model):
         """ Model metadata """
 
     def __str__(self):
-        return f'{html.unescape(self.name)} ({self.measure.name})'
+        return f'{html.unescape(self.name)}'
 
 
 class Instruction(ModelMixin, models.Model):

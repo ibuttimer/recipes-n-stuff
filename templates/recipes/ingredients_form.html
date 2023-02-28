@@ -39,17 +39,20 @@
             <div class="row mb-3 text-center">
                 <div class="col-sm-2">
                     <h6>Index</h6>
-                    <div class="form-text">
-                        Position in ingredient list, duplicates indicate alternatives.
+                    {% if new_ingred_form %}
+                    <div class="form-text small">
+                        {% lookup_value new_ingred_form.Meta.help_texts 'index' as index_help_message %}
+                        {{ index_help_message }}
                     </div>
+                    {% endif %}
                 </div>
                 <div class="col-sm-2">
                     <h6>Quantity</h6>
                 </div>
-                <div class="col-sm-1">
+                <div class="col-sm-2">
                     <h6>Measure</h6>
                 </div>
-                <div class="col-sm-4">
+                <div class="col-sm-3">
                     <h6>Ingredient</h6>
                 </div>
                 <div class="col-sm-3">
@@ -71,10 +74,7 @@
                             </div>
                         </div>
                         {% endfor %}
-                        <div class="col-sm-1">
-                            {{ ingredient.measure }}
-                        </div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-3">
                             {{ ingredient.name }}
                         </div>
                         <div class="col-sm-3">
@@ -89,7 +89,8 @@
                 </form>
             {% endfor %}
             {% if not read_only %}
-                <form method="post" class="needs-validation" novalidate action="{{ new_url }}" enctype="multipart/x-www-form-urlencoded">
+                <form method="post" class="needs-validation" novalidate action="{{ new_url }}" enctype="multipart/x-www-form-urlencoded"
+                    id="id__ingredient-form-new">
                     {% csrf_token %}
 
                     <fieldset class="row mb-3 text-center">
@@ -104,9 +105,7 @@
                                 </div>
                             {% endif %}
                         {% endfor %}
-                        <div class="col-sm-1">
-                        </div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-3">
                             {{ new_ingred_form.ingredient }}
                             <div class="invalid-feedback">
                                 {% lookup_value new_ingred_form.Meta.error_messages entity 'combined' as error_message %}
@@ -136,6 +135,11 @@
             {% include 'snippet/page_done.html' %}
         </div>
 
+        <datalist id="id__ingredient-datalist">
+            {% for ingredient in ingredient_list %}
+                <option value="{{ ingredient | safe }}">
+            {% endfor %}
+        </datalist>
 
     </article>
 
@@ -150,15 +154,62 @@
     <script src="{% static 'js/update_delete_button.js' %}"></script>
     <script src="{% static 'js/delete_modal.js' %}"></script>
     <script>
+        // copy of all valid ingredient names
+        const ingredientList = [...document.querySelectorAll('#id__ingredient-datalist option')].map(option => option.value);
+        const newIngredientFormSelector = '#id__ingredient-form-new';
+        const newIngredientInputSelector = '#id__ingredient-input-new';
+        const newIngredientUploadSelector = "#{% form_submit_btn_id 'ingredient-new' %}";
+
+        /**
+         * Validate that the new ingredient name input is valid
+         *
+         * TODO custom validation edge cases require more work
+         *
+         * @param event - event, may be 'change' or 'submit'
+         * @returns {boolean}
+         */
+        function newIngredientIsValid(event) {
+            // https://getbootstrap.com/docs/5.2/forms/validation/
+            let isValid = ingredientList.includes(
+                $(newIngredientInputSelector).first().val()
+            );
+            let add = 'is-invalid';
+            let remove = 'is-valid';
+
+            $(newIngredientInputSelector).removeClass('is-invalid is-valid');
+            if (isValid) {
+                add = 'is-valid';
+                remove = 'is-invalid';
+            }
+            $(newIngredientInputSelector).addClass(add);
+            $(newIngredientInputSelector).removeClass(remove);
+            return isValid
+        }
 
         $(document).ready(function () {
             setupAddUpdateDelHandlers(
-                "#{% form_submit_btn_id 'ingredient-new' %}",       // newSelector
+                newIngredientUploadSelector,                        // newSelector
                 "button[id^='{% form_submit_btn_id entity %}']",    // updateSelector
                 "a[id^='{% a_id delete_identifier %}']",            // delSelector
                 "#{{ ids.close_btn_id }}",                          // delCloseSelector
                 "#{{ ids.cancel_btn_id }}"                          // delCancelSelector
             );
+
+            $(newIngredientInputSelector).on('change', function (event) {
+                // handle new ingredient name input change
+                newIngredientIsValid(event);
+            });
+            $(newIngredientInputSelector).on('input', function (event) {
+                // remove classes on any new ingredient name input keypress
+                $(newIngredientInputSelector).removeClass('is-invalid is-valid was-validated valid');
+            });
+            $(newIngredientFormSelector).on('submit', function (event) {
+                if (!newIngredientIsValid(event)) {
+                    event.preventDefault();
+
+                    showIconHideSpinner(newIngredientUploadSelector);
+                }
+            });
         });
     </script>
 {% endwith %}

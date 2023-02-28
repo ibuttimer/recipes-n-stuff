@@ -44,7 +44,7 @@ from ..constants import (
     INSTRUCTIONS_CTX, NEW_INSTRUCTION_FORM_CTX,
     RECIPE_ID_INSTRUCTION_NEW_ROUTE_NAME, COUNT_OPTIONS_CTX,
     SELECTED_COUNT_CTX, CUSTOM_COUNT_CTX, CCY_SYMBOL_CTX, UNIT_PRICE_CTX,
-    QUANTITY_FIELD, NEXT_QUERY
+    QUANTITY_FIELD, NEXT_QUERY, INGREDIENT_LIST_CTX
 )
 from utils import (
     Crud, app_template_path, reverse_q,
@@ -56,7 +56,7 @@ from ..constants import RECIPE_ID_ROUTE_NAME, RECIPE_DTO_CTX
 from ..forms import (
     RecipeIngredientForm, RecipeIngredientNewForm, RecipeInstructionForm
 )
-from ..models import Recipe, Instruction
+from ..models import Recipe, Instruction, Ingredient
 
 TITLE_UPDATE = 'Update Recipe'
 
@@ -288,6 +288,10 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
                     ingredients)
             ),
             NEW_INGREDIENT_FORM_CTX: new_form,
+            INGREDIENT_LIST_CTX: list(
+                map(lambda ingred: ingred.name,
+                    Ingredient.objects.order_by(Ingredient.NAME_FIELD).all())
+            ),
             NEW_URL_CTX: reverse_q(
                 namespaced_url(THIS_APP, RECIPE_ID_INGREDIENT_NEW_ROUTE_NAME),
                 args=[recipe.id]

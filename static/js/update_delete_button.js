@@ -37,7 +37,7 @@ function hideIconShowSpinner(selector) {
  * @param selector
  */
 function showIconHideSpinner(selector) {
-    /* hide upload icon and show in progress spinner */
+    /* show upload icon and hide in progress spinner */
     $(`${selector} > i`).removeAttr("hidden");
     $(`${selector} > span`).attr("hidden", "hidden");
 }

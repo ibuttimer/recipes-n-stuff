@@ -28,9 +28,9 @@ from django.utils.translation import gettext_lazy as _
 from utils import error_messages, ErrorMsgs, update_field_widgets
 
 from .constants import (
-    INGREDIENT_FIELD, QUANTITY_FIELD, INDEX_FIELD, TEXT_FIELD
+    INGREDIENT_FIELD, QUANTITY_FIELD, INDEX_FIELD, TEXT_FIELD, MEASURE_FIELD
 )
-from .models import RecipeIngredient, Ingredient, Instruction
+from .models import RecipeIngredient, Instruction, Measure
 
 
 class RecipeIngredientForm(forms.ModelForm):
@@ -40,6 +40,7 @@ class RecipeIngredientForm(forms.ModelForm):
 
     QUANTITY_FF = QUANTITY_FIELD
     INDEX_FF = INDEX_FIELD
+    MEASURE_FF = MEASURE_FIELD
 
     quantity = forms.CharField(
         label=_("Quantity"),
@@ -52,37 +53,48 @@ class RecipeIngredientForm(forms.ModelForm):
         max_value=RecipeIngredient.RECIPE_INGREDIENT_ATTRIB_INDEX_MAX,
         required=True)
 
+    measure = forms.ModelChoiceField(
+        queryset=Measure.objects.order_by(Measure.NAME_FIELD).all(),
+        empty_label="Measure",
+        required=True
+    )
+
     @dataclass
     class Meta:
         """ Form metadata """
         model = RecipeIngredient
         fields = [
-            INDEX_FIELD,
-            QUANTITY_FIELD
+            INDEX_FIELD, QUANTITY_FIELD, MEASURE_FIELD
         ]
         non_bootstrap_fields = []
-        select_fields = []
+        select_fields = [MEASURE_FIELD]
         help_texts = {
             QUANTITY_FIELD: 'Quantity of ingredient.',
             INDEX_FIELD: 'Position in ingredient list, duplicates indicate '
                          'alternatives.',
+            MEASURE_FIELD: 'Ingredient measure.'
         }
 
         @staticmethod
         def generate_error_messages():
-            msgs = error_messages(
-                RecipeIngredient.model_name_caps(),
-                *[ErrorMsgs(
+            _msgs = [
+                ErrorMsgs(
                     field, required=True,
                     max_length=RecipeIngredient.
                     RECIPE_INGREDIENT_ATTRIB_QUANTITY_MAX_LEN
                 ) for field in (
                     QUANTITY_FIELD,
-                )]
-            )
-            msgs.update(error_messages(
-                RecipeIngredient.model_name_caps(),
-                *[ErrorMsgs(
+                )
+            ]
+            _msgs.extend([
+                ErrorMsgs(
+                    field, required=True
+                ) for field in (
+                    MEASURE_FIELD,
+                )
+            ])
+            _msgs.extend([
+                ErrorMsgs(
                     field, required=True,
                     max_value=RecipeIngredient.
                     RECIPE_INGREDIENT_ATTRIB_INDEX_MAX,
@@ -90,9 +102,9 @@ class RecipeIngredientForm(forms.ModelForm):
                     RECIPE_INGREDIENT_ATTRIB_INDEX_MIN
                 ) for field in (
                     INDEX_FIELD,
-                )]
-            ))
-            return msgs
+                )
+            ])
+            return error_messages(RecipeIngredient.model_name_caps(), *_msgs)
 
         error_messages = generate_error_messages()
 
@@ -107,8 +119,7 @@ class RecipeIngredientForm(forms.ModelForm):
              and field not in RecipeIngredientForm.Meta.select_fields],
             {'class': 'form-control'})
         update_field_widgets(
-            self,
-            RecipeIngredientForm.Meta.select_fields,
+            self, RecipeIngredientForm.Meta.select_fields,
             {'class': 'form-select'})
 
 
@@ -119,11 +130,12 @@ class RecipeIngredientNewForm(forms.ModelForm):
 
     INGREDIENT_FF = INGREDIENT_FIELD
 
-    ingredient = forms.ModelChoiceField(
-        queryset=Ingredient.objects.order_by(Ingredient.NAME_FIELD)
-        .select_related(Ingredient.MEASURE_FIELD).all(),
-        empty_label="Select ingredient",
-        required=True
+    ingredient = forms.CharField(
+        required=True, widget= forms.TextInput(attrs={
+            'list': 'id__ingredient-datalist',
+            'placeholder': 'Type to search...',
+            'id': 'id__ingredient-input-new'
+        })
     )
 
     @dataclass
@@ -131,9 +143,11 @@ class RecipeIngredientNewForm(forms.ModelForm):
         """ Form metadata """
 
         @staticmethod
-        def extend() -> Tuple[List[str], dict, dict]:
+        def extend() -> Tuple[List[str], List[str], dict, dict]:
             _fields = RecipeIngredientForm.Meta.fields.copy()
             _fields.append(INGREDIENT_FIELD)
+
+            _select_fields = RecipeIngredientForm.Meta.select_fields.copy()
 
             _help_texts = RecipeIngredientForm.Meta.help_texts.copy()
             _help_texts[INGREDIENT_FIELD] = 'Ingredient.'
@@ -148,13 +162,10 @@ class RecipeIngredientNewForm(forms.ModelForm):
                 )]
             ))
 
-            return _fields, _help_texts, _error_msgs
+            return _fields, _select_fields, _help_texts, _error_msgs
 
         model = RecipeIngredient
-        fields, help_texts, error_messages = extend()
-        select_fields = [
-            INGREDIENT_FIELD
-        ]
+        fields, select_fields, help_texts, error_messages = extend()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
