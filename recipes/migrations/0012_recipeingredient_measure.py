@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
     field_info = {
         'help_text': 'Designates the measure for the ingredient.',
         'on_delete': django.db.models.deletion.CASCADE,
-        'to':'recipes.measure'
+        'to': 'recipes.measure'
     }
     if table_exists(f'{THIS_APP}_{Measure.model_name()}'):
         field_info['default'] = Measure.get_default_unit().id

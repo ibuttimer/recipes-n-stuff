@@ -21,22 +21,14 @@
     <div class="col-12 mt-2 text-center">
         <h1>{% trans "Profile" %} <em>{{ user_profile.username }}</em></h1>
 
-        <form
-            {% if not read_only %}
-                method="post" action="{% url 'user:user_id' user_profile.id %}" enctype="multipart/form-data"
-            {% endif %}
-        >
+        <form {% if not read_only %} method="post" action="{% url 'user:user_id' user_profile.id %}" enctype="multipart/form-data" {% endif %}>
             {% if not read_only %}
                 {% csrf_token %}
             {% endif %}
 
             {% include "snippet/form_errors.html" %}
 
-            <fieldset
-                    {% if read_only %}
-                    disabled
-                    {% endif %}
-            >
+            <fieldset {% if read_only %} disabled {% endif %}>
                 <div class="row mb-3">
                     <div class="col-6">
                         {# basic user form fields #}
@@ -114,6 +106,17 @@
                     </div>
                 </div>
             {% endif %}
+
+            <div class="row mb-3">
+                <div class="col-sm-2 text-start">
+                    <p>Stats:</p>
+                </div>
+                <div class="col-sm-2 text-start">
+                    <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="See all recipes by {{ user_profile.username }}">
+                        <a class="btn btn-dark mb-1 btn__text" href="{% url 'recipes:recipes' %}?author={{ user_profile.username }}">{{ recipe_count }} recipes</a>
+                    </span>
+                </div>
+            </div>
         </form>
     </div>
 </article>

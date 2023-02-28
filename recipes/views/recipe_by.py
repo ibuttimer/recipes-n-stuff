@@ -35,7 +35,8 @@ from checkout.basket import add_ingredient_box_to_basket
 from utils.content_list_mixin import get_query_args
 from .dto import RecipeDto
 from .recipe_queries import (
-    get_recipe, get_recipe_ingredients_list, get_recipe_box_product
+    get_recipe, get_recipe_ingredients_list, get_recipe_box_product,
+    get_recipe_count
 )
 from ..constants import (
     THIS_APP, INGREDIENTS_CTX, NEW_INGREDIENT_FORM_CTX,
@@ -44,7 +45,7 @@ from ..constants import (
     INSTRUCTIONS_CTX, NEW_INSTRUCTION_FORM_CTX,
     RECIPE_ID_INSTRUCTION_NEW_ROUTE_NAME, COUNT_OPTIONS_CTX,
     SELECTED_COUNT_CTX, CUSTOM_COUNT_CTX, CCY_SYMBOL_CTX, UNIT_PRICE_CTX,
-    QUANTITY_FIELD, NEXT_QUERY, INGREDIENT_LIST_CTX
+    QUANTITY_FIELD, NEXT_QUERY, INGREDIENT_LIST_CTX, RECIPE_COUNT_CTX
 )
 from utils import (
     Crud, app_template_path, reverse_q,
@@ -102,6 +103,7 @@ class RecipeDetail(LoginRequiredMixin, View):
             context={
                 TITLE_CTX: recipe_dto.name,
                 RECIPE_DTO_CTX: recipe_dto,
+                RECIPE_COUNT_CTX: get_recipe_count(recipe_dto.author.username),
                 COUNT_OPTIONS_CTX: BOX_COUNT_OPTIONS,
                 SELECTED_COUNT_CTX: 0,
                 CUSTOM_COUNT_CTX: CUSTOM_BOX_COUNT,

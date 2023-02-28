@@ -89,7 +89,6 @@ LETTER_SEARCH.extend([
 ])
 
 
-
 class ListTemplate(Enum):
     """ Enum representing possible response template """
     FULL_TEMPLATE = app_template_path(THIS_APP, 'categories_list.html')
@@ -349,4 +348,3 @@ class CategoryList(LoginRequiredMixin, ContentListMixin):
         :return: True if the list only template
         """
         return self.response_template == ListTemplate.CONTENT_TEMPLATE
-

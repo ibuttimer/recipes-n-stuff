@@ -130,6 +130,8 @@ CATEGORY_LIST_CTX = 'category_list'
 LETTERS_CTX = 'letters'
 LETTER_CTX = 'letter'
 CATEGORY_CTX = 'category'
+AUTHOR_CTX = 'author'
+RECIPE_COUNT_CTX = 'recipe_count'
 
 COUNT_OPTIONS_CTX = 'count_options'
 SELECTED_COUNT_CTX = 'selected_count'

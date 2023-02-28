@@ -131,7 +131,7 @@ class RecipeIngredientNewForm(forms.ModelForm):
     INGREDIENT_FF = INGREDIENT_FIELD
 
     ingredient = forms.CharField(
-        required=True, widget= forms.TextInput(attrs={
+        required=True, widget=forms.TextInput(attrs={
             'list': 'id__ingredient-datalist',
             'placeholder': 'Type to search...',
             'id': 'id__ingredient-input-new'

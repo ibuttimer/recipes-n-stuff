@@ -46,7 +46,7 @@ from utils.search import SEARCH_QUERY
 
 from recipes.constants import (
     THIS_APP, RECIPE_LIST_CTX, AUTHOR_QUERY, KEYWORD_QUERY, TIME_CTX,
-    CATEGORY_QUERY, CATEGORY_CTX
+    CATEGORY_QUERY, CATEGORY_CTX, AUTHOR_CTX
 )
 from recipes.views.utils import (
     recipe_permission_check
@@ -78,12 +78,12 @@ LIST_QUERY_ARGS.extend([
     QueryOption.of_no_cls_dflt(SEARCH_QUERY),
     QueryOption.of_no_cls_dflt(KEYWORD_QUERY),
     QueryOption.of_no_cls_dflt(CATEGORY_QUERY),
+    QueryOption.of_no_cls_dflt(AUTHOR_QUERY),
 ])
 # request arguments for an opinion search request
 SEARCH_QUERY_ARGS = LIST_QUERY_ARGS.copy()
 SEARCH_QUERY_ARGS.extend([
     QueryOption.of_no_cls_dflt(query) for query in [
-        AUTHOR_QUERY
     ]
 ])
 # LIST_QUERY_ARGS.extend(OPINION_APPLIED_DEFAULTS_QUERY_ARGS)
@@ -156,6 +156,9 @@ class RecipeList(LoginRequiredMixin, ContentListMixin):
         elif self.query_value_was_set(query_params, CATEGORY_QUERY):
             self.query_type = RecipeQueryType.RECIPES_BY_CATEGORY
             self.sub_query_type = query_params[CATEGORY_QUERY].value
+        elif self.query_value_was_set(query_params, AUTHOR_QUERY):
+            self.query_type = RecipeQueryType.RECIPES_BY_AUTHOR
+            self.sub_query_type = query_params[AUTHOR_QUERY].value
 
     def set_extra_context(self, query_params: dict[str, QueryArg],
                           query_set_params: QuerySetParams):
@@ -182,6 +185,8 @@ class RecipeList(LoginRequiredMixin, ContentListMixin):
         title = 'Recipes'
         if self.query_type == RecipeQueryType.RECIPES_BY_CATEGORY:
             title = f'{self.sub_query_type} {title}'
+        elif self.query_type == RecipeQueryType.RECIPES_BY_AUTHOR:
+            title = f'{title} by {self.sub_query_type}'
 
         return {
             TITLE_CTX: title,
@@ -352,6 +357,11 @@ class RecipeList(LoginRequiredMixin, ContentListMixin):
                 template = 'recipes_by_category_no_content_msg.html'
                 template_ctx = {
                     CATEGORY_CTX: self.sub_query_type
+                }
+            elif self.query_type == RecipeQueryType.RECIPES_BY_AUTHOR:
+                template = 'recipes_by_author_no_content_msg.html'
+                template_ctx = {
+                    AUTHOR_CTX: self.sub_query_type
                 }
 
             # elif self.query_type == QueryType.ALL_USERS_OPINIONS:

@@ -33,8 +33,8 @@
         </div>
         <div class="col-sm-6">
             <div class="row">
-                <div class="col-sm-8">
-                    <p>
+                <div class="col-sm-6 d-flex">
+                    <p class="align-self-center">
                         Submitted by
                         <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="view {{ recipe_dto.author.username }}'s profile">
                             <a class="text-decoration-none" href="{% url 'user:user_id' recipe_dto.author.id %}" aria-label="view {{ recipe_dto.author.username }}'s profile">
@@ -50,7 +50,16 @@
                         {% endif %}
                     </p>
                 </div>
-                <div class="col-sm-4 text-center">
+                <div class="col-sm-3 text-center">
+                    <div class="text-muted small">Recipes</div>
+                    <p>
+                        <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="See all recipes by {{ recipe_dto.author.username }}">
+                            <a class="btn btn-dark mb-1" href="{% url 'recipes:recipes' %}?author={{ recipe_dto.author.username }}">{{ recipe_count }}</a>
+                        </span>
+                    </p>
+                </div>
+                <div class="col-sm-3 text-center">
+                    <div class="text-muted small">Category</div>
                     <p>
                         <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="view all {{ recipe_dto.category.name }} recipes">
                             <a class="btn btn-outline-info" href="{% url 'recipes:recipes' %}?category={{ recipe_dto.category.name }}" aria-label="view all {{ recipe_dto.category.name }} recipes">

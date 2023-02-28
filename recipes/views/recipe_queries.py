@@ -24,14 +24,13 @@ from datetime import datetime, timezone
 from enum import Enum, auto
 from typing import Any, Type, Optional, Tuple, List, Union
 from zoneinfo import ZoneInfo
-from decimal import Decimal, InvalidOperation
 
 from django.db.models import Q, QuerySet, Prefetch
 from django.shortcuts import get_object_or_404
 
 from checkout.models import Currency
 from order.models import OrderProduct
-from recipes.constants import KEYWORD_QUERY, CATEGORY_QUERY
+from recipes.constants import KEYWORD_QUERY, CATEGORY_QUERY, AUTHOR_QUERY
 from recipes.models import (
     Recipe, Ingredient, Instruction, RecipeIngredient, Keyword, Category
 )
@@ -47,7 +46,7 @@ from utils.query_params import SearchType, QueryTerm
 from utils.search import MARKER_CHARS
 
 NON_DATE_QUERIES = [
-    KEYWORD_QUERY, CATEGORY_QUERY, USER_QUERY
+    KEYWORD_QUERY, CATEGORY_QUERY, USER_QUERY, AUTHOR_QUERY
 ]
 REGEX_MATCHERS = regex_matchers(NON_DATE_QUERIES)
 REGEX_MATCHERS.update(regex_date_matchers())
@@ -57,7 +56,7 @@ FIELD_LOOKUPS = {
     SEARCH_QUERY: '',
     KEYWORD_QUERY: f'{Recipe.KEYWORDS_FIELD}__in',
     CATEGORY_QUERY: f'{Recipe.CATEGORY_FIELD}__{Category.NAME_FIELD}__iexact',
-    # AUTHOR_QUERY: f'{Opinion.USER_FIELD}__{User.USERNAME_FIELD}__icontains',
+    AUTHOR_QUERY: f'{Recipe.AUTHOR_FIELD}__{User.USERNAME_FIELD}__icontains',
     # CATEGORY_QUERY: f'{Opinion.CATEGORIES_FIELD}__in',
     # ON_OR_AFTER_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date__gte',
     # ON_OR_BEFORE_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date__lte',
@@ -416,3 +415,21 @@ def get_recipe_box_product(pk: int) -> Tuple[OrderProduct, Currency]:
         f'{Currency.CURRENCY_CODE_FIELD}': entity.base_currency
     })
     return entity, currency
+
+
+def get_recipe_count(user: Union[User, int, str]) -> int:
+    """
+    Get the recipe count for the specified user
+    :param user: id/username of user or user instance
+    :return: recipe count
+    """
+    if not isinstance(user, User):
+        param = User.id_field() if isinstance(user, int) else \
+            User.USERNAME_FIELD
+        user = get_object_or_404(User, **{
+            f'{param}': user
+        })
+
+    return Recipe.objects.filter(**{
+        f'{Recipe.AUTHOR_FIELD}': user
+    }).count()

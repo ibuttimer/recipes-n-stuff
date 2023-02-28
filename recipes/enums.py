@@ -35,6 +35,7 @@ class RecipeQueryType(Enum):
     """ Enum representing different recipe query types """
     UNKNOWN = auto()
     RECIPES_BY_CATEGORY = auto()
+    RECIPES_BY_AUTHOR = auto()
     ALL_RECIPES = auto()
 
 
