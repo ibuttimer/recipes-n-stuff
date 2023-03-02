@@ -145,3 +145,4 @@ INGREDIENTS_QUERY = 'ingredients'
 INSTRUCTIONS_QUERY = 'instructions'
 AUTHOR_QUERY = 'author'
 KEYWORD_QUERY = 'key'              # keyword
+INGREDIENT_QUERY = 'ingredient'

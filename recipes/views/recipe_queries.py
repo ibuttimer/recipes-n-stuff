@@ -25,12 +25,14 @@ from enum import Enum, auto
 from typing import Any, Type, Optional, Tuple, List, Union
 from zoneinfo import ZoneInfo
 
-from django.db.models import Q, QuerySet, Prefetch
+from django.db.models import Q, QuerySet, Prefetch, Model
 from django.shortcuts import get_object_or_404
 
 from checkout.models import Currency
 from order.models import OrderProduct
-from recipes.constants import KEYWORD_QUERY, CATEGORY_QUERY, AUTHOR_QUERY
+from recipes.constants import (
+    KEYWORD_QUERY, CATEGORY_QUERY, AUTHOR_QUERY, INGREDIENT_QUERY
+)
 from recipes.models import (
     Recipe, Ingredient, Instruction, RecipeIngredient, Keyword, Category
 )
@@ -46,7 +48,7 @@ from utils.query_params import SearchType, QueryTerm
 from utils.search import MARKER_CHARS
 
 NON_DATE_QUERIES = [
-    KEYWORD_QUERY, CATEGORY_QUERY, USER_QUERY, AUTHOR_QUERY
+    KEYWORD_QUERY, INGREDIENT_QUERY, CATEGORY_QUERY, USER_QUERY, AUTHOR_QUERY
 ]
 REGEX_MATCHERS = regex_matchers(NON_DATE_QUERIES)
 REGEX_MATCHERS.update(regex_date_matchers())
@@ -55,6 +57,7 @@ FIELD_LOOKUPS = {
     # query param: filter lookup
     SEARCH_QUERY: '',
     KEYWORD_QUERY: f'{Recipe.KEYWORDS_FIELD}__in',
+    INGREDIENT_QUERY: f'{Recipe.INGREDIENTS_FIELD}__in',
     CATEGORY_QUERY: f'{Recipe.CATEGORY_FIELD}__{Category.NAME_FIELD}__iexact',
     AUTHOR_QUERY: f'{Recipe.AUTHOR_FIELD}__{User.USERNAME_FIELD}__icontains',
     # CATEGORY_QUERY: f'{Opinion.CATEGORIES_FIELD}__in',
@@ -122,6 +125,8 @@ def get_lookup(
             value, user, query_set_params=query_set_params)
     elif query == KEYWORD_QUERY:
         add_keyword_query(query_set_params, value)
+    elif query == INGREDIENT_QUERY:
+        add_ingredient_query(query_set_params, value)
     elif query not in NON_LOOKUP_ARGS and value:
         query_set_params.add_and_lookup(query, FIELD_LOOKUPS[query], value)
     # else no value or complex query term handled elsewhere
@@ -150,25 +155,8 @@ def get_search_term(
             success = True
             if query == KEYWORD_QUERY:
                 add_keyword_query(query_set_params, match.group(group))
-            # elif query == STATUS_QUERY:
-            #     # need inner queryset to get list of statuses with names
-            #     # like the search term and then look for opinions with those
-            #     # statuses
-            #     choice_arg_query(
-            #         query_set_params, match.group(group).lower(),
-            #         QueryStatus, QueryStatus.ALL,
-            #         Status, Status.NAME_FIELD, query, FIELD_LOOKUPS[query]
-            #     )
-            # elif query == HIDDEN_QUERY:
-            #     # need to filter/exclude by list of opinions that the user has
-            #     # hidden
-            #     hidden = Hidden.from_arg(match.group(group).lower())
-            #     success = get_hidden_query(query_set_params, hidden, user)
-            # elif query == PINNED_QUERY:
-            #     # need to filter/exclude by list of opinions that the user has
-            #     # pinned
-            #     pinned = Pinned.from_arg(match.group(group).lower())
-            #     success = get_pinned_query(query_set_params, pinned, user)
+            elif query == INGREDIENT_QUERY:
+                add_ingredient_query(query_set_params, match.group(group))
             elif query in DATE_QUERIES:
                 success = get_date_query(query_set_params, query, *[
                     match.group(idx) for idx in [
@@ -197,7 +185,7 @@ def get_search_term(
         if query_set_params.search_type == SearchType.FREE:
             # no delimiting chars, so search keyword for
             # any of the search terms
-            to_query = [KEYWORD_QUERY]
+            to_query = [KEYWORD_QUERY, INGREDIENT_QUERY]
             or_q = {}
             for term in value.split():
                 if len(or_q) == 0:
@@ -218,7 +206,11 @@ def get_search_term(
                 if qry == KEYWORD_QUERY:
                     add_keyword_query(
                         query_set_params, or_q[qry], query_type=QueryTerm.OR,
-                        key=key)
+                        query=qry, key=key)
+                elif qry == INGREDIENT_QUERY:
+                    add_ingredient_query(
+                        query_set_params, or_q[qry], query_type=QueryTerm.OR,
+                        query=qry, key=key)
                 else:
                     # simple lookup
                     query_set_params.add_or_lookup(key, Q(_connector=Q.OR, **{
@@ -228,39 +220,87 @@ def get_search_term(
     return query_set_params
 
 
-def add_keyword_query(query_set_params: QuerySetParams, name: Union[str, list],
-                      query_type: QueryTerm = QueryTerm.AND,
-                      key: str = KEYWORD_QUERY) -> None:
+def add_m2m_name_query(query_set_params: QuerySetParams,
+                       value: Union[str, list], model: Model, name_field: str,
+                       query: str, key: str = None,
+                       query_type: QueryTerm = QueryTerm.AND) -> None:
     """
-    Get the keyword query
+    Get a many-to-many query based on name
     :param query_set_params: query params to update
+    :param model: Model of objects to query
+    :param name_field: name of the `name` field in sub-model
+    :param value: name or part thereof
+    :param query: query key
+    :param key: query params key; default same as query key
     :param query_type: query type to add; default QueryTerm.AND
-    :param name: keyword name or part thereof
-    :param key: query key
+    """
+    # need inner queryset to get list of linked model objects with names
+    # like the search term and then look for recipes with those
+    # objects
+    # https://docs.djangoproject.com/en/4.1/ref/models/querysets/#icontains
+    lookup = f'{name_field}__icontains'
+    if not key:
+        key = query
+    if query_type == QueryTerm.OR:
+        # queryset to get list of linked model objects with names like any of
+        # the parts of the search term
+        words_qs = model.objects.filter(
+            Q(_connector=Q.OR, **{
+                lookup: term for term in value
+            })
+        )
+        inner_qs = Q(_connector=Q.OR, **{
+            FIELD_LOOKUPS[query]: words_qs
+        })
+    else:
+        # queryset to get list of linked model objects with names like the
+        # search term
+        inner_qs = model.objects.filter(**{
+            lookup: value
+        })
+
+    query_set_params.add_query_term(
+        query_type, key, value=inner_qs, term=FIELD_LOOKUPS[query])
+
+
+def add_keyword_query(query_set_params: QuerySetParams,
+                      value: Union[str, list],
+                      query: str = KEYWORD_QUERY, key: str = None,
+                      query_type: QueryTerm = QueryTerm.AND) -> None:
+    """
+    Get a keyword query based on name
+    :param query_set_params: query params to update
+    :param value: keyword name or part thereof
+    :param query: query key
+    :param key: query params key; default same as query key
+    :param query_type: query type to add; default QueryTerm.AND
     """
     # need inner queryset to get list of keywords with names
     # like the search term and then look for recipes with those
     # keywords
     # https://docs.djangoproject.com/en/4.1/ref/models/querysets/#icontains
-    if query_type == QueryTerm.OR:
-        # queryset to get list of keywords with names like any of the
-        # parts of the search term
-        words_qs = Keyword.objects.filter(
-            Q(_connector=Q.OR, **{
-                f'{Keyword.NAME_FIELD}__icontains': term for term in name
-            })
-        )
-        inner_qs = Q(_connector=Q.OR, **{
-            FIELD_LOOKUPS[KEYWORD_QUERY]: words_qs
-        })
-    else:
-        # queryset to get list of keywords with names like the search term
-        inner_qs = Keyword.objects.filter(**{
-            f'{Keyword.NAME_FIELD}__icontains': name
-        })
+    add_m2m_name_query(query_set_params, value, Keyword, Keyword.NAME_FIELD,
+                       query, key=key, query_type=query_type)
 
-    query_set_params.add_query_term(
-        query_type, key, value=inner_qs, term=FIELD_LOOKUPS[KEYWORD_QUERY])
+
+def add_ingredient_query(query_set_params: QuerySetParams, value: Union[str, list],
+                         query: str = INGREDIENT_QUERY, key: str = None,
+                         query_type: QueryTerm = QueryTerm.AND) -> None:
+    """
+    Get an ingredient query based on name
+    :param query_set_params: query params to update
+    :param value: name or part thereof
+    :param query: query key
+    :param key: query params key; default same as query key
+    :param query_type: query type to add; default QueryTerm.AND
+    """
+    # need inner queryset to get list of recipe ingredients whose ingredients
+    # have names like the search term and then look for recipes with those
+    # keywords
+    # https://docs.djangoproject.com/en/4.1/ref/models/querysets/#icontains
+    add_m2m_name_query(query_set_params, value, Ingredient,
+                       Ingredient.NAME_FIELD,
+                       query, key=key, query_type=query_type)
 
 
 def get_date_query(query_set_params: QuerySetParams,

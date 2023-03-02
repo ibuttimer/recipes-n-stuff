@@ -51,6 +51,8 @@ class QueryTerm(Enum):
 
 class QuerySetParams:
     """ Class representing query params to be applied to a QuerySet """
+    is_distinct: bool
+    """ Eliminate duplicate rows flag """
     and_lookups: dict
     """ AND lookups """
     or_lookups: [Q]
@@ -74,7 +76,8 @@ class QuerySetParams:
     search_type: SearchType
     """ Search result type """
 
-    def __init__(self):
+    def __init__(self, is_distinct: bool = True):
+        self.is_distinct = is_distinct
         self.and_lookups = {}
         self.or_lookups = []
         self.qs_funcs = []
@@ -278,7 +281,7 @@ class QuerySetParams:
             for func in self.qs_funcs:
                 query_set = func(query_set)
             query_set = query_set.annotate(**self.annotations)
-        return query_set
+        return query_set.distinct() if self.is_distinct else query_set
 
 
 def choice_arg_query(

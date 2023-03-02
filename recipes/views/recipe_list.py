@@ -46,7 +46,7 @@ from utils.search import SEARCH_QUERY
 
 from recipes.constants import (
     THIS_APP, RECIPE_LIST_CTX, AUTHOR_QUERY, KEYWORD_QUERY, TIME_CTX,
-    CATEGORY_QUERY, CATEGORY_CTX, AUTHOR_CTX
+    CATEGORY_QUERY, CATEGORY_CTX, AUTHOR_CTX, INGREDIENT_QUERY
 )
 from recipes.views.utils import (
     recipe_permission_check
@@ -77,6 +77,7 @@ LIST_QUERY_ARGS.extend([
     # non-reorder query args
     QueryOption.of_no_cls_dflt(SEARCH_QUERY),
     QueryOption.of_no_cls_dflt(KEYWORD_QUERY),
+    QueryOption.of_no_cls_dflt(INGREDIENT_QUERY),
     QueryOption.of_no_cls_dflt(CATEGORY_QUERY),
     QueryOption.of_no_cls_dflt(AUTHOR_QUERY),
 ])
@@ -363,18 +364,8 @@ class RecipeList(LoginRequiredMixin, ContentListMixin):
                 template_ctx = {
                     AUTHOR_CTX: self.sub_query_type
                 }
-
-            # elif self.query_type == QueryType.ALL_USERS_OPINIONS:
-            #     template = "my_opinions_no_content_msg.html"
-            # elif self.query_type == QueryType.DRAFT_OPINIONS:
-            #     template = "draft_opinions_no_content_msg.html"
-            # elif self.query_type == QueryType.PREVIEW_OPINIONS:
-            #     template = "preview_opinions_no_content_msg.html"
-            #     template_ctx = {
-            #         USER_CTX: self.user
-            #     }
-            # elif self.query_type == QueryType.PINNED_OPINIONS:
-            #     template = "pinned_no_content.html"
+            else:
+                template = 'recipes_no_content_msg.html'
 
             self.render_no_content_help(
                 context, app_template_path(THIS_APP, "messages", template),
