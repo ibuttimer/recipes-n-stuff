@@ -40,8 +40,19 @@ class SearchType(Enum):
     UNKNOWN = auto()    # Couldn't determine what to search with
 
 
+class QueryTerm(Enum):
+    """ Enum represent different query term types """
+    AND = auto()
+    OR = auto()
+    QS_FUNC = auto()
+    ALL_INC = auto()
+    ANNOTATION = auto()
+
+
 class QuerySetParams:
     """ Class representing query params to be applied to a QuerySet """
+    is_distinct: bool
+    """ Eliminate duplicate rows flag """
     and_lookups: dict
     """ AND lookups """
     or_lookups: [Q]
@@ -65,7 +76,8 @@ class QuerySetParams:
     search_type: SearchType
     """ Search result type """
 
-    def __init__(self):
+    def __init__(self, is_distinct: bool = True):
+        self.is_distinct = is_distinct
         self.and_lookups = {}
         self.or_lookups = []
         self.qs_funcs = []
@@ -114,7 +126,7 @@ class QuerySetParams:
     def is_empty(self):
         """ Check if empty i.e. no query terms """
         return self.and_count + self.or_count + self.qs_func_count \
-            + self.annotations_count() + self.all_inclusive == 0
+            + self.annotations_count + self.all_inclusive == 0
 
     @property
     def is_free_search(self):
@@ -209,6 +221,29 @@ class QuerySetParams:
         self.all_inclusive += 1
         self.params.add(key)
 
+    def add_query_term(self, query_type: QueryTerm, key: str,
+                       value: Any = None, term: str = None):
+        """
+        Add a query term
+        :param query_type: query type to add, one of QueryTerm
+        :param key: query key
+        :param value: value, dependent on `query_type`; default None
+        :param term: lookup term for QueryTerm.AND or
+                    annotation term for QueryTerm.ANNOTATION; default None
+        """
+        if query_type == QueryTerm.AND:
+            self.add_and_lookup(key, term, value)
+        elif query_type == QueryTerm.OR:
+            self.add_or_lookup(key, value)
+        elif query_type == QueryTerm.QS_FUNC:
+            self.add_qs_func(key, value)
+        elif query_type == QueryTerm.ALL_INC:
+            self.add_all_inclusive(key)
+        elif query_type == QueryTerm.ANNOTATION:
+            self.add_annotation(key, term, value)
+        else:
+            raise NotImplementedError(f'Unknown query term: {query_type}')
+
     def add_search_term(self, term: str):
         """
         Add a search term
@@ -246,7 +281,7 @@ class QuerySetParams:
             for func in self.qs_funcs:
                 query_set = func(query_set)
             query_set = query_set.annotate(**self.annotations)
-        return query_set
+        return query_set.distinct() if self.is_distinct else query_set
 
 
 def choice_arg_query(
@@ -257,7 +292,7 @@ def choice_arg_query(
 ):
     """
     Process a ChoiceArg query
-    :param query_set_params: query set params
+    :param query_set_params: query set params to update
     :param name: query param
     :param choice_arg: ChoiceArg sub class
     :param all_options: all-inclusive option from `choice_arg`

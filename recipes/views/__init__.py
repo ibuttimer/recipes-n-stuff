@@ -19,19 +19,33 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from .recipe_list import RecipeList
-from .recipe_by import RecipeDetail, RecipeDetailUpdate
-from .recipe_ingredient_by import RecipeIngredientDetail
-from .recipe_ingredient_create import create_recipe_ingredient
+from .recipe_list import RecipeList, SearchRecipeList
+from .recipe_by import RecipeDetail, RecipeDetailUpdate, add_recipe_to_basket
+from .ingredient_by import RecipeIngredientDetail
+from .ingredient_create import create_recipe_ingredient
+from .instruction_by import InstructionDetail
+from .instruction_create import create_recipe_instruction
+from .category_list import CategoryList
+from .dto import RecipeDto
 
 
 __all__ = [
     'RecipeList',
+    'SearchRecipeList',
 
     'RecipeDetail',
     'RecipeDetailUpdate',
+    'add_recipe_to_basket',
 
     'RecipeIngredientDetail',
 
     'create_recipe_ingredient',
+
+    'InstructionDetail',
+
+    'create_recipe_instruction',
+
+    'RecipeDto',
+
+    'CategoryList',
 ]

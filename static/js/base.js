@@ -23,18 +23,25 @@
  *
  */
 
-/** Enable Bootstrap tooltips */
-function enableTooltips() {
-    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+/**
+ * Enable Bootstrap tooltips
+ * @param selector - element selector; default all elements
+ */
+function enableTooltips(selector = undefined) {
+    const ttSelector = selector === undefined ? '[data-bs-toggle="tooltip"]' : selector;
+    const tooltipTriggerList = document.querySelectorAll(ttSelector);
     const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 }
 
 const SHOW_INFO_PROP = 'show_info';
 const REDIRECT_PROP = 'redirect';
+const REDIRECT_PAUSE_PROP = 'pause';
 const REWRITES_PROP = 'rewrites';
 const ELEMENT_SELECTOR_PROP = 'element_selector';
+const TOOLTIPS_SELECTOR_PROP = 'tooltips_selector';
 const HTML_PROP = 'html';
 const INNER_HTML_PROP = 'inner_html';
+const INFO_TOAST_PROP = 'info_toast';
 
 const replaceHtml = (data) => $(data[ELEMENT_SELECTOR_PROP]).replaceWith(data[HTML_PROP]);
 const replaceInnerHtml = (data) => $(data[ELEMENT_SELECTOR_PROP]).html(data[INNER_HTML_PROP]);
@@ -54,6 +61,27 @@ function htmlUpdateHandler(data) {
                 replaceInnerHtml(data);
             }
         }
+        if (data.hasOwnProperty(TOOLTIPS_SELECTOR_PROP)) {
+            enableTooltips(data[TOOLTIPS_SELECTOR_PROP]);
+        }
+    }
+}
+
+/**
+ * Handle a rewrites replacement
+ * :param data: json data
+ */
+function htmlRewritesHandler(data) {
+    if (data !== undefined) {
+        // replace multiple element's html
+        for (const element of data) {
+            if (element.hasOwnProperty(REWRITES_PROP)) {
+                // nested rewrites
+                htmlRewritesHandler(element[REWRITES_PROP]);
+            } else {
+                htmlUpdateHandler(element);
+            }
+        }
     }
 }
 
@@ -69,17 +97,25 @@ function redirectRewriteInfoResponseHandler(data) {
         htmlUpdateHandler(data);
         if (data.hasOwnProperty(REWRITES_PROP)) {
             // replace multiple element's html
-            for (let element of data[REWRITES_PROP]) {
-                htmlUpdateHandler(element);
-            }
+            htmlRewritesHandler(data[REWRITES_PROP])
         }
         if (data.hasOwnProperty(REDIRECT_PROP)) {
             // redirect to new url
-            document.location.href = data[REDIRECT_PROP];
+            if (data.hasOwnProperty(REDIRECT_PAUSE_PROP)) {
+                setTimeout(() => {
+                    document.location.href = data[REDIRECT_PROP];
+                }, parseInt(data[REDIRECT_PAUSE_PROP]))
+            } else {
+                document.location.href = data[REDIRECT_PROP];
+            }
         }
         if (data.hasOwnProperty(SHOW_INFO_PROP)) {
             // show info modal
             modalDisplayed = displayInfoModal(data[SHOW_INFO_PROP]);
+        }
+        if (data.hasOwnProperty(INFO_TOAST_PROP)) {
+            // show info toast
+            showInfoToast(data[INFO_TOAST_PROP]);
         }
         return modalDisplayed;
     }

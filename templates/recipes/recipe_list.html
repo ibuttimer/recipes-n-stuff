@@ -2,7 +2,9 @@
 
 <!-- recipe_list.html start -->
 {# --- recipe_list.html template variable defines for includes --- #}
-{# subscription list template expects: 'snippets' as list of extra html code blocks to include #}
+{# recipe list template expects: 'snippets' as list of extra html code blocks to include #}
+{#                             : 'paginator' as a Paginator #}
+{#                             : 'recipe_list' as a list of RecipeDto #}
 
 {% load i18n %}
 {% load static %}
@@ -13,7 +15,6 @@
 
 {% block extra_js_head %}
     {{ block.super }}
-    {% include "snippet/jquery.html" %}
 {% endblock extra_js_head %}
 
 {% block head_title %}{{ title }}{% endblock %}

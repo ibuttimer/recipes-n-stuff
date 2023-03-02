@@ -47,7 +47,7 @@ from utils import (
     QueryArg, SortOrder, QuerySetParams, QueryOption, ContentListMixin,
     TITLE_CTX, LIST_HEADING_CTX, PAGE_HEADING_CTX, NO_CONTENT_MSG_CTX,
     NO_CONTENT_HELP_CTX,
-    Crud, app_template_path, ORDER_QUERY, PAGE_QUERY, PER_PAGE_QUERY, PerPage,
+    Crud, app_template_path, ORDER_QUERY, PAGE_QUERY, PER_PAGE_QUERY, PerPage6,
     REORDER_QUERY, REORDER_REQ_QUERY_ARGS, USER_QUERY, SNIPPETS_CTX,
     SEARCH_QUERY, REPEAT_SEARCH_TERM_CTX, query_search_term
 )
@@ -75,7 +75,7 @@ from ..dto import AddressDto
 REORDER_QUERY_ARGS = [
     QueryOption(ORDER_QUERY, AddressSortOrder, AddressSortOrder.DEFAULT),
     QueryOption.of_no_cls(PAGE_QUERY, 1),
-    QueryOption(PER_PAGE_QUERY, PerPage, PerPage.DEFAULT),
+    QueryOption(PER_PAGE_QUERY, PerPage6, PerPage6.DEFAULT),
     QueryOption.of_no_cls(REORDER_QUERY, 0),
 ]
 assert REORDER_REQ_QUERY_ARGS == list(
@@ -357,25 +357,10 @@ class AddressList(LoginRequiredMixin, ContentListMixin):
             #     template = "pinned_no_content.html"
             #
             # self.render_no_content_help(
-            #     context, template, template_ctx=template_ctx)
+            #     context, app_template_path(
+            #       PROFILES_APP_NAME, "messages", template),
+            #       template_ctx=template_ctx)
 
-        return context
-
-    @staticmethod
-    def render_no_content_help(
-            context: dict, template: str, template_ctx: dict = None) -> dict:
-        """
-        Add no content-specific help to context
-        :param context: context
-        :param template: template filename
-        :param template_ctx: template context
-        :return: context
-        """
-        if template:
-            context[NO_CONTENT_HELP_CTX] = render_to_string(
-                app_template_path(
-                    PROFILES_APP_NAME, "messages", template),
-                context=template_ctx)
         return context
 
     def is_list_only_template(self) -> bool:

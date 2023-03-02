@@ -23,8 +23,6 @@
  *
  */
 
-// Add address card is named 'id--address-new'
-const ADD_ADDRESS_SELECTOR = "#id--address-new";
 const addressDefaultLinkSelector = "a[class*='a--addr-dflt']";
 
 $(document).ready(function () {

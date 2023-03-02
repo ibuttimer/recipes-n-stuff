@@ -77,7 +77,7 @@ def error_messages(model: str, *args: ErrorMsgs) -> dict:
     :param args:    list of attributes
     :return: dict of help texts of the form 'Model attrib.'
     """
-    def inc_msg(fld: str, err_msg: ErrorMsgs, exclude: List[str]=None):
+    def inc_msg(fld: str, err_msg: ErrorMsgs, exclude: List[str] = None):
         # Check if field is not attrib & value is not None
         if exclude is None:
             exclude = [_ATTRIB]
@@ -109,8 +109,7 @@ def error_messages(model: str, *args: ErrorMsgs) -> dict:
                 [_msg_templates[k].substitute({
                     _ATTRIB: capwords(entry.attrib),
                     _ATTRIB_VAL: getattr(entry, k)
-                })
-                for k in ErrorMsgs._fields if inc_msg(k, entry)]
+                }) for k in ErrorMsgs._fields if inc_msg(k, entry)]
             )
         ))
     return messages

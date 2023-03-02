@@ -13,7 +13,6 @@
 
 {% block extra_js_head %}
     {{ block.super }}
-    {% include "snippet/jquery.html" %}
 {% endblock extra_js_head %}
 
 {% block head_title %}{{ title }}{% endblock %}
@@ -21,6 +20,7 @@
 {% block extra_css %}
     {{ block.super }}
     <link href="{% static 'checkout/css/stripe_checkout.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'checkout/css/styles-checkout.css' %}" rel="stylesheet" type="text/css">
 {% endblock extra_css %}
 
 {% block content %}
@@ -32,44 +32,108 @@
     {% endif %}
 </div>
 
-<div class="row flex-grow-1 overflow-auto d-flex justify-content-center">
-    <article id="article-content" class="row d-flex justify-content-center">
-
-        <div class="row" id="id__basket-div">
-            {# --- basket.html template variable defines for includes --- #}
-            {# basket template expects: 'basket' as Basket #}
-            {#                          'currencies' as currency choices for select #}
-            {% include 'checkout/snippet/basket.html' %}
+{# ensure same as with around script below - TODO improve #}
+{% with next_btn_id='id__next-btn-'  prev_btn_id='id__prev-btn-'  nav_tab_btn='id__nav-tab-btn-'  nav_tab_div='id__nav-tab-div-' %}
+<div class="">
+    <nav>
+        <div class="nav nav-tabs mb-3 justify-content-around" id="nav-tab" role="tablist">
+            <button class="nav-link active" id="{{ nav_tab_btn }}basket" data-bs-toggle="tab" data-bs-target="#{{ nav_tab_div }}basket" type="button" role="tab" aria-controls="{{ nav_tab_div }}basket" aria-selected="false" tabindex="-1">Basket</button>
+            <button class="nav-link" id="{{ nav_tab_btn }}addr" data-bs-toggle="tab" data-bs-target="#{{ nav_tab_div }}addr" type="button" role="tab" aria-controls="{{ nav_tab_div }}addr" aria-selected="false" tabindex="-1">Address</button>
+            <button class="nav-link" id="{{ nav_tab_btn }}pay" data-bs-toggle="tab" data-bs-target="#{{ nav_tab_div }}pay" type="button" role="tab" aria-controls="{{ nav_tab_div }}pay" aria-selected="true">Pay</button>
         </div>
+    </nav>
+    <div class="tab-content" id="nav-tabContent">
+        <div class="tab-pane fade active show" id="{{ nav_tab_div }}basket" role="tabpanel" aria-labelledby="{{ nav_tab_btn }}basket">
+            {# basket #}
+            <div class="row flex-grow-1 overflow-auto d-flex justify-content-center">
+                <article id="id__basket-article" class="row d-flex justify-content-center">
 
-        <!-- Display a payment form -->
-        <form id="payment-form">
-            <div id="link-authentication-element">
-                <!--Stripe.js injects the Link Authentication Element-->
-            </div>
-            <div id="payment-element">
-                <!--Stripe.js injects the Payment Element-->
-            </div>
-            <button id="submit">
-                <div class="spinner hidden" id="spinner"></div>
-                <span id="button-text">Pay now</span>
-            </button>
-            <div id="payment-message" class="hidden"></div>
-        </form>
-    </article>
-</div>
+                    <div class="row mb-3" id="id__div-basket">
+                        {# --- basket.html template variable defines for includes --- #}
+                        {# basket template expects: 'basket' as Basket #}
+                        {#                          'currencies' as currency choices for select #}
+                        {% include 'checkout/snippet/basket.html' %}
+                    </div>
 
-<div class="toast-container position-absolute top-0 start-50 translate-middle-x p-3">
-    <div id="id__min-unit-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header">
-            <strong class="me-auto"><i class="fa-solid fa-circle-info"></i> Information</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    <div class="row mb-3">
+                        <div class="col-md-3 mt-2 offset-md-2">
+                            <button id="id__cancel-checkout" class="btn btn-secondary btn__dbl-text" type="button">{% trans 'Clear basket' %}</button>
+                        </div>
+                        <div class="col-md-3 mt-2">
+                            <a class="btn btn-primary btn__dbl-text" href="{% url 'home' %}">{% trans "Continue shopping" %}</a>
+                        </div>
+                        <div class="col-md-3 mt-2">
+                            <button id="{{ next_btn_id }}basket" class="btn btn-secondary btn__text" type="button">{% trans 'Next' %}</button>
+                        </div>
+                    </div>
+                </article>
+            </div>
         </div>
-        <div class="toast-body">
-            Minimum unit count is 1.
+        <div class="tab-pane fade" id="{{ nav_tab_div }}addr" role="tabpanel" aria-labelledby="{{ nav_tab_btn }}addr">
+            {# address #}
+            <div class="row flex-grow-1 overflow-auto d-flex justify-content-center">
+                <article id="id__addr-article" class="row d-flex justify-content-center">
+
+                    <div class="row mb-3" id="id__addr-div">
+                        {# below md: 1 per row  md-lg: 2 per row  xl+: 3 per row #}
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 mb-3">
+                            {% for address_dto in address_list %}
+
+                                {# address dto template expects: 'address_dto' as AddressDto #}
+                                {#                               'identifier' as individual identifier #}
+                                {#                               'content_format' as card content format; one of 'list'/'select' #}
+                                {% with identifier=address_dto.id  content_format='select' %}
+                                    {% include "profiles/address_dto.html" %}
+                                {% endwith %}
+                            {% endfor %}
+                        </div>
+
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-3 mt-2 offset-md-3">
+                            <button id="{{ prev_btn_id }}addr" class="btn btn-secondary btn__text" type="button">{% trans 'Previous' %}</button>
+                        </div>
+                        <div class="col-md-3 mt-2">
+                            <button id="{{ next_btn_id }}addr" class="btn btn-secondary btn__text" type="button">{% trans 'Next' %}</button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="{{ nav_tab_div }}pay" role="tabpanel" aria-labelledby="{{ nav_tab_btn }}pay">
+            {# pay #}
+            <div class="row flex-grow-1 overflow-auto d-flex justify-content-center">
+                <article id="id__pay-article">
+
+                    <div class="row justify-content-center mb-3" id="id__pay-div">
+                        <!-- Display a payment form -->
+                        <form id="payment-form">
+                            <div id="link-authentication-element">
+                                <!--Stripe.js injects the Link Authentication Element-->
+                            </div>
+                            <div id="payment-element">
+                                <!--Stripe.js injects the Payment Element-->
+                            </div>
+                            <button id="id__stripe-submit" class="btn__stripe">
+                                <div class="spinner hidden" id="id__stripe-spinner"></div>
+                                <span id="id__stripe-submit-button-text">Pay now</span>
+                            </button>
+                            <div id="payment-message" class="hidden"></div>
+                        </form>
+                    </div>
+
+                    <div class="row justify-content-center mb-3">
+                        <div class="col-md-3 mt-2 text-center">
+                            <button id="{{ prev_btn_id }}pay" class="btn btn-secondary btn__text" type="button">{% trans 'Previous' %}</button>
+                        </div>
+                    </div>
+                </article>
+            </div>
         </div>
     </div>
 </div>
+{% endwith %}
 
 {% for snippet in snippets %}
     {{ snippet | safe }}
@@ -81,19 +145,87 @@
 
 {% block extra_js_body %}
     {{ block.super }}
+
+    {# ensure same as with around content block above - TODO improve #}
+    {% with next_btn_id='id__next-btn-'  prev_btn_id='id__prev-btn-'  nav_tab_btn='id__nav-tab-btn-'  nav_tab_div='id__nav-tab-div-' %}
     <script>
         const STRIPE_PUBLISHABLE_KEY = '{{ stripe_publishable_key }}';
         const CREATE_PAYMENT_INTENT_URL = '{% url "checkout:payment_intent" %}';
         const baseUrl = window.location.href.slice(0, window.location.href.indexOf(window.location.pathname))
         const stripeReturnUrl = () => `${baseUrl}{% url "checkout:paid" %}`;
         const UPDATE_BASKET_URL = '{% url "checkout:update_basket" %}';
+        const CLEAR_BASKET_URL = '{% url "checkout:clear_basket" %}';
 
         const paymentCurrencySelectSelector = "#id__pay-ccy-select";
         // Basket item units input are named 'id__units-item-....'
         const basketItemUnitsSelector = "input[id^='id__units-item-']";
 
-        let minUnitToast = undefined;
+        const tabPostfix = [
+            // postfix to uniquely identify each tab in order
+            'basket', 'addr', 'pay'
+        ];
+        let currentTab = 0;     // index of current tab
+        let furthestTab = 0;    // index of furthest viewed tab
+        const nextButtonsSelector = "button[id^='{{ next_btn_id }}']";
+        const prevButtonsSelector = "button[id^='{{ prev_btn_id }}']";
+        const navTabButtonsSelector = "button[id^='{{ nav_tab_btn }}']";
 
+        const checkoutIdSelector = (id_start, tag) => `#${id_start}${tag}`;
+        const nextButtonSelector = (tag) => checkoutIdSelector('{{ next_btn_id }}', tag);
+        const prevButtonSelector = (tag) => checkoutIdSelector('{{ prev_btn_id }}', tag);
+        const tabButtonSelector = (tag) => checkoutIdSelector('{{ nav_tab_btn }}', tag);
+        const navTabDivSelector = (tag) => checkoutIdSelector('{{ nav_tab_div }}', tag);
+
+        /**
+         * Change tab
+         * @param current - tag of current tab
+         * @param step - step; 1 next tab or -1 previous tab
+         */
+        function changeTab(current, step) {
+            const currentTabSelector = tabButtonSelector(current);
+            const newTab = tabPostfix[tabPostfix.indexOf(current) + step];
+            const newTabSelector = tabButtonSelector(newTab);
+
+            // update the furthest tab index and enable next/prev buttons; will only do on first time through
+            if ((step > 0) && (currentTab === furthestTab) && (furthestTab < tabPostfix.length)) {
+                currentTab += step;
+                furthestTab = currentTab;
+                for (const selector of [newTabSelector, nextButtonSelector(newTab), prevButtonSelector(newTab)]) {
+                    $(selector).removeAttr('disabled');
+                }
+            }
+            // inactivate current tab
+            $(currentTabSelector).removeClass("active");
+            $(currentTabSelector).attr("aria-selected", "false");
+            // activate new tab
+            $(newTabSelector).addClass("active");
+            $(newTabSelector).attr("aria-selected", "true");
+            // hide current tab content
+            $(navTabDivSelector(current)).removeClass("active show");
+            // show next tab content
+            $(navTabDivSelector(newTab)).addClass("active show");
+        }
+
+        /** Set address change handlers */
+        function setChangeAddressHandlers() {
+            $('.a__addr-set').on('click', function (event) {
+                const url = event.currentTarget.attributes['href'].textContent;
+                fetch(url, {
+                    method: 'patch',
+                    headers: csrfHeader()
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                    redirectRewriteInfoResponseHandler(data);
+                    setChangeAddressHandlers();
+                })
+                .catch((error) => {
+                    showErrorToast(error);
+                });
+                event.preventDefault();
+                event.stopPropagation();
+            });
+        }
 
         $(document).ready(function() {
             initialize().then();
@@ -101,13 +233,45 @@
 
             // setup handlers
             setBasketChangeHandler();
+            // setup set address basket
+            setChangeAddressHandlers();
 
-            minUnitToast = document.getElementById('id__min-unit-toast');
+            // setup clear basket
+            $('#id--cancel-checkout').on('click', function (event) {
+                fetch(CLEAR_BASKET_URL, {
+                    method: 'delete',
+                    headers: csrfHeader()
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                    redirectRewriteInfoResponseHandler(data);
+                })
+                .catch((error) => {
+                    showErrorToast(error);
+                });
+            });
+
+            // setup next buttons; disable all except first & set handlers
+            $(nextButtonsSelector).attr('disabled', 'disabled');
+            $(nextButtonSelector(tabPostfix[0])).removeAttr('disabled');
+            $(nextButtonsSelector).on('click', function (event) {
+                const tab = event.currentTarget.id.substring('{{ next_btn_id }}'.length);
+                changeTab(tab, 1);
+            });
+
+            // setup prev buttons; disable all & set handlers
+            $(prevButtonsSelector).attr('disabled', 'disabled');
+            $(prevButtonsSelector).on('click', function (event) {
+                const tab = event.currentTarget.id.substring('{{ prev_btn_id }}'.length);
+                changeTab(tab, -1);
+            });
+
+            // setup tab buttons; disable all except first
+            $(navTabButtonsSelector).attr('disabled', 'disabled');
+            $(tabButtonSelector(tabPostfix[0])).removeAttr('disabled');
         });
-
-
-
     </script>
+    {% endwith %}
     <script src="{% static 'checkout/js/stripe_checkout.js' %}"></script>
 {% endblock extra_js_body %}
 <!-- checkout.html end -->

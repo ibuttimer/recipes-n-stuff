@@ -23,23 +23,38 @@ import time
 
 from django.http import HttpRequest
 
+from checkout.currency import get_currency
+from recipes.models import Recipe
+from recipesnstuff.settings import DEFAULT_CURRENCY
 from subscription.models import Subscription
 
 from .models import ProductType, OrderProduct
 
 
-def generate_sku(prod_type: ProductType, subscription: Subscription = None):
+def generate_sku(
+        prod_type: ProductType, subscription: Subscription = None,
+        recipe: Recipe = None) -> str:
     """
-    Generate an order product sku
+    Generate an order product sku.
+    ** Note: sku should be app-wide unique **
     :param prod_type: product type
-    :param subscription: subscription
-    :return:
+    :param subscription: subscription instance; default None
+    :param recipe: recipe instance; default None
+    :return: sku
     """
-    identifier = 0
     if prod_type == ProductType.SUBSCRIPTION:
-        identifier = f'{subscription.id:08d}'
+        identifier = subscription.id
+        code = subscription.base_currency
+    elif prod_type == ProductType.INGREDIENT_BOX:
+        identifier = recipe.id
+        code = DEFAULT_CURRENCY
+    else:
+        raise NotImplementedError(f'Not currently supported: {prod_type}')
 
-    return f'{prod_type.choice.upper()}{identifier}'
+    currency = get_currency(code)
+
+    return f'{prod_type.choice.upper()}{identifier:08d}' \
+           f'{currency.numeric_code:03d}'
 
 
 def generate_order_num(request: HttpRequest):

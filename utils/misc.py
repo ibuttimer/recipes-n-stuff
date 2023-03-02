@@ -50,11 +50,12 @@ def random_string_generator(
 
 def is_boolean_true(text: str) -> bool:
     """
-    Check if `text` represents a boolean True value
+    Check if `text` represents a boolean True value;
+    'true', 'on', 'ok', 'y', 'yes', '1'
     :param text: string to check
     :return: True if represents a boolean True value, otherwise False
     """
-    return text.lower() in environ.Env.BOOLEAN_TRUE_STRINGS
+    return str(text).lower() in environ.Env.BOOLEAN_TRUE_STRINGS
 
 
 class Crud(Enum):
@@ -103,9 +104,12 @@ def permission_name(
     perm = f'{app_label}.' if app_label else ''
     if not isinstance(model, str):
         model = model._meta.model_name
-    permission_code = f'{perm_op.value}_{model}' \
-        if isinstance(perm_op, Crud) else perm_op
-    return f'{perm}{permission_code}'
+    if isinstance(perm_op, Crud):
+        perm_val = perm_op.value[0] if isinstance(perm_op.value, tuple) \
+            else perm_op.value
+    else:
+        perm_val = perm_op
+    return f'{perm}{perm_val}_{model}'
 
 
 def permission_check(

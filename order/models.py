@@ -28,15 +28,20 @@ from decimal import Decimal
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from recipesnstuff.settings import DEFAULT_CURRENCY
+from recipes.models import Recipe
+from recipesnstuff.settings import (
+    DEFAULT_CURRENCY, PRICING_FACTOR, PRICING_PLACES
+)
 from subscription.models import Subscription
 from user.models import User
 from utils import ModelMixin, NameChoiceMixin, DATE_OLDEST_LOOKUP
+from checkout.constants import CURRENCY_CODE_MAX_LEN
 
 from .constants import (
     USER_FIELD, CREATED_FIELD, UPDATED_FIELD, STATUS_FIELD, AMOUNT_FIELD,
     BASE_CURRENCY_FIELD, ORDER_NUM_FIELD, ITEMS_FIELD,
-    TYPE_FIELD, SUBSCRIPTION_FIELD, SKU_FIELD
+    TYPE_FIELD, SUBSCRIPTION_FIELD, RECIPE_FIELD, UNIT_PRICE_FIELD, SKU_FIELD,
+    DESCRIPTION_FIELD
 )
 
 
@@ -126,10 +131,16 @@ class OrderProduct(ModelMixin, models.Model):
     # field names
     TYPE_FIELD = TYPE_FIELD
     SUBSCRIPTION_FIELD = SUBSCRIPTION_FIELD
+    RECIPE_FIELD = RECIPE_FIELD
+    UNIT_PRICE_FIELD = UNIT_PRICE_FIELD
+    BASE_CURRENCY_FIELD = BASE_CURRENCY_FIELD
+    DESCRIPTION_FIELD = DESCRIPTION_FIELD
     SKU_FIELD = SKU_FIELD
 
     ORDER_PRODUCT_ATTRIB_TYPE_MAX_LEN: int = 2
     ORDER_PRODUCT_ATTRIB_SKU_MAX_LEN: int = 40
+    ORDER_PRODUCT_ATTRIB_DESC_MAX_LEN: int = 150
+    ORDER_PRODUCT_ATTRIB_CURRENCY_CODE_MAX_LEN: int = CURRENCY_CODE_MAX_LEN
 
     type = models.CharField(
         _('type'), max_length=ORDER_PRODUCT_ATTRIB_TYPE_MAX_LEN,
@@ -139,6 +150,21 @@ class OrderProduct(ModelMixin, models.Model):
 
     subscription = models.ForeignKey(Subscription, models.SET_NULL,
                                      blank=True, null=True)
+
+    recipe = models.ForeignKey(Recipe, models.SET_NULL, blank=True, null=True)
+
+    unit_price = models.DecimalField(
+        _('unit price'), default=Decimal.from_float(0),
+        decimal_places=PRICING_FACTOR, max_digits=PRICING_PLACES)
+
+    base_currency = models.CharField(
+        _('base currency'),
+        max_length=ORDER_PRODUCT_ATTRIB_CURRENCY_CODE_MAX_LEN, blank=False,
+        default=DEFAULT_CURRENCY.upper())
+
+    description = models.CharField(
+        _('description'), max_length=ORDER_PRODUCT_ATTRIB_DESC_MAX_LEN,
+        default='')
 
     sku = models.CharField(
         _('order number'), max_length=ORDER_PRODUCT_ATTRIB_SKU_MAX_LEN,
@@ -170,7 +196,7 @@ class Order(ModelMixin, models.Model):
 
     ORDER_ATTRIB_ORDER_NUM_MAX_LEN: int = 40
     ORDER_ATTRIB_STATUS_MAX_LEN: int = 2
-    ORDER_ATTRIB_CURRENCY_CODE_MAX_LEN: int = 3
+    ORDER_ATTRIB_CURRENCY_CODE_MAX_LEN: int = CURRENCY_CODE_MAX_LEN
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -184,8 +210,8 @@ class Order(ModelMixin, models.Model):
     )
 
     amount = models.DecimalField(
-        _('amount'), default=Decimal.from_float(0), decimal_places=2,
-        max_digits=19)
+        _('amount'), default=Decimal.from_float(0),
+        decimal_places=PRICING_FACTOR, max_digits=PRICING_PLACES)
 
     base_currency = models.CharField(
         _('base currency'),

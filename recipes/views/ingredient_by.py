@@ -21,27 +21,26 @@
 #  DEALINGS IN THE SOFTWARE.
 
 from http import HTTPStatus
-from typing import Union
+from typing import Union, List
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views import View
 
+from base.templatetags.delete_modal_ids import delete_modal_ids
 from base.utils import raise_permission_denied
 from utils import (
-    Crud, reverse_q,
-    namespaced_url, redirect_on_success_or_render,
+    Crud, redirect_on_success_or_render,
     entity_delete_result_payload
 )
+from .recipe_by import RecipeDetailUpdate
 from .recipe_queries import (
     get_recipe, get_recipe_ingredient, get_recipe_ingredients_list
 )
 from .utils import recipe_permission_check
-from ..constants import (
-    THIS_APP, RECIPE_ID_UPDATE_ROUTE_NAME
-)
+from ..constants import INGREDIENTS_QUERY
 from ..forms import RecipeIngredientForm
-from ..models import Recipe, RecipeIngredient
+from ..models import Recipe, RecipeIngredient, Instruction
 
 
 class RecipeIngredientDetail(LoginRequiredMixin, View):
@@ -62,6 +61,8 @@ class RecipeIngredientDetail(LoginRequiredMixin, View):
         recipe_permission_check(request, Crud.UPDATE)
 
         recipe_ingredient, _ = get_recipe_ingredient(pk)
+
+        own_recipe_check(request, recipe_ingredient.recipe)
 
         form = RecipeIngredientForm(
             data=request.POST, instance=recipe_ingredient)
@@ -117,8 +118,11 @@ class RecipeIngredientDetail(LoginRequiredMixin, View):
         status = HTTPStatus.OK
         # delete ingredient
         count, _ = recipe_ingredient.delete()
+
+        entity = 'ingredient'
+        modal_ids = delete_modal_ids(entity)
         payload = entity_delete_result_payload(
-            "#id__ingredient_deleted-modal-body", count > 0, 'ingredient')
+            f"#{modal_ids['deleted_id_body']}", count > 0, entity)
 
         if count == 0:
             status = HTTPStatus.BAD_REQUEST
@@ -131,10 +135,40 @@ class RecipeIngredientDetail(LoginRequiredMixin, View):
         :param pk: id of entity
         :return: url
         """
-        return reverse_q(
-            namespaced_url(THIS_APP, RECIPE_ID_UPDATE_ROUTE_NAME),
-            args=[pk]
-        )
+        return RecipeDetailUpdate.url(pk, INGREDIENTS_QUERY)
+
+
+def check_ordering(entities: List[Union[RecipeIngredient, Instruction]],
+                   field: str, start: int = 1):
+    """
+    Check and update if necessary the recipe ingredients order for the
+    specified recipe
+    :param entities: list of entities to order
+    :param field: index field of entity
+    :param start: first index; default 1
+    """
+    expected_idx = start
+    alt_end_idx = 0
+    for index, entity in enumerate(entities):
+        if index < alt_end_idx:
+            continue    # skip alternatives
+
+        entity_index = getattr(entity, field)
+
+        assert entity_index >= expected_idx
+        # alternative entities have same index
+        alt_end_idx = index
+        while alt_end_idx < len(entities) and \
+                getattr(entities[alt_end_idx], field) == entity_index:
+            alt_end_idx += 1
+
+        if entity_index > expected_idx:
+            for alt_idx in range(index, alt_end_idx):
+                update_entity = entities[alt_idx]
+                setattr(update_entity, field, expected_idx)
+                update_entity.save()
+
+        expected_idx += 1
 
 
 def check_ingredient_ordering(recipe: Union[int, Recipe]):
@@ -149,26 +183,8 @@ def check_ingredient_ordering(recipe: Union[int, Recipe]):
     ingredients = get_recipe_ingredients_list(
         recipe, order_by=RecipeIngredient.INDEX_FIELD)
 
-    expected_idx = RecipeIngredient.RECIPE_INGREDIENT_ATTRIB_INDEX_MIN
-    alt_end_idx = 0
-    for index, ingredient in enumerate(ingredients):
-        if index < alt_end_idx:
-            continue    # skip alternatives
-
-        assert ingredient.index >= expected_idx
-        # alternative ingredients have same index
-        alt_end_idx = index
-        while alt_end_idx < len(ingredients) and \
-            ingredients[alt_end_idx].index == ingredient.index:
-            alt_end_idx += 1
-
-        if ingredient.index > expected_idx:
-            for alt_idx in range(index, alt_end_idx):
-                update_ingredient = ingredients[alt_idx]
-                update_ingredient.index = expected_idx
-                update_ingredient.save()
-
-        expected_idx += 1
+    check_ordering(ingredients, RecipeIngredient.INDEX_FIELD,
+                   start=RecipeIngredient.RECIPE_INGREDIENT_ATTRIB_INDEX_MIN)
 
 
 def own_recipe_check(request: HttpRequest, recipe: Recipe,

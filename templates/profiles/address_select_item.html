@@ -1,0 +1,42 @@
+<!-- address_select_item.html start -->
+{# --- address_select_item.html template variable defines for includes --- #}
+{# address list item template expects: 'address_dto' as AddressDto #}
+{#                                     'identifier' as individual identifier #}
+
+{% load i18n  static  countries  attr_append  negate %}
+
+<div class="row mb-3">
+    <div class="col-12 text-center">
+        {% if address_dto.is_default %}
+        <span data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Default address">
+            <p class="mb-0 w-100 text-end" ><i class="fa-solid fa-certificate"></i></p>
+        </span>
+        {% endif %}
+
+        {% for field in address_dto.display_order_ex_country %}
+            {% if field %}
+                <p class="mb-0">{{ field }}</p>
+            {% endif %}
+        {% endfor %}
+
+        {% get_country address_dto.country as country %}
+        <p class="mb-0">{{ country.name }}</p>
+
+        {% for field in address_dto.display_order_ex_country %}
+            {% if not field %}
+                <p class="mb-0"></p>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+<div class="row mb-0">
+    {% attr_append 'class="col-12"' 'text-end' address_dto.is_selected as item_class %}
+    <div class=""{{ item_class | safe }}>
+        {% if address_dto.is_selected %}
+            <i class="fa-solid fa-circle-check"></i>
+        {% else %}
+            <a class="a__addr-set" href="{% url 'checkout:address' address_dto.id %}">{% trans "Use this address" %}</a>
+        {% endif %}
+    </div>
+</div>
+<!-- address_select_item.html end -->

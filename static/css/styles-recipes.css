@@ -1,3 +1,7 @@
+:root {
+    --img-no-content-width: 256px;  /* no content image actual width */
+    --img-no-content-height: 256px; /* no content image height width */
+}
 
 
 .card-img-top {
@@ -12,7 +16,30 @@
     opacity: 0.5;
 }
 
+.select__num-boxes {
+    width: 100px;
+}
+
+.a__add_to_basket_menu:hover {
+    background-color: var(--bs-primary);
+}
+
 .a__recipe-card {
     text-decoration: none;
     color: var(--bs-card-color);
+}
+
+.img__no-content {
+    width: calc(var(--img-no-content-width) / 4);
+    height: calc(var(--img-no-content-height) / 4);
+}
+
+
+/* tiny screens, 315px wide or less */
+@media screen and (max-width: 315px) {
+    .img__no-content {
+        width: calc(var(--img-no-content-width) / 6);
+        height: calc(var(--img-no-content-height) / 6);
+    }
+
 }

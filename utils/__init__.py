@@ -27,13 +27,14 @@ from .content_list_mixin import (
     SNIPPETS_CTX, ContentListMixin
 )
 from .enums import (
-    ChoiceArg, QueryArg, SortOrder, PerPage, QueryOption, YesNo
+    ChoiceArg, QueryArg, SortOrder, PerPage6, PerPage8, PerPage50,
+    QueryOption, YesNo
 )
 from .file import find_parent_of_folder
 from .forms import (
     update_field_widgets, error_messages, ErrorMsgs, form_auto_id, FormMixin
 )
-from .html import add_navbar_attr
+from .html import add_navbar_attr, html_tag
 from .misc import (
     Crud, permission_name, permission_check, ensure_list, find_index
 )
@@ -80,7 +81,9 @@ __all__ = [
     'ChoiceArg',
     'QueryArg',
     'SortOrder',
-    'PerPage',
+    'PerPage6',
+    'PerPage8',
+    'PerPage50',
     'QueryOption',
     'YesNo',
 
@@ -99,6 +102,7 @@ __all__ = [
     'find_index',
 
     'add_navbar_attr',
+    'html_tag',
 
     'ModelMixin',
     'ModelFacadeMixin',

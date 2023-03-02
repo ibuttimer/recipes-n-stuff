@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+<!-- categories_list.html start -->
+{# --- categories_list.html template variable defines for includes --- #}
+{# category list template expects: 'snippets' as list of extra html code blocks to include #}
+{#                               : 'paginator' as a Paginator #}
+{#                               : 'category_list' as a list of CategoryDto #}
+
+{% load i18n %}
+{% load static %}
+{% load humanize %}
+{% load tz %}
+{% load form_field %}
+{% load dict_value %}
+
+{% block extra_js_head %}
+    {{ block.super }}
+{% endblock extra_js_head %}
+
+{% block head_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <link href="{% static 'css/styles-recipes.css' %}" rel="stylesheet" type="text/css">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="row mt-2">
+{% if page_heading %}
+    <div class="col-12 text-center">
+        <h3>{{ page_heading | safe }}</h3>
+    </div>
+{% endif %}
+</div>
+
+<div class="row flex-grow-1 overflow-auto d-flex justify-content-center">
+    {# sort order select #}
+    {% include "snippet/sort_order_select.html" %}
+
+    <article id="article-content" class="row d-flex justify-content-center">
+        {% include "recipes/category_list_content.html" %}
+    </article>
+</div>
+
+{% for snippet in snippets %}
+    {{ snippet | safe }}
+{% endfor %}
+
+{% endblock content %}
+
+{% block extra_js_body %}
+    {{ block.super }}
+    <script src="{% static 'js/page_content.js' %}"></script>
+{% endblock extra_js_body %}
+<!-- categories_list.html end -->

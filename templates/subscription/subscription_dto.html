@@ -8,7 +8,8 @@
 {% load attr_append %}
 {% load countries %}
 
-<div class="col-lg-6">
+{# below lg: 1 per row  lg+: 2 per row #}
+<div class="col-lg-6 mb-4">
     {% attr_append 'class="card rounded-3 mb-4 h-100"' 'card--new-subscription' subscription_dto.add_new as card_class %}
     <div {{card_class | safe}}>
         <div {% if subscription_dto.add_new %} id="id--subscription-new" {% else %} id="id--subscription-{{identifier}}" {% endif %} class="card-body">
@@ -31,7 +32,7 @@
                 </div>
                 <div class="row mb-0">
                     <div class="col-sm-9">
-                        <a class="a--sub-edit" href="{% url 'subscription:subscription_id' subscription_dto.id %}">{% trans "Edit" %}</a>&ensp;&ensp;&VerticalLine;&ensp;&ensp;<a class="a--sub-del" href="{% url 'subscription:subscription_id' subscription_dto.id %}">{% trans "Delete" %}</a>
+                        <a class="a--sub-edit" href="{% url 'subscription:subscription_id' subscription_dto.id %}">{% trans "Edit" %}</a>&emsp;&VerticalLine;&emsp;<a class="a--sub-del" href="{% url 'subscription:subscription_id' subscription_dto.id %}">{% trans "Delete" %}</a>
                     </div>
                     {% if subscription_dto.is_active %}
                     <div class="col-sm-3 text-end">

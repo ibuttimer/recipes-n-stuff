@@ -80,16 +80,35 @@ class TestForexFixtures(BaseCheckoutTest):
         mocked_datetime.now.return_value = self.test_timestamp
 
         basket = Basket()
+        request = None  # http request placeholder
+        sku = 1
 
         with self.subTest('multiple same cost items'):
             expected_total = 0
             expected_items = 0
             for idx in range(1, 5):
-                basket.add(1, f'item {idx}')
+                basket.add(request, 1, f'item {idx}', sku=str(sku))
+                expected_total += 1
+                expected_items += 1
+                sku += 1
+            self.verify_basket_attributes(
+                basket, total=expected_total, items=expected_items)
+
+        with self.subTest('basket clear'):
+            currency = basket.currency
+            basket.clear()
+            self.verify_basket_attributes(basket, 0, currency, 0)
+
+        with self.subTest('update same item multiple times'):
+            expected_total = 0
+            expected_items = 0
+            for idx in range(1, 5):
+                basket.add(request, 1, f'item {idx}', sku=str(sku))
                 expected_total += 1
                 expected_items += 1
             self.verify_basket_attributes(
                 basket, total=expected_total, items=expected_items)
+            sku += 1
 
         with self.subTest('basket clear'):
             currency = basket.currency
@@ -100,9 +119,10 @@ class TestForexFixtures(BaseCheckoutTest):
             expected_total = 0
             expected_items = 0
             for idx in range(1, 5):
-                basket.add(idx, f'item {idx}')
+                basket.add(request, idx, f'item {idx}', sku=str(sku))
                 expected_total += idx
                 expected_items += 1
+                sku += 1
             self.verify_basket_attributes(
                 basket, total=expected_total, items=expected_items)
 
@@ -113,9 +133,11 @@ class TestForexFixtures(BaseCheckoutTest):
             expected_total = 0
             expected_items = 0
             for idx in range(1, 5):
-                basket.add(idx, f'item {idx}', count=idx)
+                basket.add(
+                    request, idx, f'item {idx}', count=idx, sku=str(sku))
                 expected_total += (idx * idx)
-                expected_items += 1
+                expected_items += idx
+                sku += 1
             self.verify_basket_attributes(
                 basket, total=expected_total, items=expected_items)
 
@@ -138,10 +160,11 @@ class TestForexFixtures(BaseCheckoutTest):
             expected_total = Decimal(0)
             expected_items = 0
             for idx in range(1, 5):
-                basket.add(items[idx][0], f'item {idx}',
-                           currency=items[idx][1])
+                basket.add(request, items[idx][0], f'item {idx}',
+                           currency=items[idx][1], sku=str(sku))
                 expected_total += items[idx][2]
                 expected_items += 1
+                sku += 1
             self.verify_basket_attributes(
                 basket,
                 total=normalise_amount(

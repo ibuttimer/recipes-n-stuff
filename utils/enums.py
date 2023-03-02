@@ -19,11 +19,12 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+import sys
 from dataclasses import dataclass
-from enum import Enum, auto
-from typing import TypeVar, Any, Callable, Optional, Type, Union, Tuple, List
+from enum import Enum
+from typing import TypeVar, Any, Callable, Optional, Type, Union, List
 
-from .misc import ensure_list
+from .misc import ensure_list, is_boolean_true
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
 TypeChoiceArg = TypeVar("TypeChoiceArg", bound="ChoiceArg")
@@ -145,22 +146,32 @@ class QueryArg:
 
     def was_set_to_one_of(self, values: List[Any], attrib: str = None):
         """
-        Check if value was to set one of the specified `values`
+        Check if value was set to one of the specified `values`
         :param values: values to check
         :param attrib: attribute of set value to check; default None
-        :return: True if value was to set the specified `value`
+        :return: True if value was set to one of the specified values
         """
         chk_value = self.value if not attrib else getattr(self.value, attrib)
         return self.was_set and chk_value in values
 
     def was_set_to(self, value: Any, attrib: str = None):
         """
-        Check if value was to the specified `value`
+        Check if value was set to the specified `value`;
+        'true', 'on', 'ok', 'y', 'yes', '1'
         :param value: value to check
         :param attrib: attribute of set value to check; default None
-        :return: True if value was to set the specified `value`
+        :return: True if value was set to the specified `value`
         """
         return self.was_set_to_one_of(ensure_list(value), attrib=attrib)
+
+    def was_set_to_boolean_true(self, attrib: str = None):
+        """
+        Check if value was set to a boolean true value
+        :param attrib: attribute of set value to check; default None
+        :return: True if value was set to boolean true
+        """
+        chk_value = self.value if not attrib else getattr(self.value, attrib)
+        return is_boolean_true(str(chk_value))
 
     @property
     def as_tuple(self) -> tuple[Any, bool]:
@@ -240,18 +251,74 @@ class SortOrder(ChoiceArg):
         self.order = order
 
 
-class PerPage(ChoiceArg):
-    """ Enum representing opinions per page """
+class PerPageMixin:
+    """ Mixin for enums representing items per page """
+
+    @staticmethod
+    def all_value():
+        return sys.maxsize
+
+    def __init__(self, count: int):
+        self.all = count == self.all_value()
+
+    @property
+    def is_all(self):
+        return self.count == self.all_value()
+
+
+class PerPage6(PerPageMixin, ChoiceArg):
+    """ Enum representing items per page, initial 6/pg step 3 """
     SIX = 6
     NINE = 9
     TWELVE = 12
     FIFTEEN = 15
 
     def __init__(self, count: int):
-        super().__init__(f'{count} per page', count)
+        super().__init__(count)     # PerPageMixin __init__
+        # self.__class__.__mro__ = (
+        #   <enum 'PerPage6'>, <class 'utils.enums.PerPageMixin'>,
+        #   <enum 'ChoiceArg'>, <enum 'Enum'>, <class 'object'>
+        # ) so type for super is PerPageMixin to hit ChoiceArg
+        super(PerPageMixin, self).__init__(f'{count} per page', count)
 
 
-PerPage.DEFAULT = PerPage.SIX
+PerPage6.DEFAULT = PerPage6.SIX
+
+
+class PerPage8(PerPageMixin, ChoiceArg):
+    """ Enum representing items per page, initial 8/pg step 4 """
+    EIGHT = 8
+    TWELVE = 12
+    SIXTEEN = 16
+    TWENTY = 20
+
+    def __init__(self, count: int):
+        super().__init__(count)     # PerPageMixin __init__
+        # ChoiceArg __init__, see PerPage6.__init__ comment
+        super(PerPageMixin, self).__init__(f'{count} per page', count)
+
+
+PerPage8.DEFAULT = PerPage8.EIGHT
+
+
+class PerPage50(PerPageMixin, ChoiceArg):
+    """ Enum representing items per page, initial 50/pg step 50 """
+    FIFTY = 50
+    ONE_HUNDRED = 100
+    ONE_FIFTY = 150
+    TWO_HUNDRED = 200
+    TWO_FIFTY = 250
+    ALL = PerPageMixin.all_value()
+
+    def __init__(self, count: int):
+        super().__init__(count)     # PerPageMixin __init__
+        # ChoiceArg __init__, see PerPage6.__init__ comment
+        super(PerPageMixin, self).__init__(
+            f'{count} per page' if count != PerPageMixin.all_value() else
+            'All', count)
+
+
+PerPage50.DEFAULT = PerPage50.FIFTY
 
 
 class YesNo(ChoiceArg):

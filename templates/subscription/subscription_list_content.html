@@ -9,23 +9,16 @@
 {% block subscription_list_content %}
     <var id="var--repeat-search-term" hidden>{{ repeat_search_term }}</var>
 
-    <div class="row">
-        <div class="col-12 mt-2">
-            <div class="row d-flex align-items-center">
-                {% for subscription_dto in subscription_list %}
+    {# below lg: 1 per row  lg+: 2 per row #}
+    <div class="row row-cols-1 row-cols-lg-2 mb-3">
+        {% for subscription_dto in subscription_list %}
 
-                    {# subscription dto template expects: 'subscription_dto' as SubscriptionDto #}
-                    {#                                    'identifier' as individual identifier #}
-                    {% with identifier=subscription_dto.id %}
-                        {% include "subscription/subscription_dto.html" %}
-                    {% endwith %}
-            {% if forloop.counter|divisibleby:2 %}
-            </div>
-            <div class="row d-flex align-items-center">
-                    {% endif %}
-            {% endfor %}
-            </div>
-        </div>
+            {# subscription dto template expects: 'subscription_dto' as SubscriptionDto #}
+            {#                                    'identifier' as individual identifier #}
+            {% with identifier=subscription_dto.id %}
+                {% include "subscription/subscription_dto.html" %}
+            {% endwith %}
+        {% endfor %}
     </div>
 
     {# per page and page selection #}

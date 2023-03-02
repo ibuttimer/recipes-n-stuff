@@ -27,6 +27,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.views import View
 
+from recipes.views.recipe_queries import get_recipe_count
 from recipesnstuff import (
     USER_APP_NAME, HOME_ROUTE_NAME, IMAGE_FILE_TYPES,
     DEVELOPMENT, DEV_IMAGE_FILE_TYPES
@@ -104,6 +105,7 @@ class UserDetail(LoginRequiredMixin, View):
                 UserForm.EMAIL_FF
             ],
             'avatar_url': avatar_url,
+            'recipe_count': get_recipe_count(user_obj),
             'image_file_types':
                 # not all image types supported by Pillow which is used by
                 # ImageField in dev mode

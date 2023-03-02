@@ -3,24 +3,34 @@
 {# basket template expects: 'basket' as Basket #}
 {#                          'currencies' as currency choices for select #}
 
-{% load i18n %}
+{% load i18n  image_url  lookup_value %}
 
 <table class="table text-center">
     <thead>
         <tr>
+            <th scope="col"></th>
             <th scope="col">Description</th>
             <th scope="col">Unit cost</th>
             <th scope="col">Units</th>
             <th scope="col">Item total</th>
             <th scope="col">Currency</th>
             <th scope="col">SKU</th>
-            <th scope="col"><em>Subtotal<br>{{ basket.currency }}</em></th>
+            <th scope="col"><em>Subtotal<br>{{ basket.currency_symbol }}</em></th>
         </tr>
     </thead>
     <tbody class="table-group-divider">
         {% for item in basket.items %}
             <tr id="id__item-row-{{ forloop.counter0 }}">
-                <td>{{ item.description }}</td>
+                <td>
+                    <img class="img__checkout_product" alt="product image" src="{% image_url item.image %}">
+                </td>
+                <td>
+                    {% if item.url %}
+                        <a href="{{ item.url }}" aria-label="view product">{{ item.description }}</a>
+                    {% else %}
+                        {{ item.description }}
+                    {% endif %}
+                </td>
                 <td>{{ item.amt_str }}</td>
                 <td>
                     <div class="d-flex justify-content-center align-content-center">
@@ -35,7 +45,7 @@
                 <td>{{ item.item_total_str }}</td>
                 <td>{{ item.currency }}</td>
                 <td>{{ item.sku }}</td>
-                <td>{{ basket.subtotals.0 }}</td>
+                <td>{% lookup_value basket.subtotals forloop.counter0 %}</td>
             </tr>
             {% if item.instructions %}
                 <tr>
@@ -48,11 +58,13 @@
     <tfoot class="table-group-divider">
         <tr>
             <!-- TODO bottom line of bottom row of basket not 100% even -->
-            <td class="row">
-                <div class="col-sm-6 d-flex justify-content-end align-content-center">
+            <td>
+                <div class="col-sm-12 d-flex justify-content-end align-content-center">
                     <em>Pay in</em>
                 </div>
-                <div class="col-sm-6">
+            </td>
+            <td>
+                <div class="col-sm-12 d-flex justify-content-start align-content-center">
                     <div class="d-flex justify-content-center">
                         <select id="id__pay-ccy-select" class="form-select form-select-sm" aria-label="payment currency selection">
                             {% for currency in currencies %}
@@ -64,7 +76,7 @@
             </td>
             <td colspan="4">
             </td>
-            <td><b><em>Total&nbsp;{{ basket.currency }}</em></b></td>
+            <td><b><em>Total&nbsp;{{ basket.currency_symbol }}</em></b></td>
             <td><em>{{ basket.total_str }}</em></td>
         </tr>
     </tfoot>

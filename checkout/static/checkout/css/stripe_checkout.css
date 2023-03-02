@@ -58,7 +58,7 @@
 }
 
 /* Buttons and links */
-button {
+.btn__stripe {
     background: #5469d4;
     font-family: Arial, sans-serif;
     color: #ffffff;
@@ -73,10 +73,10 @@ button {
     box-shadow: 0px 4px 5.5px 0px rgba(0, 0, 0, 0.07);
     width: 100%;
 }
-button:hover {
+.btn__stripe:hover {
     filter: contrast(115%);
 }
-button:disabled {
+.btn__stripe:disabled {
     opacity: 0.5;
     cursor: default;
 }

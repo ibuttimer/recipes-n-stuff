@@ -23,9 +23,8 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Dict, Optional
 
-from django.db import connection
-
 from base.dto import BaseDto
+from utils.database import table_exists
 
 from .constants import (
     ZERO_DECIMAL_CURRENCIES, THREE_DECIMAL_CURRENCIES, THIS_APP
@@ -57,9 +56,8 @@ def build_currencies() -> Dict[str, CurrencyDto]:
     :return: dict of currencies
     """
     # in some tests, currency table may not have been created yet
-    all_tables = connection.introspection.table_names()
-    currency_list = [] if f'{THIS_APP}_{Currency.model_name()}'.lower() \
-                          not in all_tables else list(Currency.objects.all())
+    currency_list = list(Currency.objects.all()) if \
+        table_exists(f'{THIS_APP}_{Currency.model_name()}') else []
 
     currencies = {
         currency.code: CurrencyDto.from_model(currency)

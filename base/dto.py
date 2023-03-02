@@ -21,8 +21,15 @@
 #  DEALINGS IN THE SOFTWARE.
 from copy import deepcopy
 from dataclasses import dataclass
+from typing import Callable, Union, TypeVar, List, Tuple, Optional
+
+import json_fix
+import jsonpickle
 
 from django.db.models import Model
+
+
+TypeImagePool = TypeVar("TypeImagePool", bound="ImagePool")
 
 
 @dataclass
@@ -55,3 +62,75 @@ class BaseDto:
         """
         instance.add_new = True
         return instance
+
+
+class ImagePool:
+    """ Class representing an image """
+    urls: List[Tuple[Union[str, Callable], bool]]
+
+    def __init__(self, url: Union[str, Callable], is_static: bool):
+        self.urls = [(url, is_static)]
+
+    @staticmethod
+    def of_static(url: Union[str, Callable]) -> TypeImagePool:
+        """
+        Static image url factory
+        :param url: image url or callable returning image url
+        :return: ImagePool
+        """
+        return ImagePool(url=url, is_static=True)
+
+    @staticmethod
+    def of_url(url: Union[str, Callable]) -> TypeImagePool:
+        """
+        Fully qualified image url factory
+        :param url: image url or callable returning image url
+        :return: ImagePool
+        """
+        return ImagePool(url=url, is_static=False)
+
+    def add_backup(self, url: Union[str, Callable], is_static: bool):
+        """
+        Add a backup image
+        :param url: image url or callable returning image url
+        :param is_static: is static flag
+        :return: this object
+        """
+        self.urls.append((url, is_static))
+        return self
+
+    def get_image(self) -> Optional[Tuple[str, bool]]:
+        """
+        Get the image
+        :return: tuple of url and is static flag or None if no image found
+        """
+        image_tuple = None
+        for url, is_static in self.urls:
+            if isinstance(url, Callable):
+                url = url()
+            if url is not None:
+                image_tuple = (url, is_static)
+                break
+        return image_tuple
+
+    @property
+    def is_static_image(self) -> bool:
+        """
+        Is a static image
+        :return: True if image to display is a static image
+        """
+        image_tuple = self.get_image()
+        return image_tuple[1] if image_tuple else False
+
+    def __json__(self):
+        """ Return a built-in object that is naturally jsonable """
+        return jsonpickle.encode(self)
+
+    @staticmethod
+    def from_jsonable(jsonable: dict) -> TypeImagePool:
+        """
+        Convert json representation to BasketItem
+        :param jsonable: json representation
+        :return: BasketItem if found otherwise original argument
+        """
+        return jsonpickle.decode(jsonable)

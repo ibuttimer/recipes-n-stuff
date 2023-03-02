@@ -78,6 +78,7 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
 DEVELOPMENT = env('DEVELOPMENT')
 TEST = env('TEST')
+DBG_TOOLBAR = env('DBG_TOOLBAR', default=False) and DEBUG
 
 # https://docs.djangoproject.com/en/4.1/ref/clickjacking/
 # required for Summernote editor
@@ -161,7 +162,6 @@ INSTALLED_APPS = [
     'django_summernote',
 
     'django_countries',
-    "debug_toolbar",
 
     BASE_APP_NAME,
     USER_APP_NAME,
@@ -174,6 +174,8 @@ INSTALLED_APPS = [
     # needs to be after app with django template overrides
     'django.forms',
 ]
+if DBG_TOOLBAR:
+    INSTALLED_APPS.append("debug_toolbar")
 
 # To supply custom templates to django widgets:
 # 1) Add 'django.forms' to INSTALLED_APPS; *after* the app with the overrides.
@@ -184,7 +186,10 @@ INSTALLED_APPS = [
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 MIDDLEWARE = [
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware"
+] if DBG_TOOLBAR else []
+MIDDLEWARE.extend([
+    # "debug_toolbar.middleware.DebugToolbarMiddleware",
 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -194,7 +199,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     f'{SUBSCRIPTION_APP_NAME}.middleware.SubscriptionMiddleware',
-]
+])
 
 # https://docs.djangoproject.com/en/4.1/ref/settings/#root-urlconf
 ROOT_URLCONF = f'{MAIN_APP}.urls'
@@ -216,8 +221,8 @@ TEMPLATES = [
 
                 # app-specific context processors
                 f'{MAIN_APP}.context_processors.footer_context',
-                # f'{MAIN_APP}.context_processors.test_context',
                 f'{BASE_APP_NAME}.context_processors.base_context',
+                f'{CHECKOUT_APP_NAME}.context_processors.checkout_context',
                 f'{USER_APP_NAME}.context_processors.user_context',
                 f'{SUBSCRIPTION_APP_NAME}.context_processors'
                 f'.subscription_context',
@@ -241,20 +246,24 @@ DATABASES = {
     #
     # The db() method is an alias for db_url().
     'default': env.db(),
-
-    # read os.environ['REMOTE_DATABASE_URL']
-    'remote': env.db_url(
-        'REMOTE_DATABASE_URL',
-        default=f'sqlite:///{os.path.join(BASE_DIR, "temp-remote.sqlite3")}'
-    ),
-
-    # read os.environ['SQLITE_URL']
-    'extra': env.db_url(
-        'SQLITE_URL',
-        default=f'sqlite:///{os.path.join(BASE_DIR, "temp-sqlite.sqlite3")}'
-    )
 }
+if not TEST:
+    # only need default database in test mode
+    DATABASES.update({
+        # read os.environ['REMOTE_DATABASE_URL']
+        'remote': env.db_url(
+            'REMOTE_DATABASE_URL',
+            default=f'sqlite:'
+                    f'///{os.path.join(BASE_DIR, "temp-remote.sqlite3")}'
+        ),
 
+        # read os.environ['SQLITE_URL']
+        'extra': env.db_url(
+            'SQLITE_URL',
+            default=f'sqlite:'
+                    f'///{os.path.join(BASE_DIR, "temp-sqlite.sqlite3")}'
+        )
+    })
 
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-user-model
 AUTH_USER_MODEL = f'{USER_APP_NAME}.User'
@@ -416,6 +425,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # url for blank avatar image
 AVATAR_BLANK_URL = env.get_value('AVATAR_BLANK_URL', default='')
 
+DJANGO_LOG_LEVEL = os.getenv('DJANGO_LOG_LEVEL', 'INFO').upper()
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -426,14 +436,14 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
+            'level': DJANGO_LOG_LEVEL,
             'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
         }
     },
     'loggers': {
         'django.db.backends': {
-            'level': 'DEBUG',
+            'level': DJANGO_LOG_LEVEL,
             'handlers': ['console'],
         }
     }
@@ -451,6 +461,9 @@ STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='')
 DEFAULT_CURRENCY = 'eur'
 # number of decimal places to use during financial calculations
 FINANCIAL_FACTOR = 6
+# number of decimal places and digits to use for prices
+PRICING_FACTOR = 2
+PRICING_PLACES = 19
 
 # Exchange Rates Data API
 EXCHANGERATES_DATA_KEY = env('EXCHANGERATES_DATA_KEY', default='')

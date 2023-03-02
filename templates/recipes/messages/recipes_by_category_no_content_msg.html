@@ -1,0 +1,5 @@
+{% load capwords %}
+<div class="row text-center">
+    <p class="text-center">No recipes found in <em>{{ category | capwords }}</em> category.</p>
+    <p>Check <a href="{% url 'recipes:recipe_categories' %}" aria-label="list all categories">All categories</a>.</p>
+</div>

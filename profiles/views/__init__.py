@@ -22,6 +22,7 @@
 from .address_create import AddressCreate
 from .address_list import AddressList
 from .address_by import AddressDetail, address_default
+from .address_queries import addresses_query
 from .subdivision import subdivision_name
 
 __all__ = [
@@ -31,6 +32,8 @@ __all__ = [
 
     'AddressDetail',
     'address_default',
+
+    'addresses_query',
 
     'subdivision_name',
 ]

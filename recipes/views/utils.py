@@ -24,7 +24,7 @@ from typing import Union, List
 from django.http import HttpRequest
 
 from recipes.constants import THIS_APP
-from recipes.models import Recipe
+from recipes.models import Recipe, Category
 from utils import (
     Crud, permission_check
 )
@@ -41,4 +41,18 @@ def recipe_permission_check(
     :param raise_ex: raise exception; default True
     """
     return permission_check(request, Recipe, perm_op,
+                            app_label=THIS_APP, raise_ex=raise_ex)
+
+
+def category_permission_check(
+        request: HttpRequest,
+        perm_op: Union[Union[Crud, str], List[Union[Crud, str]]],
+        raise_ex: bool = True) -> bool:
+    """
+    Check request user has specified permission
+    :param request: http request
+    :param perm_op: Crud operation or permission name to check
+    :param raise_ex: raise exception; default True
+    """
+    return permission_check(request, Category, perm_op,
                             app_label=THIS_APP, raise_ex=raise_ex)

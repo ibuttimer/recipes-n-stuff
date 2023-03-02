@@ -11,6 +11,9 @@ DEBUG=on
 # A boolean that turns on/off development mode; set to any of 'true', 'on', 'ok', 'y', 'yes', '1' to enable
 DEVELOPMENT=true
 
+# A boolean that enables/disables Django Debug Toolbar (ignored if DEBUG false); set to any of 'true', 'on', 'ok', 'y', 'yes', '1' to enable
+DBG_TOOLBAR=false
+
 # Secret key for a particular Django installation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#std-setting-SECRET_KEY
 SECRET_KEY='this-is-a-very-secret-key'

@@ -1,0 +1,18 @@
+<!-- navbar_basket.html start -->
+{# --- navbar_basket.html template variable defines for includes --- #}
+{# navbar basket template expects: 'basket_item_cnt' as number of basket items #}
+{#                                 'basket_total' as basket total #}
+
+{% if basket_item_cnt %}
+<span id="id__navbar-basket-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="{{ basket_total }}">
+    <a class="btn position-relative" href="{% url 'checkout:pay' %}" aria-label="checkout">
+        <i class="fa-regular fa-cart-shopping fa-xl">
+        <span class="position-absolute top-90 start-90 translate-middle badge rounded-pill text-bg-secondary span__basket-items-count">
+            {{ basket_item_cnt }}
+            <span class="visually-hidden">{{ basket_item_cnt }} items in basket</span>
+        </span>
+        </i>
+    </a>
+</span>
+{% endif %}
+<!-- navbar_basket.html end -->

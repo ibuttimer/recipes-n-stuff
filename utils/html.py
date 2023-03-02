@@ -50,8 +50,8 @@ def add_navbar_attr(context: dict, key: str, is_active: bool = False,
     """
     dropdown_toggle = 'dropdown-toggle' if is_dropdown_toggle else ''
     if is_active:
-        a_attr = f'class="nav-link {dropdown_toggle} {a_xtra or ""} active active_page" ' \
-                 f'aria-current="page"'
+        a_attr = f'class="nav-link {dropdown_toggle} {a_xtra or ""} ' \
+                 f'active active_page" aria-current="page"'
         span_attr = f'class="{span_xtra or ""}"'
     else:
         a_attr = f'class="nav-link {dropdown_toggle} {a_xtra or ""}"'
@@ -62,3 +62,17 @@ def add_navbar_attr(context: dict, key: str, is_active: bool = False,
         active=is_active, disabled=disabled)
 
     return context
+
+
+def html_tag(tag_name: str, tag_content: str = '', **kwargs):
+    """
+    Generate a html tag
+    :param tag_name: tag name
+    :param tag_content: tag content; default ''
+    :param kwargs: tag attributes
+    :return: html tag text
+    """
+    attrib = ' '.join([
+        f'{key}="{val}"' for key, val in kwargs.items()
+    ])
+    return f'<{tag_name} {attrib}>{tag_content}</{tag_name}>'

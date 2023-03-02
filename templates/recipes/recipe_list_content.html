@@ -1,7 +1,7 @@
 <!-- recipe_list_content.html start -->
 {# --- recipe_list_content.html template variable defines for includes --- #}
-{# subscription list content template expects: 'paginator' as a Paginator #}
-{#                                             'recipe_list' as a list of RecipeDto #}
+{# recipe list content template expects: 'paginator' as a Paginator #}
+{#                                       'recipe_list' as a list of RecipeDto #}
 
 {% load i18n %}
 {% load static %}
@@ -19,42 +19,26 @@
 {% block recipe_list_content %}
     <var id="var--repeat-search-term" hidden>{{ repeat_search_term }}</var>
 
-    <div class="row">
-        {% for recipe_dto in recipe_list %}
+    {% if paginator.count == 0 %}
+        {% include "recipes/snippet/no_content.html" %}
+    {% else %}
+        {# below sm: 1 per row  sm-md: 2 per row  lg: 3 per row  xl+: 4 per row #}
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 mb-3">
+            {% for recipe_dto in recipe_list %}
+                {# --- recipe_dto.html template variable defines for includes --- #}
+                {# recipe dto template expects: 'recipe_dto' as RecipeDto #}
+                {#                              'identifier' as individual identifier #}
+                {% with identifier=recipe_dto.id %}
+                    {% include "recipes/recipe_dto.html" %}
+                {% endwith %}
+            {% endfor %}
+        </div>
 
-            {# --- recipe_dto.html template variable defines for includes --- #}
-            {# recipe dto template expects: 'recipe_dto' as RecipeDto #}
-            {#                              'identifier' as individual identifier #}
-            {% with identifier=recipe_dto.id %}
-                {% include "recipes/recipe_dto.html" %}
-            {% endwith %}
-            {% if forloop.counter|divisibleby:1 %}
-                <div class="col-12 d-sm-none mb-4">
-                    {# based on code from https://github.com/Code-Institute-Solutions/boutique_ado_v1/blob/0a5335f2e95f58b10207ea57cedcdd063251a3ff/products/templates/products/products.html #}
-                    {# https://getbootstrap.com/docs/5.3/utilities/display/#hiding-elements #}
-                    {# mb-4 to match card from recipe_dto.html #}
-                    {# https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing #}
-                </div>
-            {% endif %}
-            {% if forloop.counter|divisibleby:2 %}
-                <div class="col-12 d-none d-sm-block d-md-block d-lg-none mb-4">
-                </div>
-            {% endif %}
-            {% if forloop.counter|divisibleby:3 %}
-                <div class="col-12 d-none d-lg-block d-xl-none mb-4">
-                </div>
-            {% endif %}
-            {% if forloop.counter|divisibleby:4 %}
-                <div class="col-12 d-none d-xl-block mb-4">
-                </div>
-            {% endif %}
-        {% endfor %}
-    </div>
-
-    {# per page and page selection #}
-    {% with "Recipes per page" as per_page_aria %}
-        {% include "snippet/per_page_pagination_select.html" %}
-    {% endwith %}
+        {# per page and page selection #}
+        {% with "Recipes per page" as per_page_aria %}
+            {% include "snippet/per_page_pagination_select.html" %}
+        {% endwith %}
+    {% endif %}
 {% endblock recipe_list_content %}
 
 <!-- recipe_list_content.html end -->

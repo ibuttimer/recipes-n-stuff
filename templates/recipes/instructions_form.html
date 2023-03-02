@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+<!-- instructions_form.html start -->
+{# --- instructions_form.html template variable defines for includes --- #}
+{# instructions form template expects: 'instructions' as list of RecipeInstructionForm #}
+{#                                    'new_instruct_form' as RecipeInstructionNewForm #}
+{#                                    'new_url' as url to add new instruction #}
+{#                                    'refresh_url' as url to refresh instruction list #}
+{#                                    'recipe_dto' as RecipeDto #}
+
+{% load i18n %}
+{% load static %}
+{% load form_submit_btn_id  a_id  lookup_value  delete_modal_ids %}
+
+{% block head_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <link href="{% static 'css/styles-recipes.css' %}" rel="stylesheet" type="text/css">
+{% endblock extra_css %}
+
+{% block extra_js_head %}
+    {{ block.super }}
+{% endblock extra_js_head %}
+
+{% block content %}
+<div class="row mt-2 mb-2">
+    {% if page_heading %}
+    <div class="col-12 text-center">
+        <h3>{{ page_heading | safe }}</h3>
+    </div>
+    {% endif %}
+</div>
+
+{% with entity='instruction' delete_identifier='instruction-del' %}
+    <article id="article-content" class="row d-flex justify-content-center">
+        <div class="col-lg-10 col-md-11 col-sm-12">
+
+            <div class="row mb-3 text-center">
+                <div class="col-sm-2">
+                    <h6>Index</h6>
+                    {% if new_form %}
+                        <div class="form-text">
+                            {% lookup_value new_form.Meta.help_texts 'index' as index_help_message %}
+                            {{ index_help_message }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-sm-7">
+                    <h6>Instruction</h6>
+                </div>
+                <div class="col-sm-3">
+                </div>
+            </div>
+            {% for instruction in instructions %}
+            <form {% if not read_only %} class="needs-validation" novalidate method="post" action="{% url 'recipes:recipe_instruction_id' instruction.form.instance.id %}" enctype="multipart/x-www-form-urlencoded" {% endif %}>
+                {% if not read_only %}
+                    {% csrf_token %}
+                {% endif %}
+
+                <fieldset class="row mb-3 text-center" {% if read_only %} disabled {% endif %}>
+                    {% for field in instruction.form %}
+                    <div {% if field.name == 'index' %} class="col-sm-2" {% else %} class="col-sm-7" {% endif %}>
+                        {{ field }}
+                        <div class="invalid-feedback">
+                            {% lookup_value new_instruct_form.Meta.error_messages field.name 'combined' as error_message %}
+                            <p>{{ error_message }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <div class="col-sm-3">
+                        {# update/delete buttons form template expects: 'entity' as entity name #}
+                        {#                                              'delete_url' as url to delete an entity #}
+                        {#                                              'delete_identifier' as entity delete identifier for delete button class & id #}
+                        {#                                                  e.g. class="a--delete_identifier", id="id--delete_identifier-a-1 #}
+                        {% url 'recipes:recipe_instruction_id' instruction.form.instance.id as delete_url %}
+                            {% include 'recipes/snippet/update_delete_buttons.html' %}
+                    </div>
+                </fieldset>
+            </form>
+            {% endfor %}
+            {% if not read_only %}
+                <form method="post" class="needs-validation" novalidate action="{{ new_url }}" enctype="multipart/x-www-form-urlencoded">
+                    {% csrf_token %}
+
+                    <fieldset class="row mb-3 text-center">
+                        {% for field in new_instruct_form %}
+                            <div {% if field.name == 'index' %} class="col-sm-2" {% else %} class="col-sm-7" {% endif %}>
+                                {{ field }}
+                                <div class="invalid-feedback">
+                                    {% lookup_value new_instruct_form.Meta.error_messages field.name 'combined' as error_message %}
+                                    <p>{{ error_message }}</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <div class="col-sm-3">
+                            <button id="{% form_submit_btn_id 'instruction-new' %}"
+                                    class="btn btn-primary primaryAction me-2"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Add instruction"
+                                    type="submit">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" hidden></span>
+                            </button>
+                        </div>
+                    </fieldset>
+                </form>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-10 col-md-11 col-sm-12">
+            {# --- page_done.html template variable defines for includes --- #}
+            {# page done template expects: 'done_url' as url for done action #}
+            {#                             'done_text' as text for done button #}
+            {#                             'large' as large button flag #}
+            {% url 'recipes:recipe_id' recipe_dto.id as done_url %}
+            {% include 'snippet/page_done.html' %}
+        </div>
+
+
+    </article>
+
+    {# entity delete modal template expects: 'entity' as entity name #}
+    {#                                       'refresh_url' as url to goto after deletion complete #}
+    {% with entity='Instruction' %}
+        {% include "base/snippet/entity_delete_modal.html" %}
+    {% endwith %}
+
+    {% delete_modal_ids entity as ids %}
+
+    <script src="{% static 'js/update_delete_button.js' %}"></script>
+    <script src="{% static 'js/delete_modal.js' %}"></script>
+    <script>
+
+        $(document).ready(function () {
+            setupAddUpdateDelHandlers(
+                "#{% form_submit_btn_id 'instruction-new' %}",      // newSelector
+                "button[id^='{% form_submit_btn_id entity %}']",    // updateSelector
+                "a[id^='{% a_id delete_identifier %}']",            // delSelector
+                "#{{ ids.close_btn_id }}",                          // delCloseSelector
+                "#{{ ids.cancel_btn_id }}"                          // delCancelSelector
+            );
+        });
+    </script>
+{% endwith %}
+{% endblock content %}
+
+<!-- instructions_form.html end -->

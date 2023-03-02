@@ -328,7 +328,7 @@ class TestProfilesView(SoupMixin, BaseProfilesTest):
         for address in expected:
             with self.subTest(address=address):
                 # check address card
-                cards = soup.find_all(id=f"id--address-{address.id}")
+                cards = soup.find_all(id=f"id__address-{address.id}")
                 self.assertEqual(len(cards), 1)
 
                 dto = AddressDto.from_model(address) \

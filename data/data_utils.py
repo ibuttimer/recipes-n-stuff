@@ -173,6 +173,10 @@ class Progress:
         self.size = 0
         print(f'{self.title}: Skipped {msg}')
 
+    def warning(self, msg: str = ''):
+        """ Display warning """
+        print(f'{self.title}: WARNING {msg}')
+
     def inc(self, new_id: Optional[int] = None, processed: int = 1,
             added: int = 1):
         """ Increment progress """

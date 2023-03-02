@@ -40,6 +40,7 @@ TITLE_CTX = 'title'
 MESSAGE_CTX = 'message'
 IDENTIFIER_CTX = 'identifier'
 SHOW_INFO_CTX = 'show_info'
+INFO_TOAST_CTX = 'info_toast'
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
 TypeInfoModalTemplate = \
@@ -92,8 +93,15 @@ class InfoModalTemplate:
     context: Optional[dict] = None
     request: Optional[HttpRequest] = None
 
+    def make(self) -> str:
+        """
+        Render this template
+        :return: rendered template or string
+        """
+        return self.render(self)
+
     @staticmethod
-    def render(info: Union[str, TypeInfoModalTemplate]):
+    def render(info: Union[str, TypeInfoModalTemplate]) -> str:
         """
         Render template
         :param info: template info or string
@@ -113,7 +121,7 @@ def info_modal_payload(title: Union[str, InfoModalTemplate],
     :param message: modal message
     :param identifier: unique identifier
     :param redirect_url: url to redirect to when modal closes; default None
-    :return: response
+    :return: payload
     """
     if not identifier:
         identifier = ''
@@ -206,6 +214,17 @@ def render_level_info_modal(level: InfoModalLevel,
         context=level_info_modal_context(
             level, message, identifier, redirect_url=redirect_url)
     )
+
+
+def info_toast_payload(message: Union[str, InfoModalTemplate]) -> dict:
+    """
+    Generate payload for an info toast response.
+    :param message: toast message
+    :return: payload
+    """
+    return {
+        INFO_TOAST_CTX: InfoModalTemplate.render(message)
+    }
 
 
 def get_about(request: HttpRequest) -> HttpResponse:

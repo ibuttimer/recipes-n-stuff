@@ -73,33 +73,76 @@ INDEX_FIELD = 'index'
 PK_PARAM_NAME = "pk"
 INGREDIENT_PK_PARAM_NAME = "ingredient_pk"
 RECIPES_URL = ""
+RECIPE_SEARCH_URL = url_path(RECIPES_URL, "search")
 RECIPE_NEW_URL = url_path(RECIPES_URL, "new")
 RECIPE_ID_URL = url_path(RECIPES_URL, f"<int:{PK_PARAM_NAME}>")
 RECIPE_ID_UPDATE_URL = url_path(RECIPE_ID_URL, "update")
+RECIPE_ID_BUY_BOX_URL = url_path(RECIPE_ID_URL, "buy_box")
 RECIPE_ID_INGREDIENT_NEW_URL = url_path(RECIPE_ID_URL, "ingredient", "new")
+RECIPE_ID_INSTRUCTION_NEW_URL = url_path(RECIPE_ID_URL, "instruction", "new")
 
-RECIPE_INGREDIENTS_URL = "recipe_ingredients"
-RECIPE_INGREDIENTS_ID_URL = \
+RECIPE_INGREDIENTS_URL = "ingredients"
+RECIPE_INGREDIENT_ID_URL = \
     url_path(RECIPE_INGREDIENTS_URL, f"<int:{PK_PARAM_NAME}>")
+RECIPE_INSTRUCTIONS_URL = "instructions"
+RECIPE_INSTRUCTION_ID_URL = \
+    url_path(RECIPE_INSTRUCTIONS_URL, f"<int:{PK_PARAM_NAME}>")
+
+LETTER_PARAM_NAME = "letter"
+RECIPE_CATEGORIES_URL = url_path(RECIPES_URL, "categories")
 
 # convention is recipes route names begin with 'recipe'
 RECIPES_ROUTE_NAME = "recipes"
+RECIPE_SEARCH_ROUTE_NAME = "recipe_search"
 RECIPE_NEW_ROUTE_NAME = "recipe_new"
 RECIPE_ID_ROUTE_NAME = "recipe_id"
 RECIPE_ID_UPDATE_ROUTE_NAME = "recipe_id_update"
+RECIPE_ID_BUY_BOX_ROUTE_NAME = "recipe_id_buy_box"
 RECIPE_ID_INGREDIENT_NEW_ROUTE_NAME = "recipe_id_ingredient_new"
+RECIPE_ID_INSTRUCTION_NEW_ROUTE_NAME = "recipe_id_instruction_new"
 
 RECIPE_INGREDIENTS_ROUTE_NAME = "recipe_ingredients"
-RECIPE_INGREDIENTS_ID_ROUTE_NAME = "recipe_ingredients_id"
+RECIPE_INGREDIENT_ID_ROUTE_NAME = "recipe_ingredient_id"
+RECIPE_INSTRUCTIONS_ROUTE_NAME = "recipe_instructions"
+RECIPE_INSTRUCTION_ID_ROUTE_NAME = "recipe_instruction_id"
+
+CATEGORIES_ROUTE_NAME = "recipe_categories"
+
+# query related
+NEXT_QUERY = 'next'
+LETTER_QUERY = 'letter'
+CATEGORY_QUERY = 'category'
 
 # context related
 RECIPE_FORM_CTX = 'recipe_form'
 RECIPE_LIST_CTX = 'recipe_list'
 RECIPE_DTO_CTX = 'recipe_dto'
 INGREDIENTS_CTX = 'ingredients'
-INGREDIENT_NAME_CTX = 'ingredient_name'
-MEASURE_NAME_CTX = 'measure_name'
-INGREDIENT_FORM_CTX = 'form'
-NEW_INGREDIENT_FORM_CTX = 'new_form'
+NEW_INGREDIENT_FORM_CTX = 'new_ingred_form'
+INGREDIENT_LIST_CTX = 'ingredient_list'
+INSTRUCTIONS_CTX = 'instructions'
+NEW_INSTRUCTION_FORM_CTX = 'new_instruct_form'
 NEW_URL_CTX = 'new_url'
 REFRESH_URL_CTX = 'refresh_url'
+KEYWORDS_CTX = 'keywords'
+TIME_CTX = 'time'
+CATEGORY_LIST_CTX = 'category_list'
+LETTERS_CTX = 'letters'
+LETTER_CTX = 'letter'
+CATEGORY_CTX = 'category'
+AUTHOR_CTX = 'author'
+RECIPE_COUNT_CTX = 'recipe_count'
+
+COUNT_OPTIONS_CTX = 'count_options'
+SELECTED_COUNT_CTX = 'selected_count'
+CUSTOM_COUNT_CTX = 'custom_count'
+CCY_SYMBOL_CTX = 'ccy_symbol'
+UNIT_PRICE_CTX = 'unit_price'
+SKU_CTX = 'sku'
+
+# query related
+INGREDIENTS_QUERY = 'ingredients'
+INSTRUCTIONS_QUERY = 'instructions'
+AUTHOR_QUERY = 'author'
+KEYWORD_QUERY = 'key'              # keyword
+INGREDIENT_QUERY = 'ingredient'

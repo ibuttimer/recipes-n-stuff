@@ -23,12 +23,14 @@
 from django.http import HttpRequest
 
 from recipesnstuff.constants import (
-    RECIPES_MENU_CTX
+    RECIPES_MENU_CTX, CATEGORIES_MENU_CTX
 )
 from utils import resolve_req, add_navbar_attr, Crud
 from .constants import (
-    RECIPES_ROUTE_NAME, RECIPE_ID_ROUTE_NAME
+    RECIPES_ROUTE_NAME, RECIPE_ID_ROUTE_NAME, KEYWORDS_CTX,
+    CATEGORIES_ROUTE_NAME,
 )
+from .models import Keyword
 from .views.utils import recipe_permission_check
 
 
@@ -45,6 +47,9 @@ def recipe_context(request: HttpRequest) -> dict:
             (RECIPES_MENU_CTX, lambda name: name in [
                 RECIPES_ROUTE_NAME, RECIPE_ID_ROUTE_NAME
             ], True),
+            (CATEGORIES_MENU_CTX, lambda name: name in [
+                CATEGORIES_ROUTE_NAME
+            ], True),
         ]:
             add_navbar_attr(
                 context, ctx, is_active=check_func(called_by.url_name),
@@ -52,4 +57,8 @@ def recipe_context(request: HttpRequest) -> dict:
                     request, Crud.READ, raise_ex=False),
                 is_dropdown_toggle=is_dropdown_toggle
             )
+
+    context[KEYWORDS_CTX] = [
+        word.name for word in Keyword.objects.all()
+    ]
     return context

@@ -24,8 +24,7 @@ from typing import TypeVar
 
 from user.models import User
 from utils import SortOrder, DESC_LOOKUP
-from .models import Recipe
-
+from .models import Recipe, Category
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
 TypeRecipeSortOrder = \
@@ -33,9 +32,18 @@ TypeRecipeSortOrder = \
 
 
 class RecipeQueryType(Enum):
-    """ Enum representing different query types """
+    """ Enum representing different recipe query types """
     UNKNOWN = auto()
+    RECIPES_BY_CATEGORY = auto()
+    RECIPES_BY_AUTHOR = auto()
     ALL_RECIPES = auto()
+
+
+class CategoryQueryType(Enum):
+    """ Enum representing different category query types """
+    UNKNOWN = auto()
+    LETTER_CATEGORY = auto()
+    ALL_CATEGORIES = auto()
 
 
 UP_ARROWS = "\N{North East Arrow}"
@@ -43,7 +51,7 @@ DOWN_ARROWS = "\N{South East Arrow}"
 
 
 class RecipeSortOrder(SortOrder):
-    """ Enum representing addresses sort orders """
+    """ Enum representing recipe sort orders """
     NAME_AZ = (
         'Name A-Z', 'naz', f'{Recipe.NAME_FIELD}')
     NAME_ZA = (
@@ -115,3 +123,28 @@ class RecipeSortOrder(SortOrder):
 
 
 RecipeSortOrder.DEFAULT = RecipeSortOrder.NAME_AZ
+
+
+class CategorySortOrder(SortOrder):
+    """ Enum representing category sort orders """
+    NAME_AZ = (
+        'Name A-Z', 'naz', f'{Recipe.NAME_FIELD}')
+    NAME_ZA = (
+        'Name Z-A', 'nza', f'{DESC_LOOKUP}{Recipe.NAME_FIELD}')
+
+    @classmethod
+    def name_orders(cls) -> list[TypeRecipeSortOrder]:
+        """ List of name-related sort orders """
+        return [CategorySortOrder.NAME_AZ, CategorySortOrder.NAME_ZA]
+
+    @property
+    def is_name_order(self) -> bool:
+        """ Check if this object is a name-related sort order """
+        return self in self.name_orders()
+
+    def to_field(self) -> str:
+        """ Get Recipe field used for sorting """
+        return Category.NAME_FIELD
+
+
+CategorySortOrder.DEFAULT = CategorySortOrder.NAME_AZ

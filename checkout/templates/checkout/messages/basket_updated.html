@@ -1,0 +1,11 @@
+{# basket updated template expects: 'added' as new entry added flag #}
+{#                                  'updated' as existing entry updated flag #}
+{#                                  'count' as number of entry items #}
+
+{% load i18n %}
+
+{% if added %}
+{{ count }} item{{ count|pluralize }} added to basket.
+{% elif updated %}
+Items in basket updated to {{ count }}.
+{% endif %}

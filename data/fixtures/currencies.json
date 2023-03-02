@@ -1,1342 +1,1443 @@
 [
 {
     "model": "checkout.currency",
-    "pk": 1,
+    "pk": 135,
     "fields": {
         "code": "AED",
         "numeric_code": 784,
         "digits": 2,
-        "name": "United Arab Emirates dirham"
+        "name": "United Arab Emirates dirham",
+        "symbol": "Dhs"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 2,
+    "pk": 136,
     "fields": {
         "code": "AFN",
         "numeric_code": 971,
         "digits": 2,
-        "name": "Afghan afghani"
+        "name": "Afghan afghani",
+        "symbol": "Afs"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 3,
+    "pk": 137,
     "fields": {
         "code": "ALL",
         "numeric_code": 8,
         "digits": 2,
-        "name": "Albanian lek"
+        "name": "Albanian lek",
+        "symbol": "Lek"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 4,
+    "pk": 138,
     "fields": {
         "code": "AMD",
         "numeric_code": 51,
         "digits": 2,
-        "name": "Armenian dram"
+        "name": "Armenian dram",
+        "symbol": "Դ"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 5,
+    "pk": 139,
     "fields": {
         "code": "ANG",
         "numeric_code": 532,
         "digits": 2,
-        "name": "Netherlands Antillean guilder"
+        "name": "Netherlands Antillean guilder",
+        "symbol": "NAƒ"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 6,
+    "pk": 140,
     "fields": {
         "code": "AOA",
         "numeric_code": 973,
         "digits": 2,
-        "name": "Angolan kwanza"
+        "name": "Angolan kwanza",
+        "symbol": "Kz"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 7,
+    "pk": 141,
     "fields": {
         "code": "ARS",
         "numeric_code": 32,
         "digits": 2,
-        "name": "Argentine peso"
+        "name": "Argentine peso",
+        "symbol": "Arg$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 8,
+    "pk": 142,
     "fields": {
         "code": "AUD",
         "numeric_code": 36,
         "digits": 2,
-        "name": "Australian dollar"
+        "name": "Australian dollar",
+        "symbol": "$A"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 9,
+    "pk": 143,
     "fields": {
         "code": "AWG",
         "numeric_code": 533,
         "digits": 2,
-        "name": "Aruban florin"
+        "name": "Aruban florin",
+        "symbol": "Afl"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 10,
+    "pk": 144,
     "fields": {
         "code": "AZN",
         "numeric_code": 944,
         "digits": 2,
-        "name": "Azerbaijani manat"
+        "name": "Azerbaijani manat",
+        "symbol": "ман"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 11,
+    "pk": 145,
     "fields": {
         "code": "BAM",
         "numeric_code": 977,
         "digits": 2,
-        "name": "Bosnia and Herzegovina convertible mark"
+        "name": "Bosnia and Herzegovina convertible mark",
+        "symbol": "KM"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 12,
+    "pk": 146,
     "fields": {
         "code": "BBD",
         "numeric_code": 52,
         "digits": 2,
-        "name": "Barbados dollar"
+        "name": "Barbados dollar",
+        "symbol": "Bds$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 13,
+    "pk": 147,
     "fields": {
         "code": "BDT",
         "numeric_code": 50,
         "digits": 2,
-        "name": "Bangladeshi taka"
+        "name": "Bangladeshi taka",
+        "symbol": "৳"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 14,
+    "pk": 148,
     "fields": {
         "code": "BGN",
         "numeric_code": 975,
         "digits": 2,
-        "name": "Bulgarian lev"
+        "name": "Bulgarian lev",
+        "symbol": "лев"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 15,
+    "pk": 149,
     "fields": {
         "code": "BIF",
         "numeric_code": 108,
         "digits": 0,
-        "name": "Burundian franc"
+        "name": "Burundian franc",
+        "symbol": "FBu"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 16,
+    "pk": 150,
     "fields": {
         "code": "BMD",
         "numeric_code": 60,
         "digits": 2,
-        "name": "Bermudian dollar"
+        "name": "Bermudian dollar",
+        "symbol": "Ber$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 17,
+    "pk": 151,
     "fields": {
         "code": "BND",
         "numeric_code": 96,
         "digits": 2,
-        "name": "Brunei dollar"
+        "name": "Brunei dollar",
+        "symbol": "B$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 18,
+    "pk": 152,
     "fields": {
         "code": "BOB",
         "numeric_code": 68,
         "digits": 2,
-        "name": "Boliviano"
+        "name": "Boliviano",
+        "symbol": "Bs."
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 19,
+    "pk": 153,
     "fields": {
         "code": "BRL",
         "numeric_code": 986,
         "digits": 2,
-        "name": "Brazilian real"
+        "name": "Brazilian real",
+        "symbol": "R$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 20,
+    "pk": 154,
     "fields": {
         "code": "BSD",
         "numeric_code": 44,
         "digits": 2,
-        "name": "Bahamian dollar"
+        "name": "Bahamian dollar",
+        "symbol": "B$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 21,
+    "pk": 155,
     "fields": {
         "code": "BWP",
         "numeric_code": 72,
         "digits": 2,
-        "name": "Botswana pula"
+        "name": "Botswana pula",
+        "symbol": "P"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 22,
+    "pk": 156,
     "fields": {
         "code": "BYN",
         "numeric_code": 933,
         "digits": 2,
-        "name": "Belarusian ruble"
+        "name": "Belarusian ruble",
+        "symbol": "Br"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 23,
+    "pk": 157,
     "fields": {
         "code": "BZD",
         "numeric_code": 84,
         "digits": 2,
-        "name": "Belize dollar"
+        "name": "Belize dollar",
+        "symbol": "BZ$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 24,
+    "pk": 158,
     "fields": {
         "code": "CAD",
         "numeric_code": 124,
         "digits": 2,
-        "name": "Canadian dollar"
+        "name": "Canadian dollar",
+        "symbol": "C$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 25,
+    "pk": 159,
     "fields": {
         "code": "CDF",
         "numeric_code": 976,
         "digits": 2,
-        "name": "Congolese franc"
+        "name": "Congolese franc",
+        "symbol": "FC"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 26,
+    "pk": 160,
     "fields": {
         "code": "CHF",
         "numeric_code": 756,
         "digits": 2,
-        "name": "Swiss franc"
+        "name": "Swiss franc",
+        "symbol": "SFr"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 27,
+    "pk": 161,
     "fields": {
         "code": "CLP",
         "numeric_code": 152,
         "digits": 0,
-        "name": "Chilean peso"
+        "name": "Chilean peso",
+        "symbol": "Ch$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 28,
+    "pk": 162,
     "fields": {
         "code": "COP",
         "numeric_code": 170,
         "digits": 2,
-        "name": "Colombian peso"
+        "name": "Colombian peso",
+        "symbol": "Col$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 29,
+    "pk": 163,
     "fields": {
         "code": "CRC",
         "numeric_code": 188,
         "digits": 2,
-        "name": "Costa Rican colon"
+        "name": "Costa Rican colon",
+        "symbol": "₡"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 30,
+    "pk": 164,
     "fields": {
         "code": "CVE",
         "numeric_code": 132,
         "digits": 2,
-        "name": "Cape Verdean escudo"
+        "name": "Cape Verdean escudo",
+        "symbol": "Esc"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 31,
+    "pk": 165,
     "fields": {
         "code": "CZK",
         "numeric_code": 203,
         "digits": 2,
-        "name": "Czech koruna"
+        "name": "Czech koruna",
+        "symbol": "Kč"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 32,
+    "pk": 166,
     "fields": {
         "code": "DJF",
         "numeric_code": 262,
         "digits": 0,
-        "name": "Djiboutian franc"
+        "name": "Djiboutian franc",
+        "symbol": "Fdj"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 33,
+    "pk": 167,
     "fields": {
         "code": "DKK",
         "numeric_code": 208,
         "digits": 2,
-        "name": "Danish krone"
+        "name": "Danish krone",
+        "symbol": "DKr"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 34,
+    "pk": 168,
     "fields": {
         "code": "DOP",
         "numeric_code": 214,
         "digits": 2,
-        "name": "Dominican peso"
+        "name": "Dominican peso",
+        "symbol": "RD$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 35,
+    "pk": 169,
     "fields": {
         "code": "DZD",
         "numeric_code": 12,
         "digits": 2,
-        "name": "Algerian dinar"
+        "name": "Algerian dinar",
+        "symbol": "DA"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 36,
+    "pk": 170,
     "fields": {
         "code": "EGP",
         "numeric_code": 818,
         "digits": 2,
-        "name": "Egyptian pound"
+        "name": "Egyptian pound",
+        "symbol": "LE"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 37,
+    "pk": 171,
     "fields": {
         "code": "ETB",
         "numeric_code": 230,
         "digits": 2,
-        "name": "Ethiopian birr"
+        "name": "Ethiopian birr",
+        "symbol": "Br"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 38,
+    "pk": 172,
     "fields": {
         "code": "EUR",
         "numeric_code": 978,
         "digits": 2,
-        "name": "Euro"
+        "name": "Euro",
+        "symbol": "€"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 39,
+    "pk": 173,
     "fields": {
         "code": "FJD",
         "numeric_code": 242,
         "digits": 2,
-        "name": "Fiji dollar"
+        "name": "Fiji dollar",
+        "symbol": "FJ$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 40,
+    "pk": 174,
     "fields": {
         "code": "FKP",
         "numeric_code": 238,
         "digits": 2,
-        "name": "Falkland Islands pound"
+        "name": "Falkland Islands pound",
+        "symbol": "£"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 41,
+    "pk": 175,
     "fields": {
         "code": "GBP",
         "numeric_code": 826,
         "digits": 2,
-        "name": "Pound sterling"
+        "name": "Pound sterling",
+        "symbol": "£"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 42,
+    "pk": 176,
     "fields": {
         "code": "GEL",
         "numeric_code": 981,
         "digits": 2,
-        "name": "Georgian lari"
+        "name": "Georgian lari",
+        "symbol": "₾"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 43,
+    "pk": 177,
     "fields": {
         "code": "GIP",
         "numeric_code": 292,
         "digits": 2,
-        "name": "Gibraltar pound"
+        "name": "Gibraltar pound",
+        "symbol": "£"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 44,
+    "pk": 178,
     "fields": {
         "code": "GMD",
         "numeric_code": 270,
         "digits": 2,
-        "name": "Gambian dalasi"
+        "name": "Gambian dalasi",
+        "symbol": "D"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 45,
+    "pk": 179,
     "fields": {
         "code": "GNF",
         "numeric_code": 324,
         "digits": 0,
-        "name": "Guinean franc"
+        "name": "Guinean franc",
+        "symbol": "GFr"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 46,
+    "pk": 180,
     "fields": {
         "code": "GTQ",
         "numeric_code": 320,
         "digits": 2,
-        "name": "Guatemalan quetzal"
+        "name": "Guatemalan quetzal",
+        "symbol": "Q"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 47,
+    "pk": 181,
     "fields": {
         "code": "GYD",
         "numeric_code": 328,
         "digits": 2,
-        "name": "Guyanese dollar"
+        "name": "Guyanese dollar",
+        "symbol": "G$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 48,
+    "pk": 182,
     "fields": {
         "code": "HKD",
         "numeric_code": 344,
         "digits": 2,
-        "name": "Hong Kong dollar"
+        "name": "Hong Kong dollar",
+        "symbol": "HK$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 49,
+    "pk": 183,
     "fields": {
         "code": "HNL",
         "numeric_code": 340,
         "digits": 2,
-        "name": "Honduran lempira"
+        "name": "Honduran lempira",
+        "symbol": "L"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 50,
+    "pk": 184,
     "fields": {
         "code": "HTG",
         "numeric_code": 332,
         "digits": 2,
-        "name": "Haitian gourde"
+        "name": "Haitian gourde",
+        "symbol": "G"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 51,
+    "pk": 185,
     "fields": {
         "code": "HUF",
         "numeric_code": 348,
         "digits": 2,
-        "name": "Hungarian forint"
+        "name": "Hungarian forint",
+        "symbol": "Ft"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 52,
+    "pk": 186,
     "fields": {
         "code": "IDR",
         "numeric_code": 360,
         "digits": 2,
-        "name": "Indonesian rupiah"
+        "name": "Indonesian rupiah",
+        "symbol": "Rp"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 53,
+    "pk": 187,
     "fields": {
         "code": "ILS",
         "numeric_code": 376,
         "digits": 2,
-        "name": "Israeli new shekel"
+        "name": "Israeli new shekel",
+        "symbol": "₪"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 54,
+    "pk": 188,
     "fields": {
         "code": "INR",
         "numeric_code": 356,
         "digits": 2,
-        "name": "Indian rupee"
+        "name": "Indian rupee",
+        "symbol": "₹"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 55,
+    "pk": 189,
     "fields": {
         "code": "ISK",
         "numeric_code": 352,
         "digits": 0,
-        "name": "Icelandic króna (plural: krónur)"
+        "name": "Icelandic króna",
+        "symbol": "IKr"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 56,
+    "pk": 190,
     "fields": {
         "code": "JMD",
         "numeric_code": 388,
         "digits": 2,
-        "name": "Jamaican dollar"
+        "name": "Jamaican dollar",
+        "symbol": "J$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 57,
+    "pk": 191,
     "fields": {
         "code": "JPY",
         "numeric_code": 392,
         "digits": 0,
-        "name": "Japanese yen"
+        "name": "Japanese yen",
+        "symbol": "¥"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 58,
+    "pk": 192,
     "fields": {
         "code": "KES",
         "numeric_code": 404,
         "digits": 2,
-        "name": "Kenyan shilling"
+        "name": "Kenyan shilling",
+        "symbol": "KSh"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 59,
+    "pk": 193,
     "fields": {
         "code": "KGS",
         "numeric_code": 417,
         "digits": 2,
-        "name": "Kyrgyzstani som"
+        "name": "Kyrgyzstani som",
+        "symbol": "som"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 60,
+    "pk": 194,
     "fields": {
         "code": "KHR",
         "numeric_code": 116,
         "digits": 2,
-        "name": "Cambodian riel"
+        "name": "Cambodian riel",
+        "symbol": "CR"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 61,
+    "pk": 195,
     "fields": {
         "code": "KMF",
         "numeric_code": 174,
         "digits": 0,
-        "name": "Comoro franc"
+        "name": "Comoro franc",
+        "symbol": "FC"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 62,
+    "pk": 196,
     "fields": {
         "code": "KRW",
         "numeric_code": 410,
         "digits": 0,
-        "name": "South Korean won"
+        "name": "South Korean won",
+        "symbol": "₩"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 63,
+    "pk": 197,
     "fields": {
         "code": "KYD",
         "numeric_code": 136,
         "digits": 2,
-        "name": "Cayman Islands dollar"
+        "name": "Cayman Islands dollar",
+        "symbol": "CI$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 64,
+    "pk": 198,
     "fields": {
         "code": "KZT",
         "numeric_code": 398,
         "digits": 2,
-        "name": "Kazakhstani tenge"
+        "name": "Kazakhstani tenge",
+        "symbol": "₸"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 65,
+    "pk": 199,
     "fields": {
         "code": "LAK",
         "numeric_code": 418,
         "digits": 2,
-        "name": "Lao kip"
+        "name": "Lao kip",
+        "symbol": "₭"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 66,
+    "pk": 200,
     "fields": {
         "code": "LBP",
         "numeric_code": 422,
         "digits": 2,
-        "name": "Lebanese pound"
+        "name": "Lebanese pound",
+        "symbol": "LL"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 67,
+    "pk": 201,
     "fields": {
         "code": "LKR",
         "numeric_code": 144,
         "digits": 2,
-        "name": "Sri Lankan rupee"
+        "name": "Sri Lankan rupee",
+        "symbol": "රු"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 68,
+    "pk": 202,
     "fields": {
         "code": "LRD",
         "numeric_code": 430,
         "digits": 2,
-        "name": "Liberian dollar"
+        "name": "Liberian dollar",
+        "symbol": "L$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 69,
+    "pk": 203,
     "fields": {
         "code": "LSL",
         "numeric_code": 426,
         "digits": 2,
-        "name": "Lesotho loti"
+        "name": "Lesotho loti",
+        "symbol": "L⁄M"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 70,
+    "pk": 204,
     "fields": {
         "code": "MAD",
         "numeric_code": 504,
         "digits": 2,
-        "name": "Moroccan dirham"
+        "name": "Moroccan dirham",
+        "symbol": "Dhs"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 71,
+    "pk": 205,
     "fields": {
         "code": "MDL",
         "numeric_code": 498,
         "digits": 2,
-        "name": "Moldovan leu"
+        "name": "Moldovan leu",
+        "symbol": "leu"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 72,
+    "pk": 206,
     "fields": {
         "code": "MGA",
         "numeric_code": 969,
         "digits": 0,
-        "name": "Malagasy ariary"
+        "name": "Malagasy ariary",
+        "symbol": "Ar"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 73,
+    "pk": 207,
     "fields": {
         "code": "MKD",
         "numeric_code": 807,
         "digits": 2,
-        "name": "Macedonian denar"
+        "name": "Macedonian denar",
+        "symbol": "ден"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 74,
+    "pk": 208,
     "fields": {
         "code": "MMK",
         "numeric_code": 104,
         "digits": 2,
-        "name": "Myanmar kyat"
+        "name": "Myanmar kyat",
+        "symbol": "Ks"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 75,
+    "pk": 209,
     "fields": {
         "code": "MNT",
         "numeric_code": 496,
         "digits": 2,
-        "name": "Mongolian tögrög"
+        "name": "Mongolian tögrög",
+        "symbol": "₮"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 76,
+    "pk": 210,
     "fields": {
         "code": "MOP",
         "numeric_code": 446,
         "digits": 2,
-        "name": "Macanese pataca"
+        "name": "Macanese pataca",
+        "symbol": "$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 77,
+    "pk": 211,
     "fields": {
         "code": "MUR",
         "numeric_code": 480,
         "digits": 2,
-        "name": "Mauritian rupee"
+        "name": "Mauritian rupee",
+        "symbol": "MRs"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 78,
+    "pk": 212,
     "fields": {
         "code": "MVR",
         "numeric_code": 462,
         "digits": 2,
-        "name": "Maldivian rufiyaa"
+        "name": "Maldivian rufiyaa",
+        "symbol": "MRf"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 79,
+    "pk": 213,
     "fields": {
         "code": "MWK",
         "numeric_code": 454,
         "digits": 2,
-        "name": "Malawian kwacha"
+        "name": "Malawian kwacha",
+        "symbol": "MK"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 80,
+    "pk": 214,
     "fields": {
         "code": "MXN",
         "numeric_code": 484,
         "digits": 2,
-        "name": "Mexican peso"
+        "name": "Mexican peso",
+        "symbol": "Mex$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 81,
+    "pk": 215,
     "fields": {
         "code": "MYR",
         "numeric_code": 458,
         "digits": 2,
-        "name": "Malaysian ringgit"
+        "name": "Malaysian ringgit",
+        "symbol": "RM"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 82,
+    "pk": 216,
     "fields": {
         "code": "MZN",
         "numeric_code": 943,
         "digits": 2,
-        "name": "Mozambican metical"
+        "name": "Mozambican metical",
+        "symbol": "Mt"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 83,
+    "pk": 217,
     "fields": {
         "code": "NAD",
         "numeric_code": 516,
         "digits": 2,
-        "name": "Namibian dollar"
+        "name": "Namibian dollar",
+        "symbol": "N$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 84,
+    "pk": 218,
     "fields": {
         "code": "NGN",
         "numeric_code": 566,
         "digits": 2,
-        "name": "Nigerian naira"
+        "name": "Nigerian naira",
+        "symbol": "₦"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 85,
+    "pk": 219,
     "fields": {
         "code": "NIO",
         "numeric_code": 558,
         "digits": 2,
-        "name": "Nicaraguan córdoba"
+        "name": "Nicaraguan córdoba",
+        "symbol": "C$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 86,
+    "pk": 220,
     "fields": {
         "code": "NOK",
         "numeric_code": 578,
         "digits": 2,
-        "name": "Norwegian krone"
+        "name": "Norwegian krone",
+        "symbol": "NKr"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 87,
+    "pk": 221,
     "fields": {
         "code": "NPR",
         "numeric_code": 524,
         "digits": 2,
-        "name": "Nepalese rupee"
+        "name": "Nepalese rupee",
+        "symbol": "रू"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 88,
+    "pk": 222,
     "fields": {
         "code": "NZD",
         "numeric_code": 554,
         "digits": 2,
-        "name": "New Zealand dollar"
+        "name": "New Zealand dollar",
+        "symbol": "$NZ"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 89,
+    "pk": 223,
     "fields": {
         "code": "PAB",
         "numeric_code": 590,
         "digits": 2,
-        "name": "Panamanian balboa"
+        "name": "Panamanian balboa",
+        "symbol": "B/"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 90,
+    "pk": 224,
     "fields": {
         "code": "PEN",
         "numeric_code": 604,
         "digits": 2,
-        "name": "Peruvian sol"
+        "name": "Peruvian sol",
+        "symbol": "S/"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 91,
+    "pk": 225,
     "fields": {
         "code": "PGK",
         "numeric_code": 598,
         "digits": 2,
-        "name": "Papua New Guinean kina"
+        "name": "Papua New Guinean kina",
+        "symbol": "K"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 92,
+    "pk": 226,
     "fields": {
         "code": "PHP",
         "numeric_code": 608,
         "digits": 2,
-        "name": "Philippine peso"
+        "name": "Philippine peso",
+        "symbol": "₱"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 93,
+    "pk": 227,
     "fields": {
         "code": "PKR",
         "numeric_code": 586,
         "digits": 2,
-        "name": "Pakistani rupee"
+        "name": "Pakistani rupee",
+        "symbol": "PRs"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 94,
+    "pk": 228,
     "fields": {
         "code": "PLN",
         "numeric_code": 985,
         "digits": 2,
-        "name": "Polish złoty"
+        "name": "Polish złoty",
+        "symbol": "zł"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 95,
+    "pk": 229,
     "fields": {
         "code": "PYG",
         "numeric_code": 600,
         "digits": 0,
-        "name": "Paraguayan guaraní"
+        "name": "Paraguayan guaraní",
+        "symbol": "₲"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 96,
+    "pk": 230,
     "fields": {
         "code": "QAR",
         "numeric_code": 634,
         "digits": 2,
-        "name": "Qatari riyal"
+        "name": "Qatari riyal",
+        "symbol": "QR"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 97,
+    "pk": 231,
     "fields": {
         "code": "RON",
         "numeric_code": 946,
         "digits": 2,
-        "name": "Romanian leu"
+        "name": "Romanian leu",
+        "symbol": "leu"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 98,
+    "pk": 232,
     "fields": {
         "code": "RSD",
         "numeric_code": 941,
         "digits": 2,
-        "name": "Serbian dinar"
+        "name": "Serbian dinar",
+        "symbol": "дин"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 99,
+    "pk": 233,
     "fields": {
         "code": "CNY",
         "numeric_code": 156,
         "digits": 2,
-        "name": "Renminbi"
+        "name": "Renminbi",
+        "symbol": "¥"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 100,
+    "pk": 234,
     "fields": {
         "code": "RUB",
         "numeric_code": 643,
         "digits": 2,
-        "name": "Russian ruble"
+        "name": "Russian ruble",
+        "symbol": "₽"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 101,
+    "pk": 235,
     "fields": {
         "code": "RWF",
         "numeric_code": 646,
         "digits": 0,
-        "name": "Rwandan franc"
+        "name": "Rwandan franc",
+        "symbol": "FRw"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 102,
+    "pk": 236,
     "fields": {
         "code": "SAR",
         "numeric_code": 682,
         "digits": 2,
-        "name": "Saudi riyal"
+        "name": "Saudi riyal",
+        "symbol": "SR"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 103,
+    "pk": 237,
     "fields": {
         "code": "SBD",
         "numeric_code": 90,
         "digits": 2,
-        "name": "Solomon Islands dollar"
+        "name": "Solomon Islands dollar",
+        "symbol": "SI$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 104,
+    "pk": 238,
     "fields": {
         "code": "SCR",
         "numeric_code": 690,
         "digits": 2,
-        "name": "Seychelles rupee"
+        "name": "Seychelles rupee",
+        "symbol": "SRs"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 105,
+    "pk": 239,
     "fields": {
         "code": "SEK",
         "numeric_code": 752,
         "digits": 2,
-        "name": "Swedish krona (plural: kronor)"
+        "name": "Swedish krona",
+        "symbol": "SKr"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 106,
+    "pk": 240,
     "fields": {
         "code": "SGD",
         "numeric_code": 702,
         "digits": 2,
-        "name": "Singapore dollar"
+        "name": "Singapore dollar",
+        "symbol": "S$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 107,
+    "pk": 241,
     "fields": {
         "code": "SHP",
         "numeric_code": 654,
         "digits": 2,
-        "name": "Saint Helena pound"
+        "name": "Saint Helena pound",
+        "symbol": "£"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 108,
+    "pk": 242,
     "fields": {
         "code": "SLE",
         "numeric_code": 925,
         "digits": 2,
-        "name": "Sierra Leonean leone (new leone)"
+        "name": "Sierra Leonean leone (new leone)",
+        "symbol": "Le"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 109,
+    "pk": 243,
     "fields": {
         "code": "SLL",
         "numeric_code": 694,
         "digits": 2,
-        "name": "Sierra Leonean leone (old leone)"
+        "name": "Sierra Leonean leone (old leone)",
+        "symbol": "Le"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 110,
+    "pk": 244,
     "fields": {
         "code": "SOS",
         "numeric_code": 706,
         "digits": 2,
-        "name": "Somali shilling"
+        "name": "Somali shilling",
+        "symbol": "Sh.So."
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 111,
+    "pk": 245,
     "fields": {
         "code": "SRD",
         "numeric_code": 968,
         "digits": 2,
-        "name": "Surinamese dollar"
+        "name": "Surinamese dollar",
+        "symbol": "SRD"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 112,
+    "pk": 246,
     "fields": {
         "code": "SZL",
         "numeric_code": 748,
         "digits": 2,
-        "name": "Swazi lilangeni"
+        "name": "Swazi lilangeni",
+        "symbol": "L/E"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 113,
+    "pk": 247,
     "fields": {
         "code": "THB",
         "numeric_code": 764,
         "digits": 2,
-        "name": "Thai baht"
+        "name": "Thai baht",
+        "symbol": "฿"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 114,
+    "pk": 248,
     "fields": {
         "code": "TJS",
         "numeric_code": 972,
         "digits": 2,
-        "name": "Tajikistani somoni"
+        "name": "Tajikistani somoni",
+        "symbol": "SM"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 115,
+    "pk": 249,
     "fields": {
         "code": "TOP",
         "numeric_code": 776,
         "digits": 2,
-        "name": "Tongan paʻanga"
+        "name": "Tongan paʻanga",
+        "symbol": "T$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 116,
+    "pk": 250,
     "fields": {
         "code": "TRY",
         "numeric_code": 949,
         "digits": 2,
-        "name": "Turkish lira"
+        "name": "Turkish lira",
+        "symbol": "₺"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 117,
+    "pk": 251,
     "fields": {
         "code": "TTD",
         "numeric_code": 780,
         "digits": 2,
-        "name": "Trinidad and Tobago dollar"
+        "name": "Trinidad and Tobago dollar",
+        "symbol": "TT$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 118,
+    "pk": 252,
     "fields": {
         "code": "TWD",
         "numeric_code": 901,
         "digits": 2,
-        "name": "New Taiwan dollar"
+        "name": "New Taiwan dollar",
+        "symbol": "NT$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 119,
+    "pk": 253,
     "fields": {
         "code": "TZS",
         "numeric_code": 834,
         "digits": 2,
-        "name": "Tanzanian shilling"
+        "name": "Tanzanian shilling",
+        "symbol": "TSh"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 120,
+    "pk": 254,
     "fields": {
         "code": "UAH",
         "numeric_code": 980,
         "digits": 2,
-        "name": "Ukrainian hryvnia"
+        "name": "Ukrainian hryvnia",
+        "symbol": "₴"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 121,
+    "pk": 255,
     "fields": {
         "code": "UGX",
         "numeric_code": 800,
         "digits": 0,
-        "name": "Ugandan shilling"
+        "name": "Ugandan shilling",
+        "symbol": "USh"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 122,
+    "pk": 256,
     "fields": {
         "code": "USD",
         "numeric_code": 840,
         "digits": 2,
-        "name": "United States dollar"
+        "name": "United States dollar",
+        "symbol": "$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 123,
+    "pk": 257,
     "fields": {
         "code": "UYU",
         "numeric_code": 858,
         "digits": 2,
-        "name": "Uruguayan peso"
+        "name": "Uruguayan peso",
+        "symbol": "$U"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 124,
+    "pk": 258,
     "fields": {
         "code": "UZS",
         "numeric_code": 860,
         "digits": 2,
-        "name": "Uzbekistan sum"
+        "name": "Uzbekistan sum",
+        "symbol": "UZS"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 125,
+    "pk": 259,
     "fields": {
         "code": "VND",
         "numeric_code": 704,
         "digits": 0,
-        "name": "Vietnamese đồng"
+        "name": "Vietnamese đồng",
+        "symbol": "Đ"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 126,
+    "pk": 260,
     "fields": {
         "code": "VUV",
         "numeric_code": 548,
         "digits": 0,
-        "name": "Vanuatu vatu"
+        "name": "Vanuatu vatu",
+        "symbol": "VT"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 127,
+    "pk": 261,
     "fields": {
         "code": "WST",
         "numeric_code": 882,
         "digits": 2,
-        "name": "Samoan tala"
+        "name": "Samoan tala",
+        "symbol": "WS$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 128,
-    "fields": {
-        "code": "XAF",
-        "numeric_code": 950,
-        "digits": 0,
-        "name": "CFA franc BEAC"
-    }
-},
-{
-    "model": "checkout.currency",
-    "pk": 129,
+    "pk": 262,
     "fields": {
         "code": "XCD",
         "numeric_code": 951,
         "digits": 2,
-        "name": "East Caribbean dollar"
+        "name": "East Caribbean dollar",
+        "symbol": "EC$"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 130,
-    "fields": {
-        "code": "XOF",
-        "numeric_code": 952,
-        "digits": 0,
-        "name": "CFA franc BCEAO"
-    }
-},
-{
-    "model": "checkout.currency",
-    "pk": 131,
-    "fields": {
-        "code": "XPF",
-        "numeric_code": 953,
-        "digits": 0,
-        "name": "CFP franc (franc Pacifique)"
-    }
-},
-{
-    "model": "checkout.currency",
-    "pk": 132,
+    "pk": 263,
     "fields": {
         "code": "YER",
         "numeric_code": 886,
         "digits": 2,
-        "name": "Yemeni rial"
+        "name": "Yemeni rial",
+        "symbol": "YRls"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 133,
+    "pk": 264,
     "fields": {
         "code": "ZAR",
         "numeric_code": 710,
         "digits": 2,
-        "name": "South African rand"
+        "name": "South African rand",
+        "symbol": "R"
     }
 },
 {
     "model": "checkout.currency",
-    "pk": 134,
+    "pk": 265,
     "fields": {
         "code": "ZMW",
         "numeric_code": 967,
         "digits": 2,
-        "name": "Zambian kwacha"
+        "name": "Zambian kwacha",
+        "symbol": "ZK"
     }
 }
 ]

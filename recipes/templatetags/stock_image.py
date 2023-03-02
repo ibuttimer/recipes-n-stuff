@@ -34,10 +34,11 @@ STOCK_IMAGES = [
     'vegetables-1275029_640.jpg', 'spoon-4700883_640.jpg'
 ]
 
+
 @register.simple_tag
 def stock_image() -> str:
     """
     Return the name of a random stock image
     :return: str image file name
     """
-    return choice(STOCK_IMAGES)
+    return f'img/{choice(STOCK_IMAGES)}'

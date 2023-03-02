@@ -26,6 +26,7 @@
     {% endblock extra_css %}
 
     {% block extra_js_head %}
+        {% include "snippet/jquery.html" %}
     {% endblock extra_js_head %}
 
     <script src="{% static 'js/script.js' %}"></script>
@@ -61,24 +62,32 @@
                                 </a>
                             </li>
                             {% if user.is_authenticated %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Link</a>
-                            </li>
                             <li class="nav-item dropdown">
                                 <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
-                                   {% with has_permission=recipes_menu.has_permission active=recipes_menu.active disabled=recipes_menu.disabled %}{% include "snippet/menu_dropdown_class.html" %}{% endwith %}
-                                >
+                                   {% with has_permission=recipes_menu.has_permission active=recipes_menu.active disabled=recipes_menu.disabled %}{% include "snippet/menu_dropdown_class.html" %}{% endwith %}>
                                     Recipes
                                 </a>
                                 <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'recipes:recipes' %}?category=Breakfast">Breakfast</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'recipes:recipes' %}?category=Lunch/Snacks">Lunch/Snacks</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'recipes:recipes' %}?category=Dessert">Dessert</a></li>
+                                    <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{% url 'recipes:recipes' %}">All</a></li>
                                 </ul>
                             </li>
-                                {% if user.is_superuser %}
+                            <li class="nav-item dropdown">
+                                <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                   {% with has_permission=categories_menu.has_permission active=categories_menu.active disabled=categories_menu.disabled %}{% include "snippet/menu_dropdown_class.html" %}{% endwith %}>
+                                    Categories
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'recipes:recipe_categories' %}">All</a></li>
+                                </ul>
+                            </li>
+                            {% if user.is_superuser %}
                                 <li class="nav-item dropdown">
                                     <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
-                                       {% with has_permission=subscription_menu.has_permission active=subscription_menu.active disabled=subscription_menu.disabled %}{% include "snippet/menu_dropdown_class.html" %}{% endwith %}
-                                    >
+                                       {% with has_permission=subscription_menu.has_permission active=subscription_menu.active disabled=subscription_menu.disabled %}{% include "snippet/menu_dropdown_class.html" %}{% endwith %}>
                                         Subscriptions
                                     </a>
                                     <ul class="dropdown-menu">
@@ -94,10 +103,21 @@
                                 </a>
                             </li>
                         </ul>
-                        <form class="d-flex" role="search">
-                            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                            <button class="btn btn-outline-success" type="submit">Search</button>
+                        <form class="d-flex" role="search" method="get" action="{% url 'recipes:recipe_search' %}">
+                            <input class="form-control me-2" type="search" placeholder="Type to search..." aria-label="Search" list="id__keyword-datalist"
+                                   name="search">
+                            <datalist id="id__keyword-datalist">
+                                {% for word in keywords %}
+                                    <option value="{{ word }}">
+                                {% endfor %}
+                            </datalist>
+                            <button class="btn btn-outline-success" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
                         </form>
+                        <span class="navbar-nav ms-auto mb-2 ms-2 me-2 mb-lg-0 d-flex align-items-center" id="id__navbar-basket-container">
+                            {# --- navbar_basket.html template variable defines for includes --- #}
+                            {# navbar basket template expects: 'basket_item_cnt' as number of basket items #}
+                            {% include 'base/snippet/navbar_basket.html' %}
+                        </span>
                         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                             {% if user.is_authenticated %}
                             <li class="nav-item dropdown">
@@ -216,6 +236,9 @@
         </ul>
     </footer>
 
+    {% include 'base/snippet/toast_info.html' %}
+    {% include 'base/snippet/toast_error.html' %}
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous"></script>
@@ -227,6 +250,7 @@
     <script src="{% static 'js/base.js' %}"></script>
     <script>
         const csrfToken = () => '{{ csrf_token }}';
+        const NAVBAR_BASKET_TOOLTIP_SELECTOR = '#id__navbar-basket-tooltip';
     </script>
 </body>
 </html>

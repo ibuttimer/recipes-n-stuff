@@ -393,13 +393,52 @@
     "model": "recipes.measure",
     "pk": 31,
     "fields": {
-        "type": "w",
+        "type": "u",
         "system": "1",
         "is_default": false,
         "name": "can",
         "abbrev": "can",
         "base_us": "1.0000000000",
         "base_metric": "1.0000000000"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 33,
+    "fields": {
+        "type": "w",
+        "system": "us",
+        "is_default": false,
+        "name": "package (14 oz.)",
+        "abbrev": "pack (14 oz.)",
+        "base_us": "14.0000000000",
+        "base_metric": "396.8930000000"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 34,
+    "fields": {
+        "type": "df",
+        "system": "us",
+        "is_default": false,
+        "name": "can (14 oz.)",
+        "abbrev": "can (14 oz.)",
+        "base_us": "14.0000000000",
+        "base_metric": "4.1402900000"
+    }
+},
+{
+    "model": "recipes.measure",
+    "pk": 35,
+    "fields": {
+        "type": "df",
+        "system": "si",
+        "is_default": false,
+        "name": "bottle (750 ml)",
+        "abbrev": "btl (750 ml)",
+        "base_us": "25.3605000000",
+        "base_metric": "7.5000000000"
     }
 }
 ]

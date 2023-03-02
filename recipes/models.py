@@ -28,6 +28,9 @@ import html
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.db.models import Field, Lookup
+
+from base.dto import ImagePool
 from user.models import User
 from utils import ModelMixin
 
@@ -43,6 +46,7 @@ from .constants import (
     SUGAR_CONTENT_FIELD, PROTEIN_CONTENT_FIELD, INGREDIENT_FIELD,
     QUANTITY_FIELD, INDEX_FIELD
 )
+from recipes.images import recipe_main_image
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
 TypeMeasure = TypeVar("TypeMeasure", bound="Measure")
@@ -271,7 +275,7 @@ class Ingredient(ModelMixin, models.Model):
         """ Model metadata """
 
     def __str__(self):
-        return f'{html.unescape(self.name)} ({self.measure.name})'
+        return f'{html.unescape(self.name)}'
 
 
 class Instruction(ModelMixin, models.Model):
@@ -280,19 +284,32 @@ class Instruction(ModelMixin, models.Model):
     """
     # field names
     TEXT_FIELD = TEXT_FIELD
+    INDEX_FIELD = INDEX_FIELD
 
     INSTRUCTION_ATTRIB_TEXT_MAX_LEN: int = 3000
+    INSTRUCTION_ATTRIB_INDEX_MIN: int = 1
+    INSTRUCTION_ATTRIB_INDEX_MAX: int = 32767
 
     text = models.CharField(
         _('text'), max_length=INSTRUCTION_ATTRIB_TEXT_MAX_LEN,
         blank=False)
 
+    index = models.PositiveSmallIntegerField(
+        _('index in instruction list'),
+        default=INSTRUCTION_ATTRIB_INDEX_MIN,
+        validators=[
+            MinValueValidator(INSTRUCTION_ATTRIB_INDEX_MIN),
+            MaxValueValidator(INSTRUCTION_ATTRIB_INDEX_MAX)
+        ]
+    )
+
     @dataclass
     class Meta:
         """ Model metadata """
+        ordering = [INDEX_FIELD]
 
     def __str__(self):
-        return f'{self.text}'
+        return f'{self.index} {self.text}'
 
 
 class Recipe(ModelMixin, models.Model):
@@ -395,14 +412,28 @@ class Recipe(ModelMixin, models.Model):
         ]
 
     @classmethod
-    def numeric_fields(cls) -> list[str]:
+    def nutritional_fields(cls) -> list[str]:
         return [
-            Recipe.SERVINGS_FIELD, Recipe.CALORIES_FIELD,
-            Recipe.FAT_CONTENT_FIELD, Recipe.SATURATED_FAT_CONTENT_FIELD,
+            Recipe.CALORIES_FIELD, Recipe.FAT_CONTENT_FIELD,
+            Recipe.SATURATED_FAT_CONTENT_FIELD,
             Recipe.CHOLESTEROL_CONTENT_FIELD, Recipe.SODIUM_CONTENT_FIELD,
             Recipe.CARBOHYDRATE_CONTENT_FIELD, Recipe.FIBRE_CONTENT_FIELD,
             Recipe.SUGAR_CONTENT_FIELD, Recipe.PROTEIN_CONTENT_FIELD
         ]
+
+    @classmethod
+    def numeric_fields(cls) -> list[str]:
+        fields = cls.nutritional_fields()
+        fields.append(Recipe.SERVINGS_FIELD)
+        return fields
+
+    @property
+    def main_image(self) -> ImagePool:
+        """
+        The url for the main image
+        :return: url str or None
+        """
+        return recipe_main_image(list(self.image_set.all()))
 
     def __str__(self):
         return f'{self.name}'
@@ -417,6 +448,7 @@ class RecipeIngredient(ModelMixin, models.Model):
     INGREDIENT_FIELD = INGREDIENT_FIELD
     QUANTITY_FIELD = QUANTITY_FIELD
     INDEX_FIELD = INDEX_FIELD
+    MEASURE_FIELD = MEASURE_FIELD
 
     RECIPE_INGREDIENT_ATTRIB_QUANTITY_MAX_LEN: int = 30
     RECIPE_INGREDIENT_ATTRIB_INDEX_MIN: int = 1
@@ -434,6 +466,11 @@ class RecipeIngredient(ModelMixin, models.Model):
             MaxValueValidator(RECIPE_INGREDIENT_ATTRIB_INDEX_MAX)
         ]
     )
+    measure = models.ForeignKey(
+        Measure, on_delete=models.CASCADE, help_text=_(
+            "Designates the measure for the ingredient."
+        )
+    )
 
     @dataclass
     class Meta:
@@ -441,6 +478,7 @@ class RecipeIngredient(ModelMixin, models.Model):
 
     def __str__(self):
         return f'{self.index} {self.ingredient.name} - {self.recipe.name}'
+
 
 class Image(ModelMixin, models.Model):
     """
@@ -464,3 +502,18 @@ class Image(ModelMixin, models.Model):
 
     def __str__(self):
         return f'{self.text}'
+
+
+@Field.register_lookup
+class INotSimilarTo(Lookup):
+    """
+    Case-insensitive custom lookup using SIMILAR TO Regular Expressions
+    https://www.postgresql.org/docs/14/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP
+    """
+    lookup_name = 'inotsimilarto'
+
+    def as_sql(self, compiler, connection):
+        lhs, lhs_params = self.process_lhs(compiler, connection)
+        rhs, rhs_params = self.process_rhs(compiler, connection)
+        params = lhs_params + rhs_params
+        return 'NOT LOWER(%s) SIMILAR TO %s' % (lhs, rhs), params

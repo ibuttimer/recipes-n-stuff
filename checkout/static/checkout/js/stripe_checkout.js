@@ -142,8 +142,7 @@ const setItemUnitsChangeHandler = () => $(basketItemUnitsSelector).on('change', 
         // warn about invalid and reset to min
         $(`#${event.currentTarget.id}`).val("1");
 
-        const toast = new bootstrap.Toast(minUnitToast)
-        toast.show()
+        showInfoToast('Minimum unit count is 1.');
     } else {
         // update basket
         $.ajax({
@@ -186,12 +185,12 @@ function showMessage(messageText) {
 function setLoading(isLoading) {
     if (isLoading) {
         // Disable the button and show a spinner
-        document.querySelector("#submit").disabled = true;
-        document.querySelector("#spinner").classList.remove("hidden");
-        document.querySelector("#button-text").classList.add("hidden");
+        document.querySelector("#id__stripe-submit").disabled = true;
+        document.querySelector("#id__stripe-spinner").classList.remove("hidden");
+        document.querySelector("#id__stripe-submit-button-text").classList.add("hidden");
     } else {
-        document.querySelector("#submit").disabled = false;
-        document.querySelector("#spinner").classList.add("hidden");
-        document.querySelector("#button-text").classList.remove("hidden");
+        document.querySelector("#id__stripe-submit").disabled = false;
+        document.querySelector("#id__stripe-spinner").classList.add("hidden");
+        document.querySelector("#id__stripe-submit-button-text").classList.remove("hidden");
     }
 }

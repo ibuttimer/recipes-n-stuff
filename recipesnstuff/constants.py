@@ -92,6 +92,7 @@ HELP_MENU_CTX = "help_menu"
 ABOUT_MENU_CTX = "about_menu"
 SUBSCRIPTION_MENU_CTX = "subscription_menu"
 RECIPES_MENU_CTX = "recipes_menu"
+CATEGORIES_MENU_CTX = "categories_menu"
 
 IS_SUPER_CTX = "is_super"
 IS_DEVELOPMENT_CTX = "is_development"

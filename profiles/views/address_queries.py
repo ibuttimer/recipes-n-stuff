@@ -27,6 +27,7 @@ from zoneinfo import ZoneInfo
 
 from django.db.models import Q, QuerySet
 
+from profiles.enums import AddressType
 from profiles.models import Address
 from user.models import User
 from utils import (
@@ -317,57 +318,27 @@ def get_date_query(query_set_params: QuerySetParams,
     return success
 
 
-# def get_hidden_query(query_set_params: QuerySetParams,
-#                      hidden: Hidden, user: User) -> bool:
-#     """
-#     Get the hidden status query
-#     :param query_set_params: query params to update
-#     :param hidden: hidden status
-#     :param user: current user
-#     :return: True if successfully added
-#     """
-#     return get_yes_no_ignore_query(
-#         query_set_params, HIDDEN_QUERY, Hidden.YES, Hidden.NO, Hidden.IGNORE,
-#         hidden, Hidden, HideStatus.objects.filter(**{
-#             HideStatus.USER_FIELD: user,
-#             f'{HideStatus.OPINION_FIELD}__isnull': False
-#         }).values(HideStatus.OPINION_FIELD)
-#     )
-#
-#
-# def get_pinned_query(query_set_params: QuerySetParams,
-#                      pinned: Pinned, user: User) -> bool:
-#     """
-#     Get the pinned status query
-#     :param query_set_params: query params to update
-#     :param pinned: pinned status
-#     :param user: current user
-#     :return: True if successfully added
-#     """
-#     return get_yes_no_ignore_query(
-#         query_set_params, PINNED_QUERY, Pinned.YES, Pinned.NO, Pinned.IGNORE,
-#         pinned, Pinned, PinStatus.objects.filter(**{
-#             PinStatus.USER_FIELD: user,
-#         }).values(PinStatus.OPINION_FIELD)
-#     )
-
-
 def addresses_query(user: User = None,
+                    address_type: AddressType = AddressType.ALL,
                     action: QueryParam = QueryParam.FILTER) -> QuerySet:
     """
     Get addresses
     :param user: user to get addresses for; default None i.e. all addresses
+    :param address_type: address type; default AddressType.ALL
     :param action: query action; default QueryParam.FILTER
     :return: addresses
     """
     params = {}
     if user:
         params[f'{Address.USER_FIELD}'] = user
+    if address_type in [AddressType.DEFAULT, AddressType.NON_DEFAULT]:
+        params[f'{Address.IS_DEFAULT_FIELD}'] = \
+            address_type == AddressType.DEFAULT
 
     if action == QueryParam.FILTER:
         query_set = Address.objects.filter(**params)
     elif action == QueryParam.EXCLUDE:
         query_set = Address.objects.exclude(**params)
     else:
-        raise ValueError(f'Unknown param {action}')
+        raise NotImplementedError(f'Unknown param {action}')
     return query_set

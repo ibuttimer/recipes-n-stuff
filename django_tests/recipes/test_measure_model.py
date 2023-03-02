@@ -149,6 +149,9 @@ class TestMeasureModelFixtures(TestCase):
              Quantity.quantised_of(Measures.QUART, (1/32)*amt, places=5), 5),
             (Quantity(Measures.FLUID_OUNCE, amt),   # 1 pt. == 16 fl. oz.
              Quantity.quantised_of(Measures.PINT, (1/16)*amt, places=4), 4),
+            (Quantity(Measures.FLUID_OUNCE, amt),
+             Quantity.quantised_of(             # 1 can (14 oz.) == 14 fl. oz.
+                 Measures.FLUID_CAN, (1/14)*amt, places=7), 7),
             (Quantity(Measures.FLUID_OUNCE, amt),   # 1 C == 8 fl. oz.
              Quantity.quantised_of(Measures.CUP, (1/8)*amt), None),
             (Quantity(Measures.FLUID_OUNCE, amt),   # 1 gi. == 4 fl. oz.
@@ -182,6 +185,9 @@ class TestMeasureModelFixtures(TestCase):
              Quantity(Measures.OUNCE, amt), None),
             (Quantity(Measures.OUNCE, amt),     # 1 dr. == 1/16 oz.
              Quantity.quantised_of(Measures.DRAM, 16*amt), None),
+            (Quantity(Measures.OUNCE, amt),     # 1 pack (14oz) == 14 oz.
+             Quantity.quantised_of(
+                 Measures.PACKAGE, (1/14)*amt, places=7), 7),
             (Quantity(Measures.OUNCE, amt),     # 1 lb. == 16 oz.
              Quantity.quantised_of(Measures.POUND, (1/16)*amt, places=4), 4),
             (Quantity(Measures.OUNCE, amt),     # 1 st. == 224 oz.
@@ -195,7 +201,7 @@ class TestMeasureModelFixtures(TestCase):
                 else:
                     from_q = q_2
                     to_q = q_1
-                with self.subTest(from_q=from_q, to_q=to_q):
+                with self.subTest(from_q=from_q, to_q=to_q, idx=idx):
                     converted = from_q.convert_to(
                         to_q.measure, quantised=True,
                         places=places or Quantity.STD_PLACES)

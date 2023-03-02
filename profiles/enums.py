@@ -61,3 +61,10 @@ class AddressSortOrder(SortOrder):
 
 
 AddressSortOrder.DEFAULT = AddressSortOrder.COUNTRY_AZ
+
+
+class AddressType(Enum):
+    """ Enum representing different address types """
+    ALL = auto()
+    DEFAULT = auto()
+    NON_DEFAULT = auto()

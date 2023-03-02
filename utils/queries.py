@@ -105,7 +105,8 @@ def get_object_and_related_or_404(
     queryset = _get_queryset(klass)
     if not hasattr(queryset, "get"):
         klass__name = (
-            klass.__name__ if isinstance(klass, type) else klass.__class__.__name__
+            klass.__name__ if isinstance(klass, type) else
+            klass.__class__.__name__
         )
         raise ValueError(
             "First argument to get_object_or_404() must be a Model, Manager, "

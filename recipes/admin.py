@@ -23,7 +23,8 @@
 from django.contrib import admin
 
 from .models import (
-    Category, Keyword, Measure, Ingredient, Recipe, RecipeIngredient
+    Category, Keyword, Measure, Ingredient, Recipe, RecipeIngredient,
+    Instruction
 )
 
 
@@ -56,6 +57,14 @@ class IngredientAdmin(admin.ModelAdmin):
     ordering = (Ingredient.NAME_FIELD,)
 
 
+@admin.register(Instruction)
+class InstructionAdmin(admin.ModelAdmin):
+    """ Class representing the Instruction model in the admin interface """
+    list_display = (
+        Instruction.TEXT_FIELD,
+    )
+
+
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     """ Class representing the Recipe model in the admin interface """
@@ -68,7 +77,9 @@ class RecipeAdmin(admin.ModelAdmin):
 
 @admin.register(RecipeIngredient)
 class RecipeIngredientAdmin(admin.ModelAdmin):
-    """ Class representing the RecipeIngredient model in the admin interface """
+    """
+    Class representing the RecipeIngredient model in the admin interface
+    """
     # doesn't really work as sub-queries for details makes it too slow
     list_display = (
         RecipeIngredient.RECIPE_FIELD,
