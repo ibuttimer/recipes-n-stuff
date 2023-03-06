@@ -1,6 +1,6 @@
 #  MIT License
 #
-#  Copyright (c) 2023 Ian Buttimer
+#  Copyright (c) 2022 Ian Buttimer
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to
@@ -19,29 +19,17 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from pathlib import Path
-from utils import append_slash, url_path
+#
 
-# name of this app
-THIS_APP = Path(__file__).resolve().parent.name
+from django import template
 
-# common field names
-USER_FIELD = 'user'
-CREATED_FIELD = 'created'
-UPDATED_FIELD = 'updated'
-STATUS_FIELD = 'status'
-AMOUNT_FIELD = 'amount'
-BASE_CURRENCY_FIELD = 'base_currency'
-AMOUNT_BASE_FIELD = 'amount_base'
-ORDER_NUM_FIELD = 'order_num'
-ITEMS_FIELD = 'items'
-WAS_1ST_X_FREE_FIELD = 'was_1st_x_free'
-TYPE_FIELD = 'type'
-SUBSCRIPTION_FIELD = 'subscription'
-RECIPE_FIELD = 'recipe'
-COUNTRY_FIELD = 'country'
-UNIT_PRICE_FIELD = 'unit_price'
-SKU_FIELD = 'sku'
-DESCRIPTION_FIELD = 'description'
+from base.templatetags.form_submit_btn_id import tag_id
 
-# context related
+register = template.Library()
+
+# https://docs.djangoproject.com/en/4.1/howto/custom-template-tags/#simple-tags
+
+
+@register.simple_tag
+def del_radio_id(identifier: str, index: str = None):
+    return tag_id(identifier, 'radio', index=index)

@@ -58,6 +58,7 @@ CHECKOUT_PAID_ROUTE_NAME = "paid"
 BASKET_CCY_QUERY = 'ccy'
 ITEM_QUERY = 'item'
 UNITS_QUERY = 'units'
+DELIVERY_QUERY = 'delivery'
 
 
 # context related
@@ -74,10 +75,12 @@ COUNT_CTX = 'count'
 ADDRESS_LIST_CTX = 'address_list'
 ADDRESS_DTO_CTX = 'address_dto'
 CONTENT_FORMAT_CTX = 'content_format'
+DELIVERY_LIST_CTX = 'delivery_list'
+DELIVERY_REQ_CTX = 'delivery_req'
 
 # session related
 BASKET_SES = 'basket'
-
+ON_COMPLETE_SES = 'on_complete'
 
 # zero decimal currencies; https://stripe.com/docs/currencies#zero-decimal
 ZERO_DECIMAL_CURRENCIES = [

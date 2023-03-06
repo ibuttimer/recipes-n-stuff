@@ -22,7 +22,10 @@
 from _decimal import Decimal
 
 from checkout.basket import Basket
+from checkout.forex import convert_forex, NumType
 from order.models import Order, OrderStatus, OrderProduct
+from recipesnstuff.settings import DEFAULT_CURRENCY
+from subscription.models import FeatureType
 
 
 def save_order(basket: Basket):
@@ -30,12 +33,18 @@ def save_order(basket: Basket):
     Save the basket order to the database
     :param basket: basket to save
     """
+    total = Decimal.from_float(basket.total)
     order = Order.objects.create(**{
         f'{Order.ORDER_NUM_FIELD}': basket.order_num,
         f'{Order.USER_FIELD}': basket.user,
         f'{Order.STATUS_FIELD}': OrderStatus.PAID.choice,
-        f'{Order.AMOUNT_FIELD}': Decimal.from_float(basket.total),
+        f'{Order.AMOUNT_FIELD}': total,
         f'{Order.BASE_CURRENCY_FIELD}': basket.currency,
+        f'{Order.AMOUNT_BASE_FIELD}': convert_forex(
+            total, basket.currency, DEFAULT_CURRENCY.upper(),
+            result_as=NumType.DECIMAL),
+        f'{Order.WAS_1ST_X_FREE_FIELD}':
+            basket.feature_type == FeatureType.FIRST_X_FREE
     })
 
     order.items.set(

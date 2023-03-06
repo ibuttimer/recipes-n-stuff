@@ -22,7 +22,7 @@
 #
 from datetime import datetime, timezone
 from enum import Enum, auto
-from typing import Any, Type, Optional, Tuple, List
+from typing import Any, Type, Optional, Tuple, List, Union
 from zoneinfo import ZoneInfo
 from decimal import Decimal, InvalidOperation
 
@@ -420,8 +420,21 @@ def user_had_free_trial_subscription(user: User) -> bool:
     return count > 0
 
 
-def get_subscription_features(
-        subscription_id: int) -> Optional[List[SubscriptionFeature]]:
+def user_subscription_features(
+        user: User) -> Tuple[Optional[List[SubscriptionFeature]], datetime]:
+    """
+    Check if the specified user's has an active user subscription
+    :param user: user to search for
+    :return: tuple of list of subscription feature and subscription start
+    """
+    _, user_sub, _ = user_has_subscription(user)
+
+    return (get_subscription_features(user_sub.subscription),
+            user_sub.start_date) if user_sub else (None, None)
+
+
+def get_subscription_features(subscription_id: Union[int, Subscription]
+                              ) -> Optional[List[SubscriptionFeature]]:
     """
     Get the list of subscription features
     :param subscription_id: id of subscription
@@ -429,7 +442,8 @@ def get_subscription_features(
     """
     subscription = Subscription.objects.prefetch_related(
         Subscription.FEATURES_FIELD).get(**{
-            f'{Subscription.id_field()}': subscription_id
+            f'{Subscription.id_field()}': subscription_id.id
+            if isinstance(subscription_id, Subscription) else subscription_id
         })
     if subscription:
         features = list(

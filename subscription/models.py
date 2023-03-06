@@ -129,6 +129,18 @@ class FeatureType(NameChoiceMixin, Enum):
     FIRST_X_FREE = Feature('First number of items free', 'xif')
     FREE_AFTER_SPEND = Feature('Free after spending', 'fas')
 
+    @classmethod
+    def free_delivery(cls):
+        return [
+            FeatureType.FREE_DELIVERY, FeatureType.FREE_DELIVERY_OVER,
+            FeatureType.FREE_DELIVERY_AFTER, FeatureType.FIRST_X_FREE,
+            FeatureType.FREE_AFTER_SPEND
+        ]
+
+    @classmethod
+    def free_delivery_choices(cls):
+        return [feat.choice for feat in cls.free_delivery()]
+
     @staticmethod
     def from_choice(choice: str) -> Optional[TypeFeatureType]:
         """

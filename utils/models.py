@@ -60,6 +60,17 @@ class ModelMixin:
         return cls._meta.pk.name
 
     @classmethod
+    def id_field_query(cls, pk: int) -> dict:
+        """
+        Get an id field query
+        :param pk: id of entity to search for
+        :return: query dict
+        """
+        return {
+            cls.id_field(): pk
+        }
+
+    @classmethod
     def model_name(cls):
         """
         Get the model name of this object
@@ -249,7 +260,7 @@ class NameChoiceMixin:
         :param choice: choice to check
         :return: True if choice matches
         """
-        return self.value.choice == choice
+        return self.value.choice.lower() == choice.lower()
 
     @property
     def display_name(self):
@@ -271,8 +282,9 @@ class NameChoiceMixin:
         :param choice: choice to find
         :return: feature type or None of not found
         """
+        choice = choice.lower()
         result = list(
-            filter(lambda t: t.value.choice == choice, obj_type)
+            filter(lambda t: t.value.choice.lower() == choice, obj_type)
         )
         return result[0] if len(result) == 1 else None
 

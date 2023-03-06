@@ -20,13 +20,16 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 from dataclasses import dataclass
+from typing import Tuple
 
 from base.dto import BaseDto
+from order.queries import get_user_spending
 from subscription.mixin import QuantiseMixin
 from subscription.models import (
     Subscription, FrequencyType, FeatureType, SubscriptionFeature
 )
 from subscription.views.subscription_queries import get_subscription_features
+from user.models import User
 
 
 @dataclass
@@ -128,3 +131,46 @@ class SubscriptionFeatureDto(QuantiseMixin, BaseDto):
                 f'{self.count}'
             )
         return text
+
+    def order_qualifies(self, user: User, subtotal: float) -> Tuple[bool, int]:
+        """
+        Check if the specified user and subtotal qualify for this subscription
+        feature
+        :param user: user
+        :param subtotal: purchase subtotal
+        :return: tuple of True if qualified and remaining
+                first x free deliveries
+        """
+        qualifies = False
+        remaining_x_free = 0
+        if self.feature_type in FeatureType.free_delivery_choices():
+
+            spent, orders, first_x_free = get_user_spending(user)
+
+            for feature, check in [
+                # free delivery
+                (FeatureType.FREE_DELIVERY, True),
+                # free delivery over order amount
+                (FeatureType.FREE_DELIVERY_OVER, subtotal > self.amount),
+                # free delivery over spent amount
+                (FeatureType.FREE_DELIVERY_AFTER, spent > self.amount),
+                # first x free delivery deliveries
+                (FeatureType.FIRST_X_FREE, first_x_free < self.count),
+                # all free over spent amount
+                (FeatureType.FREE_AFTER_SPEND, spent > self.amount),
+            ]:
+                qualifies = feature.is_from_choice(self.feature_type) and check
+
+                if feature == FeatureType.FIRST_X_FREE:
+                    remaining_x_free = self.count - first_x_free
+                    if remaining_x_free < 0:
+                        remaining_x_free = 0
+
+                if qualifies:
+                    break
+
+        return qualifies, remaining_x_free
+
+    def __str__(self):
+        return f'{self.feature_type} {self.description} {self.amount} ' \
+               f'{self.base_currency}/{self.count}'
