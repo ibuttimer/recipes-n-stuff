@@ -584,7 +584,7 @@ If any other settings vary from the defaults outlined in [Table 1: Configuration
 
     - Alternatively, the [Heroku CLI](#heroku-cli) may be utilised.
 
-      After logging into the Heroku CLI in a terminal window, in the `soapbox` folder:
+      After logging into the Heroku CLI in a terminal window, in the project folder:
         - Initialise the database
           ````shell
           $  heroku run python manage.py migrate --app recipesnstuff
