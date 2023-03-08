@@ -220,6 +220,7 @@ There are two requirements files:
 | GOOGLE_SITE_VERIFICATION | [Google Search Console](https://search.google.com/search-console) meta tag verification value for [site ownership verification](https://support.google.com/webmasters/answer/9008080?hl=en)                                                                                                                                                                                                                                                                                             |
 | STRIPE_PUBLISHABLE_KEY   | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) publishable key value for payments processing.                                                                                                                                                                                                                                                                                                                                                                   |
 | STRIPE_SECRET_KEY        | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) secret key value for payments processing.                                                                                                                                                                                                                                                                                                                                                                        |
+| STRIPE_WEBHOOK_KEY       | [Stripe Webhook secret](https://dashboard.stripe.com/test/webhooks/create) secret key value to get incoming webhooks to get real-time updates. See [Test webhooks integration](https://stripe.com/docs/webhooks/test) for local testing and [Take webhooks live](https://stripe.com/docs/webhooks/go-live) for hosted deployment.                                                                                                                                                       |
 | EXCHANGERATES_DATA_KEY   | [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api) key for exchange rates.                                                                                                                                                                                                                                                                                                                                                                              |
 
 
@@ -287,10 +288,17 @@ and a Google app is needed to obtain a key and secret through the [Google Develo
 #### Stripe
 In order to configure Stripe payments, the following actions must be performed.
 
+##### App setup
 * Login to [Stripe](https://stripe.com/)
 * Create a new application, and go to the [Developers Dashboard](https://dashboard.stripe.com/test/developers)
 * Ensure the application is selected in the application list dropdown
 * Select [API keys](https://dashboard.stripe.com/test/apikeys) and copy the `Publishable key` and `Secret key`, and store securely.
+
+##### Webhook setup
+* Login to [Stripe](https://stripe.com/)
+* Goto the [Developers Dashboard](https://dashboard.stripe.com/test/developers) for the application
+* Goto [Webhooks](https://dashboard.stripe.com/test/webhooks) and setup a _Local listener_ for testing or a _Hosted endpoint_ for deployment
+* Copy the `webhook signing secret` and store securely.
 
 #### Exchange Rates
 In order to configure Exchange Rates, the following actions must be performed.
@@ -506,6 +514,7 @@ The following steps were followed to deploy the website:
       | GOOGLE_SITE_VERIFICATION | [Google Search Console](https://search.google.com/search-console) meta tag verification value for [site ownership verification](https://support.google.com/webmasters/answer/9008080?hl=en) |
       | STRIPE_PUBLISHABLE_KEY   | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) publishable key value for payments processing.                                                             |
       | STRIPE_SECRET_KEY        | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) secret key value for payments processing.                                                                  |
+      | STRIPE_WEBHOOK_KEY       | [Stripe Webhook secret](https://dashboard.stripe.com/test/webhooks/create) secret key value to get incoming webhooks to get real-time updates. See [Test webhooks integration](https://stripe.com/docs/webhooks/test) for local testing and [Take webhooks live](https://stripe.com/docs/webhooks/go-live) for hosted deployment. |
       | EXCHANGERATES_DATA_KEY   | [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api) key for exchange rates.                                                                        |
       |                          | _The following keys are automatically added when `Resources` are provisioned:_                                                                                                   |
       | CLOUDINARY_URL           | [Cloudinary url](https://pypi.org/project/dj3-cloudinary-storage/)                                                                                                                |

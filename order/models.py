@@ -42,7 +42,7 @@ from .constants import (
     USER_FIELD, CREATED_FIELD, UPDATED_FIELD, STATUS_FIELD, AMOUNT_FIELD,
     BASE_CURRENCY_FIELD, AMOUNT_BASE_FIELD, ORDER_NUM_FIELD, ITEMS_FIELD,
     TYPE_FIELD, SUBSCRIPTION_FIELD, RECIPE_FIELD, UNIT_PRICE_FIELD, SKU_FIELD,
-    DESCRIPTION_FIELD, COUNTRY_FIELD, WAS_1ST_X_FREE_FIELD
+    DESCRIPTION_FIELD, COUNTRY_FIELD, WAS_1ST_X_FREE_FIELD, INFO_FIELD
 )
 
 
@@ -62,6 +62,8 @@ class OrderStatus(NameChoiceMixin, Enum):
     """ Enum representing order statuses """
     IN_PROGRESS = OrderStatusOption('In progress', 'ip')
     PENDING_PAYMENT = OrderStatusOption('Pending payment', 'pp')
+    PROCESSING_PAYMENT = OrderStatusOption('Processing payment', '@p')
+    PAYMENT_FAILED = OrderStatusOption('Payment failed', 'pf')
     PAID = OrderStatusOption('Paid', 'p')
     PREPARING = OrderStatusOption('Preparing', 'pr')
     PENDING_SHIPPING = OrderStatusOption('Pending shipping', 'ps')
@@ -277,8 +279,10 @@ class Order(ModelMixin, models.Model):
     ORDER_NUM_FIELD = ORDER_NUM_FIELD
     ITEMS_FIELD = ITEMS_FIELD
     WAS_1ST_X_FREE_FIELD = WAS_1ST_X_FREE_FIELD
+    INFO_FIELD = INFO_FIELD
 
     ORDER_ATTRIB_ORDER_NUM_MAX_LEN: int = 40
+    ORDER_ATTRIB_INFO_MAX_LEN: int = 150
     ORDER_ATTRIB_STATUS_MAX_LEN: int = 2
     ORDER_ATTRIB_CURRENCY_CODE_MAX_LEN: int = CURRENCY_CODE_MAX_LEN
 
@@ -308,12 +312,17 @@ class Order(ModelMixin, models.Model):
 
     order_num = models.CharField(
         _('order number'), max_length=ORDER_ATTRIB_ORDER_NUM_MAX_LEN,
-        blank=False
+        blank=False, unique=True
     )
 
     was_1st_x_free = models.BooleanField(
         default=False,
         help_text='Designates this order was a first x free delivery.')
+
+    info = models.CharField(
+        _('miscellaneous info'), max_length=ORDER_ATTRIB_INFO_MAX_LEN,
+        blank=True
+    )
 
     items = models.ManyToManyField(OrderProduct)
 

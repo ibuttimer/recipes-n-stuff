@@ -46,6 +46,7 @@ CHECKOUT_UPDATE_BASKET_URL = append_slash("update-basket")
 CHECKOUT_ADDRESS_URL = url_path("address", f"<int:{PK_PARAM_NAME}>")
 CHECKOUT_CLEAR_URL = append_slash("clear-basket")
 CHECKOUT_PAID_URL = append_slash("paid")
+CHECKOUT_STRIPE_WEBHOOK_URL = append_slash("stripehook")
 
 CHECKOUT_PAY_ROUTE_NAME = "pay"
 CHECKOUT_CREATE_PAYMENT_ROUTE_NAME = "payment_intent"
@@ -53,6 +54,7 @@ CHECKOUT_UPDATE_BASKET_ROUTE_NAME = "update_basket"
 CHECKOUT_ADDRESS_ROUTE_NAME = "address"
 CHECKOUT_CLEAR_ROUTE_NAME = "clear_basket"
 CHECKOUT_PAID_ROUTE_NAME = "paid"
+CHECKOUT_STRIPE_WEBHOOK_ROUTE_NAME = "stripehook"
 
 # query related
 BASKET_CCY_QUERY = 'ccy'

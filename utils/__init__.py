@@ -36,7 +36,8 @@ from .forms import (
 )
 from .html import add_navbar_attr, html_tag
 from .misc import (
-    Crud, permission_name, permission_check, ensure_list, find_index
+    Crud, permission_name, permission_check, ensure_list, find_index,
+    dict_drill
 )
 from .models import (
     ModelMixin, ModelFacadeMixin, NameChoiceMixin,
@@ -100,6 +101,7 @@ __all__ = [
     'permission_check',
     'ensure_list',
     'find_index',
+    'dict_drill',
 
     'add_navbar_attr',
     'html_tag',

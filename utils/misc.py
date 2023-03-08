@@ -22,7 +22,7 @@
 #
 import random
 import string
-from typing import Union, List, Any, Callable, Optional, TypeVar
+from typing import Union, List, Any, Callable, Optional, TypeVar, Tuple
 
 import environ
 from enum import Enum
@@ -187,3 +187,23 @@ def find_index(
         search[index] = replace
 
     return index
+
+
+def dict_drill(obj: dict, *args) -> Tuple[bool, Any]:
+    """
+    Drill into a dict object to retrieve a value
+    :param obj: dict object
+    :param args: attrib names
+    :return: tuple of success flag and value
+    """
+    success = False
+    value = obj
+    for key in args:
+        if key in value:
+            value = value[key]
+        else:
+            value = None
+            break
+    else:
+        success = True
+    return success, value

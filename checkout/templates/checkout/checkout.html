@@ -207,17 +207,19 @@
 
         /**
          * Change tab
-         * @param current - tag of current tab
+         * @param currentTag - tag of current tab
          * @param step - step; 1 next tab or -1 previous tab
          */
-        function changeTab(current, step) {
-            const currentTabSelector = tabButtonSelector(current);
-            const newTab = tabPostfix[tabPostfix.indexOf(current) + step];
+        function changeTab(currentTag, step) {
+            const prevTab = currentTab;
+            currentTab = tabPostfix.indexOf(currentTag) + step;
+
+            const currentTabSelector = tabButtonSelector(currentTag);
+            const newTab = tabPostfix[currentTab];
             const newTabSelector = tabButtonSelector(newTab);
 
             // update the furthest tab index and enable next/prev buttons; will only do on first time through
-            if ((step > 0) && (currentTab === furthestTab) && (furthestTab < tabPostfix.length)) {
-                currentTab += step;
+            if ((step > 0) && (prevTab === furthestTab) && (furthestTab < tabPostfix.length)) {
                 furthestTab = currentTab;
                 for (const selector of [newTabSelector, nextButtonSelector(newTab), prevButtonSelector(newTab)]) {
                     $(selector).removeAttr('disabled');
@@ -230,9 +232,15 @@
             $(newTabSelector).addClass("active");
             $(newTabSelector).attr("aria-selected", "true");
             // hide current tab content
-            $(navTabDivSelector(current)).removeClass("active show");
+            $(navTabDivSelector(currentTag)).removeClass("active show");
             // show next tab content
             $(navTabDivSelector(newTab)).addClass("active show");
+
+            if (currentTab == tabPostfix.length - 1) {
+                // last tab i.e. pay, so get a payment intent
+                initialize().then();
+                checkStatus().then();
+            }
         }
 
         /** Set address change handlers */
@@ -258,8 +266,6 @@
         }
 
         $(document).ready(function() {
-            initialize().then();
-            checkStatus().then();
 
             // setup handlers
             setBasketChangeHandler();
@@ -285,15 +291,20 @@
             $(nextButtonsSelector).attr('disabled', 'disabled');
             $(nextButtonSelector(tabPostfix[0])).removeAttr('disabled');
             $(nextButtonsSelector).on('click', function (event) {
-                const tab = event.currentTarget.id.substring('{{ next_btn_id }}'.length);
-                changeTab(tab, 1);
+                const currentTag = event.currentTarget.id.substring('{{ next_btn_id }}'.length);
+                changeTab(currentTag, 1);
             });
 
             // setup prev buttons; disable all & set handlers
             $(prevButtonsSelector).attr('disabled', 'disabled');
             $(prevButtonsSelector).on('click', function (event) {
-                const tab = event.currentTarget.id.substring('{{ prev_btn_id }}'.length);
-                changeTab(tab, -1);
+                const currentTag = event.currentTarget.id.substring('{{ prev_btn_id }}'.length);
+                changeTab(currentTag, -1);
+            });
+
+            $(navTabButtonsSelector).on('click', function (event) {
+                const currentTag = event.currentTarget.id.substring('{{ nav_tab_btn }}'.length);
+                changeTab(currentTag, 0);
             });
 
             // setup tab buttons; disable all except first

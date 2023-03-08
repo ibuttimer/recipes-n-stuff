@@ -32,7 +32,7 @@ from more_itertools import one
 
 from base.views import info_toast_payload, InfoModalTemplate
 from order.misc import decode_sku
-from order.models import ProductType
+from order.models import ProductType, OrderStatus
 from order.persist import save_order
 from order.queries import get_delivery_product
 from profiles.dto import AddressDto
@@ -40,9 +40,7 @@ from profiles.templatetags.address_element_id import address_element_id
 from profiles.views.address_by import get_address
 from profiles.views.address_queries import addresses_query
 from recipesnstuff import HOME_ROUTE_NAME, PROFILES_APP_NAME
-from recipesnstuff.settings import (
-    STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY
-)
+from recipesnstuff.settings import STRIPE_PUBLISHABLE_KEY
 from subscription.constants import USER_SUB_ID_SES
 from subscription.forms import get_currency_choices
 from subscription.middleware import subscription_payment_completed
@@ -66,9 +64,8 @@ from .constants import (
 from .currency import is_valid_code
 from .dto import DeliveryDto
 from .on_complete import get_on_complete
+import checkout.stripe_cfg
 
-# set Stripe API key
-stripe.api_key = STRIPE_SECRET_KEY
 
 # (display text, FeatureType choice)
 FreeDelivery = namedtuple('FreeDelivery', ['display', 'feature_type'],
@@ -244,13 +241,37 @@ def create_payment_intent(request: HttpRequest) -> HttpResponse:
     """
     basket, _ = get_session_basket(request)
 
+    save_order(basket, status=OrderStatus.PENDING_PAYMENT)
+
     # Create a PaymentIntent with the order amount and currency
+    # https://stripe.com/docs/api/payment_intents/create
     intent = stripe.PaymentIntent.create(
         amount=basket.payment_total,
         currency=basket.currency,
         automatic_payment_methods={
             'enabled': False,
         },
+        # https://stripe.com/docs/api/payment_intents/create#create_payment_intent-shipping
+        shipping={
+            'address': {
+                'city': basket.address.city,
+                'country': basket.address.country,
+                'line1': basket.address.street,
+                'line2': basket.address.street2,
+                'postal_code': basket.address.postcode,
+                'state': basket.address.state
+            },
+            'name': request.user.get_full_name()
+        },
+        # https://stripe.com/docs/api/payment_intents/create#create_payment_intent-metadata
+        metadata={
+            'user_id': basket.user.id,
+            'address_id': basket.address.id,
+            'items': str(
+                list(map(lambda item: item.receipt_dict(), basket.items))),
+            'order_num': basket.order_num,
+            'was_1st_x_free': basket.feature_type == FeatureType.FIRST_X_FREE,
+        }
     )
     return JsonResponse({
         'clientSecret': intent['client_secret']
@@ -414,7 +435,6 @@ def payment_complete(request: HttpRequest) -> HttpResponse:
     :return: response
     """
     basket, _ = get_session_basket(request)
-    save_order(basket)
     on_complete, _ = get_on_complete(request)
     on_complete.execute()
 

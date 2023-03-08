@@ -31,11 +31,14 @@ from .constants import (
     CHECKOUT_ADDRESS_URL, CHECKOUT_ADDRESS_ROUTE_NAME,
     CHECKOUT_CLEAR_URL, CHECKOUT_CLEAR_ROUTE_NAME,
     CHECKOUT_PAID_URL, CHECKOUT_PAID_ROUTE_NAME,
+    CHECKOUT_STRIPE_WEBHOOK_URL, CHECKOUT_STRIPE_WEBHOOK_ROUTE_NAME
 )
 from .views import (
     checkout, create_payment_intent, payment_complete, update_basket,
     set_address, clear_basket
 )
+from .webhooks import stripe_webhook
+
 
 # https://docs.djangoproject.com/en/4.1/topics/http/urls/#url-namespaces-and-included-urlconfs
 app_name = THIS_APP
@@ -50,4 +53,6 @@ urlpatterns = [
     path(CHECKOUT_CLEAR_URL, clear_basket,
          name=CHECKOUT_CLEAR_ROUTE_NAME),
     path(CHECKOUT_PAID_URL, payment_complete, name=CHECKOUT_PAID_ROUTE_NAME),
+    path(CHECKOUT_STRIPE_WEBHOOK_URL, stripe_webhook,
+         name=CHECKOUT_STRIPE_WEBHOOK_ROUTE_NAME),
 ]
