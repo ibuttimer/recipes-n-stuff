@@ -25,8 +25,7 @@ from django.http import HttpRequest
 
 from subscription.constants import THIS_APP
 from subscription.models import Subscription
-from subscription.views.subscription_queries import \
-    user_had_free_trial_subscription
+from subscription.subscription_queries import user_had_free_trial_subscription
 from utils import (
     Crud, permission_check
 )

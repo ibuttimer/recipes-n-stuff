@@ -28,7 +28,7 @@ from subscription.mixin import QuantiseMixin
 from subscription.models import (
     Subscription, FrequencyType, FeatureType, SubscriptionFeature
 )
-from subscription.views.subscription_queries import get_subscription_features
+from subscription.subscription_queries import get_subscription_features
 from user.models import User
 
 

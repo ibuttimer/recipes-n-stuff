@@ -27,6 +27,7 @@ from django.shortcuts import get_object_or_404
 from order.models import OrderProduct, ProductType, Order, OrderStatus
 from recipes.models import Recipe
 from subscription.models import Subscription
+from subscription.subscription_queries import user_has_subscription
 from user.models import User
 
 
@@ -88,8 +89,6 @@ def get_user_spending(user: User) -> Tuple[float, int, int]:
     :return: tuple of total amount in app base currency, number of orders, and
             number of first x free delivery orders
     """
-    from subscription.views.subscription_queries import user_has_subscription
-
     _, user_sub, _ = user_has_subscription(user)
 
     queryset = Order.objects.filter(**{

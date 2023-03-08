@@ -46,7 +46,7 @@ from subscription.forms import get_currency_choices
 from subscription.middleware import subscription_payment_completed
 from subscription.models import FeatureType
 from subscription.views.dto import SubscriptionFeatureDto
-from subscription.views.subscription_queries import user_subscription_features
+from subscription.subscription_queries import user_subscription_features
 from utils import (
     GET, POST, PATCH, namespaced_url, app_template_path,
     replace_inner_html_payload, TITLE_CTX, PAGE_HEADING_CTX, DELETE,

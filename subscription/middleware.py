@@ -35,7 +35,7 @@ from checkout.constants import (
 )
 from recipesnstuff.constants import LOGOUT_ROUTE_NAME, CHECKOUT_APP_NAME
 from recipesnstuff.settings import STATIC_URL
-from subscription.views.subscription_queries import user_has_subscription
+from subscription.subscription_queries import user_has_subscription
 from utils import namespaced_url, resolve_req
 
 from .constants import (
