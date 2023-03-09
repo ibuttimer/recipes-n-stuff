@@ -99,6 +99,9 @@ IS_DEVELOPMENT_CTX = "is_development"
 IS_TEST_CTX = "is_test"
 AVATAR_URL_CTX = "avatar_url"
 
+# CSS/HTML validator test related
+VAL_TEST_PATH_PREFIX = 'val-test'
+
 # cloudinary related
 AVATAR_FOLDER = "rns_avatars"
 

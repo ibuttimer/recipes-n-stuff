@@ -25,6 +25,8 @@ from .views import (
     InfoModalTemplate, info_modal_payload, level_info_modal_payload,
     render_level_info_modal, IDENTIFIER_CTX
 )
+from .email import send_email, EmailOpt
+
 
 imported = exports
 imported.append(InfoModalLevel)
@@ -34,6 +36,9 @@ imported.extend([
     'level_info_modal_payload',
     'render_level_info_modal',
     'IDENTIFIER_CTX',
+
+    'send_email',
+    'EmailOpt',
 ])
 
 __all__ = imported

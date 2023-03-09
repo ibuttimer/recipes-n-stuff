@@ -19,6 +19,7 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+import json
 from collections import namedtuple
 from http import HTTPStatus
 
@@ -65,6 +66,7 @@ from .currency import is_valid_code
 from .dto import DeliveryDto
 from .on_complete import get_on_complete
 import checkout.stripe_cfg
+from checkout.stripe_cfg import generate_payment_intent_data
 
 
 # (display text, FeatureType choice)
@@ -251,27 +253,7 @@ def create_payment_intent(request: HttpRequest) -> HttpResponse:
         automatic_payment_methods={
             'enabled': False,
         },
-        # https://stripe.com/docs/api/payment_intents/create#create_payment_intent-shipping
-        shipping={
-            'address': {
-                'city': basket.address.city,
-                'country': basket.address.country,
-                'line1': basket.address.street,
-                'line2': basket.address.street2,
-                'postal_code': basket.address.postcode,
-                'state': basket.address.state
-            },
-            'name': request.user.get_full_name()
-        },
-        # https://stripe.com/docs/api/payment_intents/create#create_payment_intent-metadata
-        metadata={
-            'user_id': basket.user.id,
-            'address_id': basket.address.id,
-            'items': str(
-                list(map(lambda item: item.receipt_dict(), basket.items))),
-            'order_num': basket.order_num,
-            'was_1st_x_free': basket.feature_type == FeatureType.FIRST_X_FREE,
-        }
+        **generate_payment_intent_data(basket, request)
     )
     return JsonResponse({
         'clientSecret': intent['client_secret']

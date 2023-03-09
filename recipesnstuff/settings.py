@@ -57,6 +57,11 @@ scheme = {
     'DEBUG': (bool, False),
     'DEVELOPMENT': (bool, False),
     'TEST': (bool, False),
+    'DEFAULT_SEND_EMAIL': (str, ''),
+    'EMAIL_HOST': (str, ''),
+    'EMAIL_USE_TLS': (bool, True),
+    'EMAIL_PORT': (int, 587),
+    'EMAIL_HOST_USER': (str, ''),
 }
 REQUIRED_ENV_VARS = [key for key, _ in scheme.items()]
 REQUIRED_ENV_VARS.extend(['SITE_ID', 'SECRET_KEY', 'DATABASE_URL'])
@@ -233,7 +238,17 @@ TEMPLATES = [
 ]
 
 # email
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+if DEVELOPMENT:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    DEFAULT_SEND_EMAIL = env('DEFAULT_SEND_EMAIL')
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS')
+    EMAIL_PORT = os.environ.get('EMAIL_PORT')
+    EMAIL_HOST = os.environ.get('EMAIL_HOST')
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+    DEFAULT_SEND_EMAIL = EMAIL_HOST_USER
 
 WSGI_APPLICATION = f'{MAIN_APP}.wsgi.application'
 
@@ -460,7 +475,12 @@ LOGGING = {
         'django.db.backends': {
             'level': DJANGO_LOG_LEVEL,
             'handlers': ['console'],
-        }
+        },
+        'django': {
+            'handlers': ['console'],
+            'level': DJANGO_LOG_LEVEL,
+            'propagate': True,
+        },
     }
 }
 

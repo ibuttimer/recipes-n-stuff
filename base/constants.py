@@ -30,6 +30,7 @@ THIS_APP = Path(__file__).resolve().parent.name
 
 # general context
 APP_NAME_CTX = 'app_name'
+VAL_TEST_CTX = 'val_test'
 
 # templates/base/snippet/info_title.html
 TITLE_CTX = 'title'

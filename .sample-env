@@ -30,7 +30,7 @@ SITE_ID=2
 
 # hostname of application on Heroku; e.g. recipesnstuff.herokuapp.com
 # https://docs.djangoproject.com/en/4.1/ref/settings/#allowed-hosts
-#HEROKU_HOSTNAME = <app>.herokuapp.com
+HEROKU_HOSTNAME = <app>.herokuapp.com
 
 # Stripe publishable key
 STRIPE_PUBLISHABLE_KEY='pk_test_verylongstringofalphanumericchars'
@@ -44,3 +44,18 @@ EXCHANGERATES_DATA_KEY='verylongstringofalphanumericchars'
 
 # A boolean that turns on/off Food.com links; set to any of 'true', 'on', 'ok', 'y', 'yes', '1' to enable
 FOOD_DOT_COM=off
+
+# Email address to send emails from; development mode only
+# (in production mode EMAIL_HOST_USER setting is used)
+DEFAULT_SEND_EMAIL='recipesnstuff@email.com'
+
+# SMTP server to send email
+EMAIL_HOST='smtp.gmail.com'
+# Use Transport Layer Security (TLS) flag; set to any of 'true', 'on', 'ok', 'y', 'yes', '1' to enable
+EMAIL_USE_TLS=True
+# SMTP server port
+EMAIL_PORT=587
+# Email user account
+EMAIL_HOST_USER=recipesnstuff@gmail.com
+# Email user app password
+EMAIL_HOST_PASSWORD=stringofalphanumericchars

@@ -116,10 +116,11 @@ class BasketItem:
         return {
             'sku': self.sku,
             'description': self.description,
-            'price': self.amount,
+            'price': self.amount
+            if isinstance(self.amount, float) else float(self.amount),
             'currency': self.currency,
             'units': self.count,
-            'instructions': self.instructions,
+            'instructions': self.instructions
         }
 
     TYPE_MARKER = 'type'

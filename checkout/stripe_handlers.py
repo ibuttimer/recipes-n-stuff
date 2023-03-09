@@ -20,13 +20,17 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 import logging
-from typing import Optional
+from typing import Optional, Tuple
 
+from stripe.api_resources.payment_intent import PaymentIntent
 from stripe.stripe_object import StripeObject
 
+from base import send_email, EmailOpt
+from checkout.constants import THIS_APP
+from checkout.stripe_cfg import confirmation_context
 from order.models import OrderStatus
 from order.persist import update_order_status
-from utils import dict_drill
+from utils import dict_drill, app_template_path
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +38,8 @@ logger = logging.getLogger(__name__)
 # https://stripe.com/docs/api/payment_intents/object?lang=python
 
 
-def get_order_num(event: StripeObject) -> Optional[str]:
+def get_order_num(
+        event: StripeObject) -> Tuple[Optional[str], PaymentIntent]:
     """
     Get order number from a payment intent event metadata.
     :param event: Stripe event
@@ -47,7 +52,7 @@ def get_order_num(event: StripeObject) -> Optional[str]:
         logger.warning(f'Handling {event.type}: order number not found')
         order_num = None
 
-    return order_num
+    return order_num, payment_intent
 
 
 def handle_payment_intent_succeeded(event: StripeObject):
@@ -58,9 +63,20 @@ def handle_payment_intent_succeeded(event: StripeObject):
     data.object is a payment intent
     :param event: Stripe event
     """
-    order_num = get_order_num(event)
+    order_num, payment_intent = get_order_num(event)
     if order_num:
         update_order_status(order_num, OrderStatus.PAID)
+
+        # send confirmation email
+        send_email(
+            app_template_path(
+                THIS_APP, 'email', 'confirmation_email_subject.txt'),
+            app_template_path(
+                THIS_APP, 'email', 'confirmation_email_body.txt'),
+            payment_intent['receipt_email'],
+            opt=EmailOpt.ALL_TEMPLATE,
+            context=confirmation_context(payment_intent)
+        )
 
     logger.debug(f'Handled {event.type}')
 
@@ -73,7 +89,7 @@ def handle_payment_intent_processing(event: StripeObject):
     data.object is a payment intent
     :param event: Stripe event
     """
-    order_num = get_order_num(event)
+    order_num, _ = get_order_num(event)
     if order_num:
         update_order_status(order_num, OrderStatus.PROCESSING_PAYMENT)
 
@@ -89,7 +105,7 @@ def handle_payment_intent_payment_failed(event: StripeObject):
     data.object is a payment intent
     :param event: Stripe event
     """
-    order_num = get_order_num(event)
+    order_num, _ = get_order_num(event)
     if order_num:
         payment_intent = event.data.object  # contains a stripe.PaymentIntent
         # get reason
