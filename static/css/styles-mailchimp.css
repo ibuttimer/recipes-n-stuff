@@ -1,0 +1,31 @@
+#mc_embed_signup {
+    background: #fff;
+    clear: left;
+    font-family: var(--paragraph-font);
+    font-weight: var(--paragraph-font-weight);
+    font-size: 0.9rem;
+}
+
+#mc_embed_signup h2 {
+    margin: 0;
+}
+
+#mc-embedded-subscribe-form input[type=checkbox] {
+    display: inline;
+    width: auto;
+    margin-right: 10px;
+}
+
+#mergeRow-gdpr {
+    margin-top: 5px;
+}
+
+#mergeRow-gdpr fieldset label {
+    font-weight: normal;
+}
+
+#mc-embedded-subscribe-form .mc_fieldset {
+    border: none;
+    min-height: 0;
+    padding-bottom: 0;
+}
