@@ -39,14 +39,16 @@ from django.urls import path
 
 from recipesnstuff.constants import (
     LANDING_ROUTE_NAME, HOME_ROUTE_NAME, HELP_ROUTE_NAME, HELP_URL,
-    ABOUT_URL, ABOUT_ROUTE_NAME, PRIVACY_URL, PRIVACY_ROUTE_NAME
+    ABOUT_URL, ABOUT_ROUTE_NAME, PRIVACY_URL, PRIVACY_ROUTE_NAME, ROBOTS_URL,
+    ROBOTS_ROUTE_NAME
 )
-from .views import get_landing, get_about, get_privacy
+from .views import get_landing, get_about, get_privacy, robots_txt
 
 urlpatterns = [
     path(ABOUT_URL, get_about, name=ABOUT_ROUTE_NAME),
     path(HELP_URL, get_landing, name=HELP_ROUTE_NAME),
     path(PRIVACY_URL, get_privacy, name=PRIVACY_ROUTE_NAME),
+    path(ROBOTS_URL, robots_txt, name=ROBOTS_ROUTE_NAME),
     path('', get_landing, name=HOME_ROUTE_NAME),
     path('', get_landing, name=LANDING_ROUTE_NAME),
 ]

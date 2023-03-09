@@ -39,12 +39,14 @@ HOME_URL = "/"
 HELP_URL = append_slash("help")
 ABOUT_URL = append_slash("about")
 PRIVACY_URL = append_slash("privacy")
+ROBOTS_URL = "robots.txt"
 
 HOME_ROUTE_NAME = "home"
 HELP_ROUTE_NAME = "help"
 ABOUT_ROUTE_NAME = "about"
 LANDING_ROUTE_NAME = "landing"
 PRIVACY_ROUTE_NAME = "privacy"
+ROBOTS_ROUTE_NAME = "robots.txt"
 
 # Admin routes related
 ADMIN_URL = append_slash("admin")

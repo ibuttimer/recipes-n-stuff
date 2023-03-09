@@ -27,14 +27,20 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.templatetags.static import static
+from django.views.decorators.http import require_GET
 
-
+from recipesnstuff import ADMIN_URL, ACCOUNTS_URL
+from recipesnstuff.constants import CHECKOUT_URL, ROBOTS_URL
 from utils import app_template_path
 from utils.views import REDIRECT_CTX
 
 from .constants import (
     MODAL_LEVEL_CTX, TITLE_CLASS_CTX, InfoModalLevel, THIS_APP
 )
+
+DISALLOWED_URLS = [
+    ADMIN_URL, ACCOUNTS_URL, CHECKOUT_URL
+]
 
 TITLE_CTX = 'title'
 MESSAGE_CTX = 'message'
@@ -71,6 +77,7 @@ class CarouselItem:
     active: bool
 
 
+@require_GET
 def get_landing(request: HttpRequest) -> HttpResponse:
     """
     Render landing page
@@ -227,6 +234,7 @@ def info_toast_payload(message: Union[str, InfoModalTemplate]) -> dict:
     }
 
 
+@require_GET
 def get_about(request: HttpRequest) -> HttpResponse:
     """
     Render about page
@@ -242,6 +250,7 @@ def get_about(request: HttpRequest) -> HttpResponse:
     )
 
 
+@require_GET
 def get_privacy(request: HttpRequest) -> HttpResponse:
     """
     Render privacy page
@@ -251,3 +260,24 @@ def get_privacy(request: HttpRequest) -> HttpResponse:
     return render(
         request, app_template_path(THIS_APP, "privacy.html")
     )
+
+
+@require_GET
+def robots_txt(request):
+    """
+    View function for robots.txt
+    Based on https://adamj.eu/tech/2020/02/10/robots-txt/
+    :param request: http request
+    :return: robots.txt response
+    """
+    lines = [
+        "User-Agent: *",
+    ]
+    lines.extend([
+        f"Disallow: /{url}" for url in DISALLOWED_URLS
+    ])
+    lines.append(
+        'Sitemap: {}'.format(
+            request.build_absolute_uri().replace(ROBOTS_URL, 'sitemap.xml'))
+    )
+    return HttpResponse("\n".join(lines), content_type="text/plain")

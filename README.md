@@ -662,4 +662,5 @@ The following resources were used to build the website.
 ### Code
 
 - [Secret Key Generation](#secret-key-generation) courtesy of [Humberto Rocha](https://humberto.io/blog/tldr-generate-django-secret-key/)
+- Robots.txt implementation based on [How to add a robots.txt to your Django site](https://adamj.eu/tech/2020/02/10/robots-txt/)
  
