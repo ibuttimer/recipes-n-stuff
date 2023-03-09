@@ -206,7 +206,7 @@
 
     {# footer #}
     <footer class="container d-flex flex-wrap justify-content-between align-items-center py-3 border-top bg-white div__panel">
-        <div class="col-lg-4 col-12 d-flex justify-content-center">
+        <div class="col-lg-4 col-12">
             <div class="row d-flex flex-column align-items-center">
                 <ul class="nav list-unstyled d-flex justify-content-center col-12">
                     {% for social in socials %}
@@ -221,11 +221,13 @@
                     </li>
                     {% endfor %}
                 </ul>
-                <div class="col-12 mt-4 d-flex justify-content-center">
-                    <a href="{% url 'home' %}" class="ms-2 me-2 mb-md-0 text-muted text-decoration-none lh-1">
-                        <img class="bi" width="24" height="24" src="{% static 'fontawesome/svgs/solid/bowl-rice.svg' %}" alt="{{app_name}} logo">
-                    </a>
-                    <span class="mb-md-0 text-muted">&copy; {{ copyright_year }} {{ copyright }}</span>
+                <div class="col-12 mt-4 d-flex justify-content-around w-100">
+                    <span>
+                        <a href="{% url 'home' %}" class="ms-2 me-2 mb-md-0 text-muted text-decoration-none lh-1">
+                            <img class="bi" width="24" height="24" src="{% static 'fontawesome/svgs/solid/bowl-rice.svg' %}" alt="{{app_name}} logo">
+                        </a>
+                        <span class="mb-md-0 text-muted">&copy; {{ copyright_year }} {{ copyright }}</span>
+                    </span>
                     <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Admin">
                         <a href="{% url 'admin:index' %}" target="_blank" rel="noopener"
                            aria-label="visit admin page in another tab"
@@ -233,6 +235,9 @@
                             <i class="fa-solid fa-screwdriver-wrench text-muted"></i>
                         </a>
                     </span>
+                </div>
+                <div class="col-12 mt-4 text-center">
+                    <a href="{% url 'privacy' %}" aria-label="view privacy policy">{{ app_name | safe }} Privacy Policy</a>
                 </div>
             </div>
         </div>
@@ -266,7 +271,7 @@
                                         <p>Please select all the ways you would like to hear from Recipes 'N' Stuff:</p>
                                         <fieldset class="mc_fieldset gdprRequired mc-field-group" name="interestgroup_field">
                                             <label class="checkbox subfield" for="gdpr_89534">
-                                                <input type="checkbox" id="gdpr_89534" name="gdpr[89534]" value="Y" class="av-checkbox gdpr" checked><span>Email</span>
+                                                <input type="checkbox" id="gdpr_89534" name="gdpr[89534]" value="Y" class="av-checkbox gdpr"><span>Email</span>
                                             </label>
                                         </fieldset>
                                     </div>

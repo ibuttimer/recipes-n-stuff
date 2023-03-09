@@ -240,3 +240,14 @@ def get_about(request: HttpRequest) -> HttpResponse:
         request, app_template_path(THIS_APP, "about.html"),
         context=context
     )
+
+
+def get_privacy(request: HttpRequest) -> HttpResponse:
+    """
+    Render privacy page
+    :param request: request
+    :return: response
+    """
+    return render(
+        request, app_template_path(THIS_APP, "privacy.html")
+    )
