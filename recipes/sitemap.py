@@ -29,6 +29,7 @@ from recipes.constants import (
     THIS_APP, RECIPE_ID_ROUTE_NAME, RECIPES_ROUTE_NAME
 )
 from recipes.models import Recipe
+from recipesnstuff.constants import LAST_PUBLISH_DATE
 from utils import (
     reverse_q, namespaced_url, DATE_NEWEST_LOOKUP, SitemapMixin, SitemapEntry
 )
@@ -50,7 +51,8 @@ class RecipeSitemap(SitemapMixin):
                 namespaced_url(THIS_APP, RECIPES_ROUTE_NAME)),
                 lastmod=Recipe.objects.order_by(
                     f'{DATE_NEWEST_LOOKUP}{Recipe.DATE_PUBLISHED_FIELD}'
-                ).first().date_published,
+                ).first().date_published
+                if Recipe.objects.exists() else LAST_PUBLISH_DATE,
                 changefreq='daily', priority=0.8
             ),
         ]
