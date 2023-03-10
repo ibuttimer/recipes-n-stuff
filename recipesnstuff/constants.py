@@ -19,6 +19,8 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from datetime import datetime
+
 from utils import append_slash, url_path
 
 APP_NAME = "Recipes 'N' Stuff"
@@ -40,6 +42,7 @@ HELP_URL = append_slash("help")
 ABOUT_URL = append_slash("about")
 PRIVACY_URL = append_slash("privacy")
 ROBOTS_URL = "robots.txt"
+SITEMAP_URL = "sitemap.xml"
 
 HOME_ROUTE_NAME = "home"
 HELP_ROUTE_NAME = "help"
@@ -120,3 +123,6 @@ IMAGE_FILE_TYPES.extend([
 ])
 
 MIN_PASSWORD_LEN = 8
+
+# date the site was last published
+LAST_PUBLISH_DATE = datetime(year=2023, month=3, day=9)

@@ -152,6 +152,7 @@ INSTALLED_APPS = [
     # The following apps are required by 'allauth':
     #   django.contrib.auth, django.contrib.messages
     'django.contrib.sites',
+    'django.contrib.sitemaps',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -194,8 +195,6 @@ MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware"
 ] if DBG_TOOLBAR else []
 MIDDLEWARE.extend([
-    # "debug_toolbar.middleware.DebugToolbarMiddleware",
-
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

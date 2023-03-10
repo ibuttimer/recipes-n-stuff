@@ -53,6 +53,7 @@ from .search import (
     DATE_KEY_TERM_GROUP, DATE_QUERY_GROUP, DATE_QUERY_DAY_GROUP,
     DATE_QUERY_MTH_GROUP, DATE_QUERY_YR_GROUP
 )
+from .sitemap import SitemapEntry, SitemapMixin
 from .url_path import (
     append_slash, namespaced_url, app_template_path, url_path, reverse_q,
     GET, PATCH, POST, DELETE
@@ -137,6 +138,9 @@ __all__ = [
     'DATE_QUERY_DAY_GROUP',
     'DATE_QUERY_MTH_GROUP',
     'DATE_QUERY_YR_GROUP',
+
+    'SitemapEntry',
+    'SitemapMixin',
 
     'append_slash',
     'namespaced_url',
