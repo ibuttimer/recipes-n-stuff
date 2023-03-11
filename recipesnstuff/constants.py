@@ -90,6 +90,9 @@ CHECKOUT_URL = append_slash("checkout")
 # Recipes routes related
 RECIPES_URL = append_slash("recipes")
 
+# Orders routes related
+ORDERS_URL = append_slash("orders")
+
 # context related
 HOME_MENU_CTX = "home_menu"
 USER_MENU_CTX = "user_menu"

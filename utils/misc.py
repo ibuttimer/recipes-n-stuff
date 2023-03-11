@@ -31,7 +31,6 @@ from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.http import HttpRequest
 
-
 # workaround for self type hints from https://peps.python.org/pep-0673/
 TypeCrud = TypeVar("TypeCrud", bound="Crud")
 
@@ -129,6 +128,9 @@ def permission_check(
     :raises PermissionDenied if user does not have permission and `raise_ex`
         is True
     """
+    # TODO including User in the arg type hint causes a circular import
+    # so leave out for now
+
     user = request.user if isinstance(request, HttpRequest) else request
     has_perm = user.is_superuser
     if not has_perm:

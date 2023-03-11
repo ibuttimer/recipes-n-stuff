@@ -216,6 +216,11 @@ class SubscriptionFeature(ModelMixin, models.Model):
         """ Get the list of numeric fields """
         return [SubscriptionFeature.AMOUNT_FIELD]
 
+    @classmethod
+    def boolean_fields(cls) -> list[str]:
+        """ Get the list of boolean fields """
+        return [SubscriptionFeature.IS_ACTIVE_FIELD]
+
     def __str__(self):
         return f'{self.feature_type} {self.description} {self.amount} ' \
                f'{self.base_currency}/{self.count}'
@@ -318,6 +323,11 @@ class Subscription(ModelMixin, models.Model):
     def numeric_fields(cls) -> list[str]:
         """ Get the list of numeric fields """
         return [Subscription.FREQUENCY_FIELD, Subscription.AMOUNT_FIELD]
+
+    @classmethod
+    def boolean_fields(cls) -> list[str]:
+        """ Get the list of boolean fields """
+        return [Subscription.IS_ACTIVE_FIELD]
 
     @classmethod
     def get_default_subscription(cls) -> TypeSubscription:

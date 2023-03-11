@@ -44,16 +44,16 @@ class BaseSitemap(SitemapMixin):
         :return:
         """
         return [
-            SitemapEntry(location=reverse_q(LANDING_ROUTE_NAME),
-                lastmod=LAST_PUBLISH_DATE, changefreq='yearly', priority=1.0
-            ),
-            SitemapEntry(location=reverse_q(ABOUT_ROUTE_NAME),
-                lastmod=LAST_PUBLISH_DATE, changefreq='yearly', priority=0.4
-            ),
-            SitemapEntry(location=reverse_q(HELP_ROUTE_NAME),
-                lastmod=LAST_PUBLISH_DATE, changefreq='yearly', priority=0.5
-            ),
-            SitemapEntry(location=reverse_q(PRIVACY_ROUTE_NAME),
-                lastmod=LAST_PUBLISH_DATE, changefreq='yearly', priority=0.5
-            ),
+            SitemapEntry(
+                location=reverse_q(LANDING_ROUTE_NAME),
+                lastmod=LAST_PUBLISH_DATE, changefreq='yearly', priority=1.0),
+            SitemapEntry(
+                location=reverse_q(ABOUT_ROUTE_NAME),
+                lastmod=LAST_PUBLISH_DATE, changefreq='yearly', priority=0.4),
+            SitemapEntry(
+                location=reverse_q(HELP_ROUTE_NAME),
+                lastmod=LAST_PUBLISH_DATE, changefreq='yearly', priority=0.5),
+            SitemapEntry(
+                location=reverse_q(PRIVACY_ROUTE_NAME),
+                lastmod=LAST_PUBLISH_DATE, changefreq='yearly', priority=0.5),
         ]

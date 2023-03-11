@@ -20,26 +20,28 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 #
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum, auto
-from typing import Any, Type
+from typing import Any, Type, Optional, Tuple, List, Union
 from zoneinfo import ZoneInfo
 
-from django.db.models import Q, QuerySet
+from django.db.models import Q, QuerySet, Prefetch, Model
 
-from profiles.enums import AddressType
-from profiles.models import Address
+from checkout.models import Currency
+from order.models import Order, OrderProduct
 from user.models import User
 from utils import (
-    ensure_list, SEARCH_QUERY, DATE_QUERIES,
+    SEARCH_QUERY, DATE_QUERIES,
     regex_matchers, regex_date_matchers, QuerySetParams,
     TERM_GROUP, KEY_TERM_GROUP, DATE_QUERY_GROUP, DATE_KEY_TERM_GROUP,
     DATE_QUERY_YR_GROUP, DATE_QUERY_MTH_GROUP,
-    DATE_QUERY_DAY_GROUP, ChoiceArg, USER_QUERY
+    DATE_QUERY_DAY_GROUP, USER_QUERY, get_object_and_related_or_404
 )
-
-# context-related
-DEFAULT_ADDRESS_QUERY: str = 'dflt-addr'    # display default address modal
+from utils.query_params import SearchType, QueryTerm
+from utils.search import (
+    MARKER_CHARS, ON_OR_AFTER_QUERY, ON_OR_BEFORE_QUERY, AFTER_QUERY,
+    BEFORE_QUERY, EQUAL_QUERY
+)
 
 NON_DATE_QUERIES = [
     USER_QUERY
@@ -50,17 +52,12 @@ REGEX_MATCHERS.update(regex_date_matchers())
 FIELD_LOOKUPS = {
     # query param: filter lookup
     SEARCH_QUERY: '',
-    USER_QUERY: f'{Address.USER_FIELD}__{User.USERNAME_FIELD}',
-    # STATUS_QUERY: f'{Opinion.STATUS_FIELD}__{Status.NAME_FIELD}',
-    # TITLE_QUERY: f'{Opinion.TITLE_FIELD}__icontains',
-    # CONTENT_QUERY: f'{Opinion.CONTENT_FIELD}__icontains',
-    # AUTHOR_QUERY: f'{Opinion.USER_FIELD}__{User.USERNAME_FIELD}__icontains',
-    # CATEGORY_QUERY: f'{Opinion.CATEGORIES_FIELD}__in',
-    # ON_OR_AFTER_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date__gte',
-    # ON_OR_BEFORE_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date__lte',
-    # AFTER_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date__gt',
-    # BEFORE_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date__lt',
-    # EQUAL_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date',
+    USER_QUERY: f'{Order.USER_FIELD}__{User.USERNAME_FIELD}__icontains',
+    ON_OR_AFTER_QUERY: f'{Order.SEARCH_DATE_FIELD}__date__gte',
+    ON_OR_BEFORE_QUERY: f'{Order.SEARCH_DATE_FIELD}__date__lte',
+    AFTER_QUERY: f'{Order.SEARCH_DATE_FIELD}__date__gt',
+    BEFORE_QUERY: f'{Order.SEARCH_DATE_FIELD}__date__lt',
+    EQUAL_QUERY: f'{Order.SEARCH_DATE_FIELD}__date',
 }
 # priority order list of query terms
 FILTERS_ORDER = [
@@ -77,7 +74,6 @@ FILTERS_ORDER.extend(
 )
 # complex queries which require more than a simple lookup or context-related
 NON_LOOKUP_ARGS = [
-    DEFAULT_ADDRESS_QUERY,
     # FILTER_QUERY, REVIEW_QUERY
 ]
 
@@ -145,30 +141,6 @@ def get_search_term(
         match = regex.match(value)
         if match:
             success = True
-            # if query == CATEGORY_QUERY:
-            #     # need inner queryset to get list of categories with names
-            #     # like the search term and then look for opinions with those
-            #     # categories
-            #     get_category_query(query_set_params, match.group(group))
-            # elif query == STATUS_QUERY:
-            #     # need inner queryset to get list of statuses with names
-            #     # like the search term and then look for opinions with those
-            #     # statuses
-            #     choice_arg_query(
-            #         query_set_params, match.group(group).lower(),
-            #         QueryStatus, QueryStatus.ALL,
-            #         Status, Status.NAME_FIELD, query, FIELD_LOOKUPS[query]
-            #     )
-            # elif query == HIDDEN_QUERY:
-            #     # need to filter/exclude by list of opinions that the user has
-            #     # hidden
-            #     hidden = Hidden.from_arg(match.group(group).lower())
-            #     success = get_hidden_query(query_set_params, hidden, user)
-            # elif query == PINNED_QUERY:
-            #     # need to filter/exclude by list of opinions that the user has
-            #     # pinned
-            #     pinned = Pinned.from_arg(match.group(group).lower())
-            #     success = get_pinned_query(query_set_params, pinned, user)
             if query in DATE_QUERIES:
                 success = get_date_query(query_set_params, query, *[
                     match.group(idx) for idx in [
@@ -187,59 +159,17 @@ def get_search_term(
                 else query_set_params.add_invalid_term
             save_term_func(match.group(key_val_group))
 
-    # if query_set_params.is_empty and value:
-    #     query_set_params.search_type = SearchType.FREE if not any(
-    #         list(
-    #             map(lambda x: x in value, MARKER_CHARS)
-    #         )
-    #     ) else SearchType.UNKNOWN
-    #
-    #     if query_set_params.search_type == SearchType.FREE:
-    #         # no delimiting chars, so search title & content for
-    #         # any of the search terms
-    #         to_query = [TITLE_QUERY, CONTENT_QUERY]
-    #         or_q = {}
-    #         for term in value.split():
-    #             if len(or_q) == 0:
-    #                 or_q = {q: [term] for q in to_query}
-    #             else:
-    #                 or_q[TITLE_QUERY].append(term)
-    #                 or_q[CONTENT_QUERY].append(term)
-    #
-    #         # https://docs.djangoproject.com/en/4.1/topics/db/queries/#complex-lookups-with-q
-    #
-    #         # OR queries of title and content contains terms
-    #         # e.g. [
-    #         #   "WHERE ("title") LIKE '<term>'",
-    #         #   "WHERE ("content") LIKE '<term>'"
-    #         # ]
-    #         for qry in to_query:
-    #             query_set_params.add_or_lookup(
-    #                 '-'.join(to_query),
-    #                 Q(_connector=Q.OR, **{
-    #                     FIELD_LOOKUPS[qry]: term for term in or_q[qry]
-    #                 })
-    #             )
+    if query_set_params.is_empty and value:
+        query_set_params.search_type = SearchType.FREE if not any(
+            list(
+                map(lambda x: x in value, MARKER_CHARS)
+            )
+        ) else SearchType.UNKNOWN
+
+        if query_set_params.search_type == SearchType.FREE:
+            query_set_params.add_all_inclusive(Order.model_name())
 
     return query_set_params
-
-
-# def get_category_query(query_set_params: QuerySetParams,
-#                        name: str) -> None:
-#     """
-#     Get the category query
-#     :param query_set_params: query params to update
-#     :param name: category name or part thereof
-#     """
-#     # need inner queryset to get list of categories with names
-#     # like the search term and then look for opinions with those
-#     # categories
-#     # https://docs.djangoproject.com/en/4.1/ref/models/querysets/#icontains
-#     inner_qs = Category.objects.filter(**{
-#         f'{Category.NAME_FIELD}__icontains': name
-#     })
-#     query_set_params.add_and_lookup(
-#         CATEGORY_QUERY, FIELD_LOOKUPS[CATEGORY_QUERY], inner_qs)
 
 
 def get_date_query(query_set_params: QuerySetParams,
@@ -268,27 +198,38 @@ def get_date_query(query_set_params: QuerySetParams,
     return success
 
 
-def addresses_query(user: User = None,
-                    address_type: AddressType = AddressType.ALL,
-                    action: QueryParam = QueryParam.FILTER) -> QuerySet:
+def get_order(
+        pk: int, related: Optional[List[str]] = None) -> Tuple[Order, dict]:
     """
-    Get addresses
-    :param user: user to get addresses for; default None i.e. all addresses
-    :param address_type: address type; default AddressType.ALL
-    :param action: query action; default QueryParam.FILTER
-    :return: addresses
+    Get order by specified `id`
+    :param pk: id of order
+    :param related: list of related fields to prefetch; default None
+    :return: tuple of object and query param
+    :raises Http404 if not found
     """
-    params = {}
-    if user:
-        params[f'{Address.USER_FIELD}'] = user
-    if address_type in [AddressType.DEFAULT, AddressType.NON_DEFAULT]:
-        params[f'{Address.IS_DEFAULT_FIELD}'] = \
-            address_type == AddressType.DEFAULT
+    query_param = Order.id_field_query(pk)
+    entity = get_object_and_related_or_404(
+        Order, **query_param, related=related)
+    return entity, query_param
 
-    if action == QueryParam.FILTER:
-        query_set = Address.objects.filter(**params)
-    elif action == QueryParam.EXCLUDE:
-        query_set = Address.objects.exclude(**params)
-    else:
-        raise NotImplementedError(f'Unknown param {action}')
-    return query_set
+
+# def get_order_products_list(
+#         order: Union[int, Order],
+#         order_by: str = OrderProduct.TYPE_FIELD,
+#         prefetch_related: bool = True
+#         ) -> List[OrderProduct]:
+#     """
+#     Get order products for the specified `order`
+#     :param order: order object or its id
+#     :param order_by: order by; default index field
+#     :param prefetch_related: prefetch related flag, default True
+#     :return: tuple of object and query param
+#     """
+#     query_param = {
+#         f'{Order.ITEMS_FIELD}__{OrderProduct.ORD}':
+#             get_order(order) if isinstance(order, int) else order
+#     }
+#
+#     return list(
+#         OrderProduct.objects.filter(**query_param).order_by(order_by).all()
+#     )

@@ -66,6 +66,7 @@ ADDR_FIELDS = [
 ]
 COUNTRIES_DICT = dict(countries)
 
+
 def generate_payment_intent_data(basket: Basket, request: HttpRequest) -> dict:
     """
     Generate the additional data to include in a Stripe payment intent

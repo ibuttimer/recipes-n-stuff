@@ -31,9 +31,10 @@ from django.db.migrations.state import StateApps
 from django.contrib.auth.management import create_permissions
 from django.db.models import Model
 
+from order.models import Order
 from profiles.models import Address
 from recipesnstuff import PROFILES_APP_NAME
-from recipesnstuff.constants import SUBSCRIPTION_APP_NAME
+from recipesnstuff.constants import SUBSCRIPTION_APP_NAME, ORDER_APP_NAME
 from subscription.models import Subscription
 from utils import permission_name, Crud, ensure_list
 from .constants import REGISTERED_GROUP
@@ -46,6 +47,11 @@ PermSetting = namedtuple(
     ['model', 'all', 'perms', 'app', 'action'],
     defaults=[None, False, [], '', ADD]
 )
+
+SUBS_PERMS_REGISTERED = Crud.READ
+ORDER_PERMS_REGISTERED = [
+    opt for opt in Crud if opt != Crud.DELETE
+]
 
 
 def create_registered_group(
@@ -116,7 +122,8 @@ def migration_add_group(
     """
     group = apps.get_model("auth", "Group")
     db_alias = schema_editor.connection.alias
-    group.objects.using(db_alias).create(name=name)
+    if not group.objects.using(db_alias).filter(name=name).exists():
+        group.objects.using(db_alias).create(name=name)
 
 
 def migration_remove_group(
@@ -240,7 +247,7 @@ def reverse_migrate_permissions(
 
 def set_group_permissions(
         assignees: Union[str, List[str]],
-        model: Model, ops: List[Crud], app_name: str,
+        model: Model, ops: Union[List[Crud], Crud], app_name: str,
         action: str, apps: StateApps = None,
         schema_editor: BaseDatabaseSchemaEditor = None):
     """
@@ -271,6 +278,43 @@ def set_group_permissions(
         ], apps=apps, schema_editor=schema_editor)
 
 
+def add_permissions_for_registered(
+        model: Model, ops: Union[List[Crud], Crud], app_name: str,
+        apps: StateApps = None,
+        schema_editor: BaseDatabaseSchemaEditor = None):
+    """
+    Add permissions for registered group
+    :param model: model whose permissions to apply
+    :param ops: list of Crud operations
+    :param app_name: app name
+    :param apps: apps registry, default None
+    :param schema_editor:
+        editor generating statements to change database schema, default None
+    """
+    create_registered_group(apps=apps, schema_editor=schema_editor)
+    set_group_permissions(
+        REGISTERED_GROUP, model, ops, app_name, ADD,
+        apps=apps, schema_editor=schema_editor)
+
+
+def remove_permissions_for_registered(
+        model: Model, ops: Union[List[Crud], Crud], app_name: str,
+        apps: StateApps = None,
+        schema_editor: BaseDatabaseSchemaEditor = None):
+    """
+    Remove permissions for registered group
+    :param model: model whose permissions to apply
+    :param ops: list of Crud operations
+    :param app_name: app name
+    :param apps: apps registry, default None
+    :param schema_editor:
+        editor generating statements to change database schema, default None
+    """
+    set_group_permissions(
+        REGISTERED_GROUP, model, ops, app_name, REMOVE,
+        apps=apps, schema_editor=schema_editor)
+
+
 def add_subs_permissions_for_registered(
         apps: StateApps = None,
         schema_editor: BaseDatabaseSchemaEditor = None):
@@ -280,10 +324,9 @@ def add_subs_permissions_for_registered(
     :param schema_editor:
         editor generating statements to change database schema, default None
     """
-    create_registered_group(apps=apps, schema_editor=schema_editor)
-    set_group_permissions(
-        REGISTERED_GROUP, Subscription, Crud.READ, SUBSCRIPTION_APP_NAME,
-        ADD, apps=apps, schema_editor=schema_editor)
+    add_permissions_for_registered(
+        Subscription, SUBS_PERMS_REGISTERED, SUBSCRIPTION_APP_NAME,
+        apps=apps, schema_editor=schema_editor)
 
 
 def remove_subs_permissions_for_registered(
@@ -295,6 +338,34 @@ def remove_subs_permissions_for_registered(
     :param schema_editor:
         editor generating statements to change database schema, default None
     """
-    set_group_permissions(
-        REGISTERED_GROUP, Subscription, Crud.READ, SUBSCRIPTION_APP_NAME,
-        REMOVE, apps=apps, schema_editor=schema_editor)
+    remove_permissions_for_registered(
+        Subscription, SUBS_PERMS_REGISTERED, SUBSCRIPTION_APP_NAME,
+        apps=apps, schema_editor=schema_editor)
+
+
+def add_order_permissions_for_registered(
+        apps: StateApps = None,
+        schema_editor: BaseDatabaseSchemaEditor = None):
+    """
+    Add order permissions for registered group
+    :param apps: apps registry, default None
+    :param schema_editor:
+        editor generating statements to change database schema, default None
+    """
+    add_permissions_for_registered(
+        Order, ORDER_PERMS_REGISTERED, ORDER_APP_NAME,
+        apps=apps, schema_editor=schema_editor)
+
+
+def remove_order_permissions_for_registered(
+        apps: StateApps = None,
+        schema_editor: BaseDatabaseSchemaEditor = None):
+    """
+    Remove order permissions for registered group
+    :param apps: apps registry, default None
+    :param schema_editor:
+        editor generating statements to change database schema, default None
+    """
+    remove_permissions_for_registered(
+        Order, ORDER_PERMS_REGISTERED, ORDER_APP_NAME,
+        apps=apps, schema_editor=schema_editor)

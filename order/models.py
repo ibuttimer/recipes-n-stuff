@@ -42,7 +42,8 @@ from .constants import (
     USER_FIELD, CREATED_FIELD, UPDATED_FIELD, STATUS_FIELD, AMOUNT_FIELD,
     BASE_CURRENCY_FIELD, AMOUNT_BASE_FIELD, ORDER_NUM_FIELD, ITEMS_FIELD,
     TYPE_FIELD, SUBSCRIPTION_FIELD, RECIPE_FIELD, UNIT_PRICE_FIELD, SKU_FIELD,
-    DESCRIPTION_FIELD, COUNTRY_FIELD, WAS_1ST_X_FREE_FIELD, INFO_FIELD
+    DESCRIPTION_FIELD, COUNTRY_FIELD, WAS_1ST_X_FREE_FIELD, INFO_FIELD,
+    ORDER_FIELD, ORDER_PROD_FIELD, QUANTITY_FIELD
 )
 
 
@@ -251,6 +252,13 @@ class OrderProduct(ModelMixin, models.Model):
         """ Model metadata """
         ordering = [f'{TYPE_FIELD}']
 
+    @classmethod
+    def numeric_fields(cls) -> list[str]:
+        """ Get the list of numeric fields """
+        return [
+            OrderProduct.UNIT_PRICE_FIELD
+        ]
+
     def __str__(self):
         desc = self.recipe if type in ProductType.recipe_options else \
             self.subscription if type in ProductType.subscription_options \
@@ -324,12 +332,55 @@ class Order(ModelMixin, models.Model):
         blank=True
     )
 
-    items = models.ManyToManyField(OrderProduct)
+    items = models.ManyToManyField(OrderProduct, through='OrderItem')
 
     @dataclass
     class Meta:
         """ Model metadata """
         ordering = [f'{DATE_OLDEST_LOOKUP}{CREATED_FIELD}']
 
+    @classmethod
+    def date_fields(cls) -> list[str]:
+        """ Get the list of date fields """
+        return [
+            Order.CREATED_FIELD, Order.UPDATED_FIELD
+        ]
+
+    @classmethod
+    def numeric_fields(cls) -> list[str]:
+        """ Get the list of numeric fields """
+        return [
+            Order.AMOUNT_FIELD, Order.AMOUNT_BASE_FIELD
+        ]
+
+    @classmethod
+    def boolean_fields(cls) -> list[str]:
+        """ Get the list of boolean fields """
+        return [Order.WAS_1ST_X_FREE_FIELD]
+
     def __str__(self):
         return f'{self.order_num} {self.created} {str(self.user)}'
+
+
+Order.SEARCH_DATE_FIELD = Order.UPDATED_FIELD
+
+
+class OrderItem(ModelMixin, models.Model):
+    """
+    Order item model
+    """
+    ORDER_FIELD = ORDER_FIELD
+    ORDER_PROD_FIELD = ORDER_PROD_FIELD
+    QUANTITY_FIELD = QUANTITY_FIELD
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order_prod = models.ForeignKey(OrderProduct, on_delete=models.CASCADE)
+    quantity = models.IntegerField(
+        _('quantity of product'), blank=False, default=0)
+
+    @dataclass
+    class Meta:
+        """ Model metadata """
+
+    def __str__(self):
+        return f'{self.order} {self.order_prod} - {self.quantity}'

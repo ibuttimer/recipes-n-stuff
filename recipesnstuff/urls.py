@@ -30,7 +30,7 @@ from .constants import (
     BASE_APP_NAME, ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL,
     USERS_URL, USER_APP_NAME, PROFILES_APP_NAME, PROFILES_URL,
     SUBSCRIPTION_APP_NAME, SUBSCRIPTIONS_URL, CHECKOUT_URL, CHECKOUT_APP_NAME,
-    RECIPES_URL, RECIPES_APP_NAME, SITEMAP_URL
+    RECIPES_URL, RECIPES_APP_NAME, SITEMAP_URL, ORDER_APP_NAME, ORDERS_URL
 )
 from .settings import STATIC_URL
 
@@ -48,6 +48,7 @@ urlpatterns = [
     path(SUBSCRIPTIONS_URL, include(f'{SUBSCRIPTION_APP_NAME}.urls')),
     path(CHECKOUT_URL, include(f'{CHECKOUT_APP_NAME}.urls')),
     path(RECIPES_URL, include(f'{RECIPES_APP_NAME}.urls')),
+    path(ORDERS_URL, include(f'{ORDER_APP_NAME}.urls')),
 
     path('', include(f'{BASE_APP_NAME}.root_urls')),
     path(SITEMAP_URL, sitemap, {'sitemaps': {

@@ -71,6 +71,27 @@ class ModelMixin:
         }
 
     @classmethod
+    def get_by_field(cls, field: str, value: Any) -> Model:
+        """
+        Get an entity by the value of a field
+        :param field: field to get by
+        :param value: value to match
+        :return: model
+        """
+        return cls.objects.get(**{
+            field: value
+        })
+
+    @classmethod
+    def get_by_id_field(cls, pk: int) -> Model:
+        """
+        Get an entity by its id field
+        :param pk: id of entity to search for
+        :return: model
+        """
+        return cls.objects.get(**cls.id_field_query(pk))
+
+    @classmethod
     def model_name(cls):
         """
         Get the model name of this object
@@ -107,6 +128,11 @@ class ModelMixin:
     @classmethod
     def numeric_fields(cls) -> list[str]:
         """ Get the list of numeric fields """
+        return []
+
+    @classmethod
+    def boolean_fields(cls) -> list[str]:
+        """ Get the list of boolean fields """
         return []
 
     @classmethod
@@ -170,6 +196,17 @@ class ModelMixin:
         )
 
     @classmethod
+    def is_boolean_lookup(cls, lookup: str):
+        """
+        Check if the specified `lookup` represents a boolean Lookup
+        :param lookup: lookup string
+        :return: True if lookup is a boolean Lookup
+        """
+        return any(
+            map(lambda fld: fld in lookup, cls.boolean_fields())
+        )
+
+    @classmethod
     def is_id_lookup(cls, lookup: str):
         """
         Check if the specified `lookup` represents an id Lookup
@@ -187,7 +224,7 @@ class ModelMixin:
         :param lookup: lookup string
         :return: True if lookup is not a text lookup
         """
-        return cls.is_date_lookup(lookup) or \
+        return cls.is_date_lookup(lookup) or cls.is_boolean_lookup(lookup) or \
             cls.is_timedelta_lookup(lookup) or \
             cls.is_numeric_lookup(lookup) or cls.is_id_lookup(lookup)
 

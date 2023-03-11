@@ -25,7 +25,7 @@ from _decimal import Decimal
 
 from checkout.basket import Basket, BasketItem
 from checkout.forex import convert_forex, NumType
-from order.models import Order, OrderStatus, OrderProduct
+from order.models import Order, OrderStatus, OrderProduct, OrderItem
 from recipesnstuff.settings import DEFAULT_CURRENCY
 from subscription.models import FeatureType
 
@@ -89,12 +89,16 @@ def order_set_items(order: Order,
     if items is not None:
         order.items.clear()     # clear previous basket items
 
-        order.items.set(
-            OrderProduct.objects.get(**{
-                f'{OrderProduct.SKU_FIELD}':
+        for item in items:
+            OrderItem.objects.create(**{
+                f'{OrderItem.ORDER_PROD_FIELD}': OrderProduct.get_by_field(
+                    OrderProduct.SKU_FIELD,
                     item.sku if isinstance(item, BasketItem) else item
-            }) for item in items
-        )
+                ),
+                f'{OrderItem.QUANTITY_FIELD}': item.count,
+                f'{OrderItem.ORDER_FIELD}': order
+            })
+
         order.save()
 
 

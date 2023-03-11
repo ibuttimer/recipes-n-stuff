@@ -1,0 +1,56 @@
+<!-- order_dto.html start -->
+{# --- order_dto.html template variable defines for includes --- #}
+{# order dto template expects: 'order_dto' as RecipeDto #}
+{#                             'identifier' as individual identifier #}
+
+{% load i18n %}
+{% load static %}
+{% load image_url  attr_append %}
+
+{# below lg: 1 per row  lg-xxl: 2 per row  xxl: 3 per row #}
+<div class="col-lg-6 col-xxl-4 mb-4">
+    <a href="{% url 'order:order_id' order_dto.id %}" class="a__order-card text-decoration-none" aria-label="view order">
+        <div class="card rounded-3 h-100">
+            <div class="card-header">
+                <div class="row m-0 p-0 g-0">
+                    <div class="col-sm-3">
+                        <p class="text-muted small mb-0">Date</p>
+                        {{ order_dto.updated|date:"SHORT_DATE_FORMAT" }}
+                    </div>
+                    <div class="col-sm-6">
+                        <p class="text-muted small mb-0">Order Number</p>
+                        {{ order_dto.order_num }}
+                    </div>
+                    <div class="col-sm-3">
+                        <p class="text-muted small mb-0">Total</p>
+                        {{ order_dto.amount_str }}
+                    </div>
+                </div>
+            </div>
+            <div id="id--order-{{identifier}}"
+                 class="card-body div__order-{{order_dto.id}}">
+                <div class="row mb-3">
+                    {% for item in order_dto.items %}
+                    <tr id="id__item-row-{{ forloop.counter0 }}">
+                        <div class="col-sm-2">
+                            <img class="img__order_product" alt="product image" src="{% image_url item.image %}">
+                        </div>
+                        <div class="col-sm-9">
+                            <p class="card-text">
+                                {% if item.url %}
+                                    <a href="{{ item.url }}" aria-label="view product">{{ item.description }}</a>
+                                {% else %}
+                                    {{ item.description | safe }}
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-sm-1">
+                            <p class="mb-0">{{ item.quantity }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </a>
+</div>
+<!-- order_dto.html end -->

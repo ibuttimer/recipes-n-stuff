@@ -26,6 +26,7 @@ from utils import url_path
 # name of this app
 THIS_APP = Path(__file__).resolve().parent.name
 
+# common field names
 NAME_FIELD = "name"
 TYPE_FIELD = "type"
 SYSTEM_FIELD = "system"
