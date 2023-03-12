@@ -27,28 +27,30 @@
                     </div>
                 </div>
             </div>
-            <div id="id--order-{{identifier}}"
-                 class="card-body div__order-{{order_dto.id}}">
-                <div class="row mb-3">
-                    {% for item in order_dto.items %}
-                    <tr id="id__item-row-{{ forloop.counter0 }}">
-                        <div class="col-sm-2">
-                            <img class="img__order_product" alt="product image" src="{% image_url item.image %}">
-                        </div>
-                        <div class="col-sm-9">
-                            <p class="card-text">
-                                {% if item.url %}
-                                    <a href="{{ item.url }}" aria-label="view product">{{ item.description }}</a>
-                                {% else %}
-                                    {{ item.description | safe }}
-                                {% endif %}
-                            </p>
-                        </div>
-                        <div class="col-sm-1">
-                            <p class="mb-0">{{ item.quantity }}</p>
-                        </div>
-                    {% endfor %}
+            <div id="id--order-{{identifier}}" class="card-body div__order-{{order_dto.id}}">
+                <div class="row mb-0">
+                    <div class="col-sm-2">
+                    </div>
+                    <div class="col-sm-7">
+                        <p class="text-muted small mb-0">Item Description</p>
+                    </div>
+                    <div class="col-sm-3 text-end">
+                        <p class="text-muted small mb-0">Quantity</p>
+                    </div>
                 </div>
+                {% for item in order_dto.items %}
+                <div class="row mb-3" id="id__item-row-{{ forloop.counter0 }}">
+                    <div class="col-sm-2">
+                        <img class="img__order-product-list" alt="product image" src="{% image_url item.image %}">
+                    </div>
+                    <div class="col-sm-9">
+                        <p class="card-text">{{ item.description | safe }}</p>
+                    </div>
+                    <div class="col-sm-1">
+                        <p class="mb-0">{{ item.quantity }}</p>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
         </div>
     </a>

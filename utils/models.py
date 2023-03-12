@@ -24,8 +24,8 @@ from inspect import isclass
 from typing import Union, Type, Any, TypeVar, Optional, List, Tuple
 from string import capwords
 
-from django.db.models import Model
-
+from django.db.models import Model, QuerySet
+from django.shortcuts import get_object_or_404
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
 TypeNameChoiceMixin = TypeVar("NameChoiceMixin", bound="NameChoiceMixin")
@@ -71,25 +71,42 @@ class ModelMixin:
         }
 
     @classmethod
-    def get_by_field(cls, field: str, value: Any) -> Model:
+    def get_by_field(cls, field: str, value: Any,
+                     get_or_404: bool = True) -> Model:
         """
         Get an entity by the value of a field
         :param field: field to get by
         :param value: value to match
+        :param get_or_404: get ot 404 flag; default True
         :return: model
         """
-        return cls.objects.get(**{
+        query_param = {
+            field: value
+        }
+        return get_object_or_404(cls, **query_param) if get_or_404 else \
+            cls.objects.get(**query_param)
+
+    @classmethod
+    def filter_by_field(cls, field: str, value: Any) -> QuerySet:
+        """
+        Filter an entity by the value of a field
+        :param field: field to filter by
+        :param value: value to match
+        :return: model
+        """
+        return cls.objects.filter(**{
             field: value
         })
 
     @classmethod
-    def get_by_id_field(cls, pk: int) -> Model:
+    def get_by_id_field(cls, pk: int, get_or_404: bool = True) -> Model:
         """
         Get an entity by its id field
         :param pk: id of entity to search for
+        :param get_or_404: get ot 404 flag; default True
         :return: model
         """
-        return cls.objects.get(**cls.id_field_query(pk))
+        return cls.get_by_field(cls.id_field(), pk, get_or_404=get_or_404)
 
     @classmethod
     def model_name(cls):

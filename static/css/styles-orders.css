@@ -1,4 +1,22 @@
 
-.img__order_product {
+.img__order-product-list {
     width: 50px;
+}
+
+.img__order-product-view {
+    width: 50px;
+}
+
+/* bootstrap md breakpoint, 768px wide or more */
+@media screen and (min-width: 768px) {
+    .img__order-product-view {
+        width: 75px;
+    }
+}
+
+/* bootstrap lg breakpoint, 992px wide or more */
+@media screen and (min-width: 992px) {
+    .img__order-product-view {
+        width: 100px;
+    }
 }

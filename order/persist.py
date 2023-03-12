@@ -50,7 +50,8 @@ def save_order(basket: Basket, status: OrderStatus = OrderStatus.IN_PROGRESS):
             total, basket.currency, DEFAULT_CURRENCY.upper(),
             result_as=NumType.DECIMAL),
         f'{Order.WAS_1ST_X_FREE_FIELD}':
-            basket.feature_type == FeatureType.FIRST_X_FREE
+            basket.feature_type == FeatureType.FIRST_X_FREE,
+        f'{Order.ADDRESS_FIELD}': basket.address
     }
 
     if Order.objects.filter(**query_param).exists():
@@ -61,6 +62,7 @@ def save_order(basket: Basket, status: OrderStatus = OrderStatus.IN_PROGRESS):
         query_param.update(order_info)
         order = Order.objects.create(**query_param)
         order_set_items(order, basket.items)
+        order.save()
 
 
 def update_order(order_num: str, updates: dict,
@@ -71,12 +73,11 @@ def update_order(order_num: str, updates: dict,
     :param updates: updates to apply
     :param items: list of items; default None, i.e. no change
     """
-    query_param = {
-        f'{Order.ORDER_NUM_FIELD}': order_num
-    }
-    Order.objects.filter(**query_param).update(**updates)
-
-    order_set_items(Order.objects.get(**query_param), items)
+    order = Order.filter_by_field(Order.ORDER_NUM_FIELD, order_num)
+    order.update(**updates)
+    order = order.first()
+    order_set_items(order, items)
+    order.save()
 
 
 def order_set_items(order: Order,
@@ -96,6 +97,8 @@ def order_set_items(order: Order,
                     item.sku if isinstance(item, BasketItem) else item
                 ),
                 f'{OrderItem.QUANTITY_FIELD}': item.count,
+                f'{OrderItem.AMOUNT_FIELD}': item.cost(as_decimal=True),
+                f'{OrderItem.BASE_CURRENCY_FIELD}': item.currency,
                 f'{OrderItem.ORDER_FIELD}': order
             })
 

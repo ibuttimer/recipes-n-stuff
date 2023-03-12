@@ -26,9 +26,9 @@
                 </td>
                 <td>
                     {% if item.url %}
-                        <a href="{{ item.url }}" aria-label="view product">{{ item.description }}</a>
+                        <a href="{{ item.url }}" aria-label="view product">{{ item.description | safe }}</a>
                     {% else %}
-                        {{ item.description }}
+                        {{ item.description | safe }}
                     {% endif %}
                 </td>
                 <td>{{ item.amt_str }}</td>

@@ -29,6 +29,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_countries.fields import CountryField
 
+from profiles.models import Address
 from recipes.models import Recipe
 from recipesnstuff.settings import (
     DEFAULT_CURRENCY, PRICING_FACTOR, PRICING_PLACES
@@ -43,7 +44,7 @@ from .constants import (
     BASE_CURRENCY_FIELD, AMOUNT_BASE_FIELD, ORDER_NUM_FIELD, ITEMS_FIELD,
     TYPE_FIELD, SUBSCRIPTION_FIELD, RECIPE_FIELD, UNIT_PRICE_FIELD, SKU_FIELD,
     DESCRIPTION_FIELD, COUNTRY_FIELD, WAS_1ST_X_FREE_FIELD, INFO_FIELD,
-    ORDER_FIELD, ORDER_PROD_FIELD, QUANTITY_FIELD
+    ORDER_FIELD, ORDER_PROD_FIELD, QUANTITY_FIELD, ADDRESS_FIELD
 )
 
 
@@ -288,6 +289,7 @@ class Order(ModelMixin, models.Model):
     ITEMS_FIELD = ITEMS_FIELD
     WAS_1ST_X_FREE_FIELD = WAS_1ST_X_FREE_FIELD
     INFO_FIELD = INFO_FIELD
+    ADDRESS_FIELD = ADDRESS_FIELD
 
     ORDER_ATTRIB_ORDER_NUM_MAX_LEN: int = 40
     ORDER_ATTRIB_INFO_MAX_LEN: int = 150
@@ -305,15 +307,16 @@ class Order(ModelMixin, models.Model):
         default=OrderStatus.VOID.choice,
     )
 
+    # amount/base_currency is what the customer paid
     amount = models.DecimalField(
         _('amount'), default=Decimal(0),
         decimal_places=PRICING_FACTOR, max_digits=PRICING_PLACES)
-
     base_currency = models.CharField(
         _('base currency'),
         max_length=ORDER_ATTRIB_CURRENCY_CODE_MAX_LEN, blank=False,
         default=DEFAULT_CURRENCY.upper())
 
+    # amount_base is what the customer paid from the app's point of view
     amount_base = models.DecimalField(
         _('amount (app base currency)'), default=Decimal(0),
         decimal_places=PRICING_FACTOR, max_digits=PRICING_PLACES)
@@ -331,6 +334,8 @@ class Order(ModelMixin, models.Model):
         _('miscellaneous info'), max_length=ORDER_ATTRIB_INFO_MAX_LEN,
         blank=True
     )
+
+    address = models.ForeignKey(Address, on_delete=models.CASCADE)
 
     items = models.ManyToManyField(OrderProduct, through='OrderItem')
 
@@ -372,11 +377,23 @@ class OrderItem(ModelMixin, models.Model):
     ORDER_FIELD = ORDER_FIELD
     ORDER_PROD_FIELD = ORDER_PROD_FIELD
     QUANTITY_FIELD = QUANTITY_FIELD
+    AMOUNT_FIELD = AMOUNT_FIELD
+    BASE_CURRENCY_FIELD = BASE_CURRENCY_FIELD
+
+    ORDER_ITEM_ATTRIB_CURRENCY_CODE_MAX_LEN: int = CURRENCY_CODE_MAX_LEN
 
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     order_prod = models.ForeignKey(OrderProduct, on_delete=models.CASCADE)
     quantity = models.IntegerField(
         _('quantity of product'), blank=False, default=0)
+
+    amount = models.DecimalField(
+        _('subtotal amount'), default=Decimal(0),
+        decimal_places=PRICING_FACTOR, max_digits=PRICING_PLACES)
+    base_currency = models.CharField(
+        _('currency'),
+        max_length=ORDER_ITEM_ATTRIB_CURRENCY_CODE_MAX_LEN, blank=False,
+        default=DEFAULT_CURRENCY.upper())
 
     @dataclass
     class Meta:

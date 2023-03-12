@@ -20,6 +20,9 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 from dataclasses import dataclass
+from typing import List
+
+from django_countries.fields import Country
 
 from base.dto import BaseDto
 from profiles.models import Address
@@ -53,7 +56,7 @@ class AddressDto(BaseDto):
         return BaseDto.to_add_new_obj(AddressDto())
 
     @property
-    def display_order_ex_country(self):
+    def display_order_ex_country(self) -> List[str]:
         """ Field values in display order (excluding country) """
         return [
             getattr(self, key) for key in [
@@ -64,11 +67,19 @@ class AddressDto(BaseDto):
         ]
 
     @property
-    def display_order(self):
+    def display_order(self) -> List[str]:
         """ Field values in display order """
         fields = self.display_order_ex_country
         fields.append(getattr(self, Address.COUNTRY_FIELD))
         return fields
+
+    @property
+    def display_comma_separated(self):
+        """ Field values as comma separated string """
+        return ', '.join([
+            field.name if isinstance(field, Country) else field
+            for field in self.display_order if field
+        ])
 
     def __str__(self):
         return f'{self.street} {self.country} {str(self.user)}'
