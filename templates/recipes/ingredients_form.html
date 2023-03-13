@@ -151,8 +151,8 @@
 
     {% delete_modal_ids entity as ids %}
 
-    <script src="{% static 'js/update_delete_button.js' %}"></script>
-    <script src="{% static 'js/delete_modal.js' %}"></script>
+    <script type='text/javascript' src="{% static 'js/update_delete_button.js' %}"></script>
+    <script type='text/javascript' src="{% static 'js/delete_modal.js' %}"></script>
     <script>
         // copy of all valid ingredient names
         const ingredientList = [...document.querySelectorAll('#id__ingredient-datalist option')].map(option => option.value);
