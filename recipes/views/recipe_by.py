@@ -32,6 +32,7 @@ from django.views import View
 from django.views.decorators.http import require_http_methods
 
 from checkout.basket import add_ingredient_box_to_basket
+from order.views.utils import order_permission_check
 from utils.content_list_mixin import get_query_args
 from .dto import RecipeDto
 from .recipe_queries import (
@@ -376,6 +377,7 @@ def add_recipe_to_basket(request: HttpRequest, pk: int) -> HttpResponse:
     :return: response
     """
     recipe_permission_check(request, Crud.READ)
+    order_permission_check(request, Crud.CREATE)
 
     recipe, _ = get_recipe(pk)
 

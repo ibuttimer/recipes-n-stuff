@@ -20,9 +20,7 @@
         {% endfor %}
     </div>
     <div class="col-sm-6">
-        <p><em>Subtotal:</em> <span>{{ basket.format_subtotal_str }}</span></p>
-        <p><em>Delivery:</em> <span>{{ basket.format_delivery_charge_str }}</span></p>
-        <p><em>Total:</em> <span>{{ basket.format_total_str }}</span></p>
+        {% include 'checkout/snippet/total_summary.html' %}
     </div>
 </div>
 

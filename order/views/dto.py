@@ -19,14 +19,16 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from collections import namedtuple
 from dataclasses import dataclass
 from typing import TypeVar
 from decimal import Decimal
 
 from base.dto import BaseDto
 from checkout.basket import SUBSCRIPTION_IMAGE
+from order.misc import order_prod_type_id
 from order.views.order_queries import get_order
-from order.models import Order, OrderProduct, OrderItem
+from order.models import Order, OrderProduct, OrderItem, ProductType
 from profiles.dto import AddressDto
 from recipes.constants import RECIPE_ID_ROUTE_NAME
 from recipes.models import Recipe
@@ -38,6 +40,13 @@ from utils import reverse_q, namespaced_url
 
 TypeOrderDto = TypeVar("TypeOrderDto", bound="OrderDto")
 TypeOrderProductDto = TypeVar("TypeOrderProductDto", bound="OrderProductDto")
+TypeOrderIdsBundle = TypeVar("TypeOrderIdsBundle", bound="OrderIdsBundle")
+
+
+IdQuantity = namedtuple(
+    #               OrderProduct id, quantity, ProductType, type-specific id
+    'IdQuantity', ['id', 'quantity', 'prod_type', 'type_id'],
+    defaults=[None, None, None])
 
 
 @dataclass
@@ -165,3 +174,41 @@ class OrderProductDto(BaseDto):
         return OrderProductDto.from_model(
             order_prod, *args, all_attrib=all_attrib, quantity=quantity,
             amount=amount, base_currency=base_currency)
+
+
+@dataclass
+class OrderIdsBundle(BaseDto):
+    """ Order Ids bundle data transfer object """
+
+    @staticmethod
+    def from_model(order: Order) -> TypeOrderIdsBundle:
+        """
+        Generate a DTO from the specified `order`
+        :param order: model instance to populate DTO from
+        :return: DTO instance
+        """
+        dto = BaseDto.from_model_to_obj(
+            order, OrderIdsBundle(),
+            exclude=BaseDto.model_fields_difference(Order, Order.id_field()))
+        # custom handling for specific attributes
+        dto.items = list(
+            map(lambda order_item:
+                IdQuantity(
+                    id=order_item.order_prod.id, quantity=order_item.quantity,
+                    prod_type=ProductType.from_choice(
+                        order_item.order_prod.type),
+                    type_id=order_prod_type_id(order_item)
+                ), order.orderitem_set.all()
+            )
+        )
+        return dto
+
+    @staticmethod
+    def from_id(pk: int) -> TypeOrderIdsBundle:
+        """
+        Generate a DTO from the specified order `id`
+        :param pk: order id to populate DTO from
+        :return: DTO instance
+        """
+        order, _ = get_order(pk)
+        return OrderIdsBundle.from_model(order)

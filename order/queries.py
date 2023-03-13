@@ -51,14 +51,11 @@ def get_ingredient_box_product(recipe: Union[Recipe, int]) -> OrderProduct:
     :return: OrderProduct
     """
     if isinstance(recipe, int):
-        recipe = get_object_or_404(Recipe, **{
-            f'{Recipe.id_field()}': recipe
-        })
-    order_prod = OrderProduct.objects.get(**{
+        recipe = Recipe.get_by_id_field(recipe)
+    return OrderProduct.objects.get(**{
         f'{OrderProduct.TYPE_FIELD}': ProductType.INGREDIENT_BOX.choice,
         f'{OrderProduct.RECIPE_FIELD}': recipe
     })
-    return order_prod
 
 
 def get_delivery_product(

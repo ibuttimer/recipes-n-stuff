@@ -22,6 +22,7 @@
 import time
 from collections import namedtuple
 from enum import IntEnum, auto
+from typing import Any
 
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
@@ -34,8 +35,7 @@ from recipes.models import Recipe
 from recipesnstuff.settings import DEFAULT_CURRENCY
 from subscription.models import Subscription
 
-from .models import ProductType, OrderProduct
-
+from .models import ProductType, OrderProduct, OrderItem
 
 SKU_DECODE_FIELDS = ['prod_type', 'subscription', 'recipe', 'country', 'ccy']
 
@@ -92,6 +92,26 @@ def generate_sku(
 
     return f'{prod_type.choice.upper()}{identifier:0{SKU_ID_DIGITS}d}' \
            f'{currency.numeric_code:0{SKU_CCY_DIGITS}d}'
+
+
+def order_prod_type_id(order_item: OrderItem) -> Any:
+    """
+    Get the order product type-specific id of the entity.
+    :param order_item: order product
+    :return: type id
+    """
+    order_prod = order_item.order_prod
+    prod_type = ProductType.from_choice(order_prod.type)
+    if prod_type in ProductType.subscription_options():
+        identifier = order_prod.subscription.id
+    elif prod_type in ProductType.recipe_options():
+        identifier = order_prod.recipe.id
+    elif prod_type in ProductType.delivery_options():
+        identifier = countries.alt_codes[order_prod.country.code][1]
+    else:
+        raise NotImplementedError(f'Not currently supported: {prod_type}')
+
+    return identifier
 
 
 def decode_sku(sku: str) -> SkuDecode:

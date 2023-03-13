@@ -26,16 +26,18 @@ from http import HTTPStatus
 import stripe
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_http_methods
 from more_itertools import one
 
-from base.views import info_toast_payload, InfoModalTemplate
+from base.views import info_toast_payload, ToastTemplate
 from order.misc import decode_sku
-from order.models import ProductType, OrderStatus
+from order.models import ProductType, OrderStatus, Order
 from order.persist import save_order
 from order.queries import get_delivery_product
+from order.views.dto import OrderIdsBundle
+from order.views.utils import order_permission_check
 from profiles.dto import AddressDto
 from profiles.templatetags.address_element_id import address_element_id
 from profiles.views.address_by import get_address
@@ -52,15 +54,17 @@ from utils import (
     GET, POST, PATCH, namespaced_url, app_template_path,
     replace_inner_html_payload, TITLE_CTX, PAGE_HEADING_CTX, DELETE,
     rewrite_payload, entity_delete_result_payload, reverse_q,
-    redirect_payload, replace_html_payload
+    redirect_payload, replace_html_payload, Crud
 )
-from .basket import Basket, navbar_basket_html, get_session_basket
+from .basket import Basket, navbar_basket_html, get_session_basket, \
+    add_ingredient_box_to_basket
 
 from .constants import (
     THIS_APP, STRIPE_PUBLISHABLE_KEY_CTX, STRIPE_RETURN_URL_CTX,
     CHECKOUT_PAID_ROUTE_NAME, BASKET_CTX, CURRENCIES_CTX, BASKET_CCY_QUERY,
     ITEM_QUERY, UNITS_QUERY, ORDER_NUM_CTX, ADDRESS_LIST_CTX, ADDRESS_DTO_CTX,
-    CONTENT_FORMAT_CTX, DELIVERY_LIST_CTX, DELIVERY_QUERY, DELIVERY_REQ_CTX
+    CONTENT_FORMAT_CTX, DELIVERY_LIST_CTX, DELIVERY_QUERY, DELIVERY_REQ_CTX,
+    CHECKOUT_PAY_ROUTE_NAME
 )
 from .currency import is_valid_code
 from .dto import DeliveryDto
@@ -82,6 +86,8 @@ def checkout(request: HttpRequest) -> HttpResponse:
     :param request: http request
     :return: response
     """
+    order_permission_check(request, Crud.READ)
+
     basket, _ = get_session_basket(request)
     get_on_complete(request)
 
@@ -241,6 +247,8 @@ def create_payment_intent(request: HttpRequest) -> HttpResponse:
     :param request: http request
     :return: response
     """
+    order_permission_check(request, Crud.CREATE)
+
     basket, _ = get_session_basket(request)
 
     save_order(basket, status=OrderStatus.PENDING_PAYMENT)
@@ -268,8 +276,11 @@ def update_basket(request: HttpRequest) -> HttpResponse:
     :param request: http request
     :return: response
     """
+    order_permission_check(request, Crud.UPDATE)
+
     basket, _ = get_session_basket(request)
 
+    payload = {}
     redraw_basket = False
     redraw_delivery = False
     redraw_msg = False
@@ -290,11 +301,15 @@ def update_basket(request: HttpRequest) -> HttpResponse:
         # add/remove item from basket
         item = int(request.GET[ITEM_QUERY])
         if request.method == DELETE:
-            # remove item
-            redraw_basket = basket.remove(item)
-            if redraw_basket:
-                redraw_msg = entity_delete_result_payload(
-                    "#id--item-deleted-modal-body", True, 'item')
+            if basket.num_products == 1:
+                # clear basket as only 1 product left
+                payload = action_clear_basket(request)
+            else:
+                # remove item
+                redraw_basket = basket.remove(item)
+                if redraw_basket:
+                    redraw_msg = entity_delete_result_payload(
+                        "#id--item-deleted-modal-body", True, 'item')
 
         elif request.method == PATCH and UNITS_QUERY in request.GET:
             # change num of units of item
@@ -312,10 +327,8 @@ def update_basket(request: HttpRequest) -> HttpResponse:
         payload = rewrite_payload(
             redraw_basket or None, redraw_delivery or None, redraw_msg or None
         )
-    else:
-        payload = {}
 
-    return JsonResponse(
+    return payload if isinstance(payload, HttpResponse) else JsonResponse(
         payload, status=HTTPStatus.OK if payload else HTTPStatus.BAD_REQUEST)
 
 
@@ -350,6 +363,8 @@ def set_address(request: HttpRequest, pk: int) -> HttpResponse:
     :param pk: id of address to set
     :return: response
     """
+    order_permission_check(request, Crud.UPDATE)
+
     basket, _ = get_session_basket(request)
 
     old_address = basket.address
@@ -376,8 +391,8 @@ def set_address(request: HttpRequest, pk: int) -> HttpResponse:
             )
         ) for address_dto in addresses
     ]
-    # redraw delivery
-    payload.append(delivery_payload(basket, is_update=True))
+    # redraw delivery; address has changed so don't treat as update
+    payload.append(delivery_payload(basket, is_update=False))
 
     payload = rewrite_payload(*payload)
 
@@ -392,6 +407,17 @@ def clear_basket(request: HttpRequest) -> HttpResponse:
     :param request: http request
     :return: response
     """
+    order_permission_check(request, Crud.UPDATE)
+
+    return action_clear_basket(request)
+
+
+def action_clear_basket(request: HttpRequest) -> HttpResponse:
+    """
+    Clear the basket
+    :param request: http request
+    :return: response
+    """
     basket, _ = get_session_basket(request)
     on_complete, _ = get_on_complete(request)
 
@@ -400,8 +426,10 @@ def clear_basket(request: HttpRequest) -> HttpResponse:
 
     payload = redirect_payload(reverse_q(HOME_ROUTE_NAME), pause=2000)
     payload.update(
-        info_toast_payload(InfoModalTemplate(app_template_path(
-            THIS_APP, "messages", "basket_cleared.html")))
+        info_toast_payload(ToastTemplate(
+            template=app_template_path(
+                THIS_APP, "messages", "basket_cleared.html"))
+        )
     )
 
     return JsonResponse(
@@ -416,6 +444,8 @@ def payment_complete(request: HttpRequest) -> HttpResponse:
     :param request: http request
     :return: response
     """
+    order_permission_check(request, Crud.UPDATE)
+
     basket, _ = get_session_basket(request)
     on_complete, _ = get_on_complete(request)
     on_complete.execute()
@@ -433,3 +463,33 @@ def payment_complete(request: HttpRequest) -> HttpResponse:
         PAGE_HEADING_CTX: "Payment received",
         ORDER_NUM_CTX: basket.order_num
     })
+
+
+@login_required
+@require_http_methods([GET])
+def reorder(request: HttpRequest, pk: int) -> HttpResponse:
+    """
+    Reorder a previous order
+    :param request: http request
+    :param pk: id of order to repeat
+    :return: response
+    """
+    order_permission_check(request, Crud.CREATE)
+
+    order = OrderIdsBundle.from_id(pk)
+
+    basket, _ = get_session_basket(request)
+
+    for item in order.items:
+        if item.prod_type.is_ingredient_box_option:
+            add_ingredient_box_to_basket(
+                request, item.type_id, count=item.quantity,
+                basket=basket)
+        # else ignore other types
+
+    # need to update serialised basket in request
+    basket.add_to_request(request)
+
+    return redirect(
+        namespaced_url(THIS_APP, CHECKOUT_PAY_ROUTE_NAME)
+    )

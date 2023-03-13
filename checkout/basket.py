@@ -31,7 +31,7 @@ from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 
 from base.dto import ImagePool
-from base.views import info_toast_payload, InfoModalTemplate
+from base.views import info_toast_payload, ToastTemplate
 from order.misc import generate_order_num
 from order.models import OrderProduct, ProductType
 from order.queries import (
@@ -350,12 +350,21 @@ class Basket:
     @property
     def num_items(self) -> int:
         """
-        Get number of items in the basket
+        Get number of individual items in the basket i.e. sum of units of all
+        basket entries
         :return: number of items
         """
         return sum(
             map(lambda item: item.count, self.items)
         )
+
+    @property
+    def num_products(self) -> int:
+        """
+        Get number of products in the basket i.e. products not units
+        :return: number of items
+        """
+        return len(self.items)
 
     @property
     def currency(self):
@@ -609,16 +618,20 @@ def add_subscription_to_basket(
 
 def add_ingredient_box_to_basket(
         request: HttpRequest, recipe: Union[Recipe, int], count: int = 1,
-        instructions: str = None) -> dict:
+        instructions: str = None, basket: Basket = None) -> dict:
     """
     Add an item to the request basket
     :param request: http request
     :param recipe: recipe, or it's id
     :param count: number of items; default 1
     :param instructions: additional instructions; default None
+    :param basket: basket to update; default None i.e. session basket
     :return navbar basket html payload
     """
-    basket, _ = get_session_basket(request)
+    if not basket:
+        basket, _ = get_session_basket(request)
+    if isinstance(recipe, int):
+        recipe = Recipe.get_by_id_field(recipe)
 
     order_prod = get_ingredient_box_product(recipe)
 
@@ -652,8 +665,9 @@ def navbar_basket_html(basket: Basket, result: BasketUpdate = None):
     )
     if result:
         payload.update(
-            info_toast_payload(InfoModalTemplate(app_template_path(
-                THIS_APP, "messages", "basket_updated.html"),
+            info_toast_payload(ToastTemplate(
+                template=app_template_path(
+                    THIS_APP, "messages", "basket_updated.html"),
                 context={
                     ADDED_CTX: result.added,
                     UPDATED_CTX: result.updated,

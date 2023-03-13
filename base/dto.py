@@ -28,6 +28,7 @@ import jsonpickle
 
 from django.db.models import Model
 
+from utils import ensure_list
 
 TypeImagePool = TypeVar("TypeImagePool", bound="ImagePool")
 
@@ -85,7 +86,8 @@ class BaseDto:
         :param fields: fields to add to model fields
         :return: list of fields
         """
-        return list(set(BaseDto.fields(model)).union(fields))
+        return list(set(BaseDto.fields(model)).union(
+            ensure_list(fields)))
 
     @staticmethod
     def model_fields_intersection(
@@ -97,7 +99,8 @@ class BaseDto:
         :param fields: fields to determine intersect
         :return: list of fields
         """
-        return list(set(BaseDto.fields(model)).intersection(fields))
+        return list(set(BaseDto.fields(model)).intersection(
+            ensure_list(fields)))
 
     @staticmethod
     def model_fields_symmetric_diff(
@@ -109,7 +112,8 @@ class BaseDto:
         :param fields: fields to determine symmetric difference
         :return: list of fields
         """
-        return list(set(BaseDto.fields(model)).symmetric_difference(fields))
+        return list(set(BaseDto.fields(model)).symmetric_difference(
+            ensure_list(fields)))
 
     @staticmethod
     def model_fields_difference(
@@ -121,7 +125,8 @@ class BaseDto:
         :param fields: fields to determine symmetric difference
         :return: list of fields
         """
-        return list(set(BaseDto.fields(model)).difference(fields))
+        return list(set(BaseDto.fields(model)).difference(
+            ensure_list(fields)))
 
 
 class ImagePool:

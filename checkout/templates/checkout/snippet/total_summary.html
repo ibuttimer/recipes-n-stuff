@@ -1,0 +1,25 @@
+<!-- total_summary.html start -->
+{# --- total_summary.html template variable defines for includes --- #}
+{# basket template expects: 'basket' as Basket #}
+
+{% load i18n  obj_func_call %}
+
+<table class="table text-center">
+    <tbody>
+        <tr>
+            <td><em>Subtotal:</em></td>
+            <td>{% obj_func_call basket 'format_subtotal_str' with_symbol='true' %}</td>
+        </tr>
+        <tr>
+            <td><em>Delivery:</em></td>
+            <td>{% obj_func_call basket 'format_delivery_charge_str' with_symbol='true' %}</td>
+        </tr>
+    </tbody>
+    <tfoot class="table-group-divider">
+    <tr>
+        <td><em>Total:</em></td>
+        <td>{% obj_func_call basket 'format_total_str' with_symbol='true' %}</td>
+    </tr>
+    </tfoot>
+</table>
+<!-- total_summary.html end -->

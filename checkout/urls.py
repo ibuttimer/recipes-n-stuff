@@ -31,11 +31,12 @@ from .constants import (
     CHECKOUT_ADDRESS_URL, CHECKOUT_ADDRESS_ROUTE_NAME,
     CHECKOUT_CLEAR_URL, CHECKOUT_CLEAR_ROUTE_NAME,
     CHECKOUT_PAID_URL, CHECKOUT_PAID_ROUTE_NAME,
-    CHECKOUT_STRIPE_WEBHOOK_URL, CHECKOUT_STRIPE_WEBHOOK_ROUTE_NAME
+    CHECKOUT_STRIPE_WEBHOOK_URL, CHECKOUT_STRIPE_WEBHOOK_ROUTE_NAME,
+    CHECKOUT_REORDER_URL, CHECKOUT_REORDER_ROUTE_NAME
 )
 from .views import (
     checkout, create_payment_intent, payment_complete, update_basket,
-    set_address, clear_basket
+    set_address, clear_basket, reorder
 )
 from .webhooks import stripe_webhook
 
@@ -50,6 +51,7 @@ urlpatterns = [
     path(CHECKOUT_UPDATE_BASKET_URL, update_basket,
          name=CHECKOUT_UPDATE_BASKET_ROUTE_NAME),
     path(CHECKOUT_ADDRESS_URL, set_address, name=CHECKOUT_ADDRESS_ROUTE_NAME),
+    path(CHECKOUT_REORDER_URL, reorder, name=CHECKOUT_REORDER_ROUTE_NAME),
     path(CHECKOUT_CLEAR_URL, clear_basket,
          name=CHECKOUT_CLEAR_ROUTE_NAME),
     path(CHECKOUT_PAID_URL, payment_complete, name=CHECKOUT_PAID_ROUTE_NAME),
