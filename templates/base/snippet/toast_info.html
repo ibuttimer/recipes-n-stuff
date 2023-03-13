@@ -1,6 +1,6 @@
 {% with toast_id="id__info-toast" toast_body_id="id__info-toast-body" %}
 {# TODO make toast position updatable #}
-<div class="toast-container position-absolute bottom-0 end-0 translate-middle-x p-3">
+<div id="{{ toast_id }}-container" class="toast-container position-absolute {{ toast_position }} p-3">
     <div id="{{ toast_id }}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header">
             <strong class="me-auto">
@@ -23,9 +23,17 @@
     /**
      * Display the information toast
      * @param body - content to display
+     * @param position - display position; default none
      * @param onClose - on close event handler; default none
+     * @returns {boolean} - true if displayed
      */
-    function showInfoToast(body, onClose = undefined) {
+    function showInfoToast(body, position = undefined, onClose = undefined) {
+
+        const toastContainerId = "{{ toast_id }}-container";
+        if (position === undefined) {
+            position = "top-0 end-0";   // top right
+        }
+        $(`#${toastContainerId}`).attr('class', `toast-container position-absolute ${position} p-3`);
 
         const toastBodyId = "{{ toast_body_id }}";
         $(`#${toastBodyId}`).html(body);
@@ -38,6 +46,8 @@
 
         const toast = new bootstrap.Toast(toastElement)
         toast.show()
+
+        return true;
     }
 </script>
 {% endwith %}

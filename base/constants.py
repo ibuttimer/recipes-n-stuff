@@ -37,6 +37,8 @@ TITLE_CTX = 'title'
 TITLE_CLASS_CTX = 'title_class'
 MODAL_LEVEL_CTX = 'modal_level'
 
+TOAST_POSITION_CTX = 'toast_position'
+
 InfoModalCfg = namedtuple(
     'InfoModalCfg',
     ['name', 'title_class', 'title_text'],

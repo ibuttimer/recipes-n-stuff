@@ -42,6 +42,7 @@ const TOOLTIPS_SELECTOR_PROP = 'tooltips_selector';
 const HTML_PROP = 'html';
 const INNER_HTML_PROP = 'inner_html';
 const INFO_TOAST_PROP = 'info_toast';
+const TOAST_POSITION_PROP = 'toast_position';
 
 const replaceHtml = (data) => $(data[ELEMENT_SELECTOR_PROP]).replaceWith(data[HTML_PROP]);
 const replaceInnerHtml = (data) => $(data[ELEMENT_SELECTOR_PROP]).html(data[INNER_HTML_PROP]);
@@ -88,10 +89,10 @@ function htmlRewritesHandler(data) {
 /**
  * Handle a redirect/rewrite response
  * :param data: json data
- * :return: true if modal was displayed
+ * :return: true if modal/toast was displayed
  */
 function redirectRewriteInfoResponseHandler(data) {
-    let modalDisplayed = false;
+    let feedbackDisplayed = false;
     if (data !== undefined) {
         // replace single element html
         htmlUpdateHandler(data);
@@ -111,13 +112,14 @@ function redirectRewriteInfoResponseHandler(data) {
         }
         if (data.hasOwnProperty(SHOW_INFO_PROP)) {
             // show info modal
-            modalDisplayed = displayInfoModal(data[SHOW_INFO_PROP]);
+            feedbackDisplayed = displayInfoModal(data[SHOW_INFO_PROP]);
         }
         if (data.hasOwnProperty(INFO_TOAST_PROP)) {
             // show info toast
-            showInfoToast(data[INFO_TOAST_PROP]);
+            const position = data.hasOwnProperty(TOAST_POSITION_PROP) ? data[TOAST_POSITION_PROP] : undefined;
+            feedbackDisplayed = showInfoToast(data[INFO_TOAST_PROP], position);
         }
-        return modalDisplayed;
+        return feedbackDisplayed;
     }
 }
 
