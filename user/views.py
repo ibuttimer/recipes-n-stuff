@@ -32,6 +32,7 @@ from recipesnstuff import (
     USER_APP_NAME, HOME_ROUTE_NAME, IMAGE_FILE_TYPES,
     DEVELOPMENT, DEV_IMAGE_FILE_TYPES
 )
+from recipesnstuff.constants import NO_ROBOTS_CTX
 from recipesnstuff.settings import AVATAR_BLANK_URL
 from utils import app_template_path, redirect_on_success_or_render, reverse_q
 from .forms import UserForm
@@ -109,7 +110,8 @@ class UserDetail(LoginRequiredMixin, View):
             'image_file_types':
                 # not all image types supported by Pillow which is used by
                 # ImageField in dev mode
-                DEV_IMAGE_FILE_TYPES if DEVELOPMENT else IMAGE_FILE_TYPES
+                DEV_IMAGE_FILE_TYPES if DEVELOPMENT else IMAGE_FILE_TYPES,
+            NO_ROBOTS_CTX: True
         }
 
     def post(self, request: HttpRequest,

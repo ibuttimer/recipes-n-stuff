@@ -27,7 +27,7 @@ from django.http import HttpRequest
 from recipesnstuff.constants import (
     LOGIN_ROUTE_NAME, USER_MENU_CTX, SIGN_IN_MENU_CTX, REGISTER_MENU_CTX,
     REGISTER_ROUTE_NAME, IS_SUPER_CTX, ACCOUNTS_URL, LOGOUT_ROUTE_NAME,
-    CHANGE_PASSWORD_ROUTE_NAME, AVATAR_URL_CTX
+    CHANGE_PASSWORD_ROUTE_NAME, AVATAR_URL_CTX, NO_ROBOTS_CTX
 )
 from recipesnstuff.settings import AVATAR_BLANK_URL
 from utils import resolve_req, add_navbar_attr
@@ -61,6 +61,7 @@ def user_context(request: HttpRequest) -> dict:
     :return: dictionary to add to template context
     """
     context = {}
+    no_robots = False
     called_by = resolve_req(request)
     if called_by:
         for ctx, check_func, is_dropdown_toggle in [
@@ -73,8 +74,11 @@ def user_context(request: HttpRequest) -> dict:
             (REGISTER_MENU_CTX,
              lambda name: name == REGISTER_ROUTE_NAME, False),
         ]:
+            is_active = check_func(called_by.url_name)
+            if is_active:
+                no_robots = True
             add_navbar_attr(
-                context, ctx, is_active=check_func(called_by.url_name),
+                context, ctx, is_active=is_active,
                 is_dropdown_toggle=is_dropdown_toggle
             )
 
@@ -84,8 +88,11 @@ def user_context(request: HttpRequest) -> dict:
             request.user.avatar.url if request.user.is_authenticated and
             User.AVATAR_BLANK not in request.user.avatar.url else
             AVATAR_BLANK_URL
-
-        # IS_MODERATOR_CTX: is_moderator(request.user),
-        # IS_AUTHOR_CTX: is_author(request.user),
     })
+    if no_robots:
+        # no robots in user menu items
+        context.update({
+            NO_ROBOTS_CTX: True
+        })
+
     return context

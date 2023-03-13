@@ -23,7 +23,14 @@
 
 from django.http import HttpRequest
 
+from recipesnstuff.constants import NO_ROBOTS_CTX
+from utils import resolve_req
 from .basket import get_session_basket, navbar_basket_context
+from .constants import THIS_APP
+from .urls import urlpatterns
+
+
+route_names = list(map(lambda route: route.name, urlpatterns))
 
 
 def checkout_context(request: HttpRequest) -> dict:
@@ -33,4 +40,18 @@ def checkout_context(request: HttpRequest) -> dict:
     :return: dictionary to add to template context
     """
     basket, _ = get_session_basket(request)
-    return navbar_basket_context(basket)
+    context = navbar_basket_context(basket)
+
+    no_robots = False
+    called_by = resolve_req(request)
+    if called_by:
+        no_robots = called_by.app_name == THIS_APP and \
+            called_by.url_name in route_names
+
+    if no_robots:
+        # no robots in checkout app urls
+        context.update({
+            NO_ROBOTS_CTX: True
+        })
+
+    return context

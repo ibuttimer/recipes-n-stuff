@@ -31,7 +31,7 @@ from django.templatetags.static import static
 from django.views.decorators.http import require_GET
 
 from recipesnstuff import ADMIN_URL, ACCOUNTS_URL
-from recipesnstuff.constants import CHECKOUT_URL, ROBOTS_URL
+from recipesnstuff.constants import CHECKOUT_URL, ROBOTS_URL, USERS_URL
 from utils import app_template_path
 from utils.views import REDIRECT_CTX
 
@@ -41,7 +41,7 @@ from .constants import (
 )
 
 DISALLOWED_URLS = [
-    ADMIN_URL, ACCOUNTS_URL, CHECKOUT_URL
+    ADMIN_URL, ACCOUNTS_URL, USERS_URL, CHECKOUT_URL
 ]
 
 TITLE_CTX = 'title'

@@ -25,7 +25,8 @@ from django.http import HttpRequest
 
 from recipesnstuff.constants import (
     HOME_MENU_CTX, HELP_MENU_CTX, HELP_ROUTE_NAME, HOME_ROUTE_NAME,
-    APP_NAME, ABOUT_MENU_CTX, ABOUT_ROUTE_NAME, VAL_TEST_PATH_PREFIX
+    APP_NAME, ABOUT_MENU_CTX, ABOUT_ROUTE_NAME, VAL_TEST_PATH_PREFIX,
+    NO_ROBOTS_CTX
 )
 from utils import resolve_req, add_navbar_attr
 
@@ -42,6 +43,7 @@ def base_context(request: HttpRequest) -> dict:
         APP_NAME_CTX: APP_NAME,
         VAL_TEST_CTX: request.path.find(VAL_TEST_PATH_PREFIX) >= 0
     }
+    no_robots = False
     called_by = resolve_req(request)
     if called_by:
         for ctx, routes in [
@@ -53,4 +55,17 @@ def base_context(request: HttpRequest) -> dict:
         ]:
             add_navbar_attr(
                 context, ctx, is_active=called_by.url_name in routes)
+
+        # allauth route names start with 'account_' and have no app name
+        no_robots = called_by.app_name == '' and \
+                    called_by.url_name.startswith('account_')
+        # admin routes have app name 'admin'
+        no_robots = no_robots or called_by.app_name == 'admin'
+
+    if no_robots:
+        # no robots in checkout app urls
+        context.update({
+            NO_ROBOTS_CTX: True
+        })
+
     return context

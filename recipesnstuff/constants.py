@@ -108,6 +108,7 @@ IS_SUPER_CTX = "is_super"
 IS_DEVELOPMENT_CTX = "is_development"
 IS_TEST_CTX = "is_test"
 AVATAR_URL_CTX = "avatar_url"
+NO_ROBOTS_CTX = "no_robots"
 
 # CSS/HTML validator test related
 VAL_TEST_PATH_PREFIX = 'val-test'
