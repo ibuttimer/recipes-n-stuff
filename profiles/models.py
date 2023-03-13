@@ -110,5 +110,10 @@ class Address(ModelMixin, models.Model):
         """ Model metadata """
         ordering = [f'-{IS_DEFAULT_FIELD}']
 
+    @classmethod
+    def boolean_fields(cls) -> list[str]:
+        """ Get the list of boolean fields """
+        return [Address.IS_DEFAULT_FIELD]
+
     def __str__(self):
         return f'{self.street} {self.country} {str(self.user)}'

@@ -19,6 +19,8 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from datetime import datetime
+
 from utils import append_slash, url_path
 
 APP_NAME = "Recipes 'N' Stuff"
@@ -38,11 +40,16 @@ ORDER_APP_NAME = "order"
 HOME_URL = "/"
 HELP_URL = append_slash("help")
 ABOUT_URL = append_slash("about")
+PRIVACY_URL = append_slash("privacy")
+ROBOTS_URL = "robots.txt"
+SITEMAP_URL = "sitemap.xml"
 
 HOME_ROUTE_NAME = "home"
 HELP_ROUTE_NAME = "help"
 ABOUT_ROUTE_NAME = "about"
 LANDING_ROUTE_NAME = "landing"
+PRIVACY_ROUTE_NAME = "privacy"
+ROBOTS_ROUTE_NAME = "robots.txt"
 
 # Admin routes related
 ADMIN_URL = append_slash("admin")
@@ -83,6 +90,9 @@ CHECKOUT_URL = append_slash("checkout")
 # Recipes routes related
 RECIPES_URL = append_slash("recipes")
 
+# Orders routes related
+ORDERS_URL = append_slash("orders")
+
 # context related
 HOME_MENU_CTX = "home_menu"
 USER_MENU_CTX = "user_menu"
@@ -99,6 +109,9 @@ IS_DEVELOPMENT_CTX = "is_development"
 IS_TEST_CTX = "is_test"
 AVATAR_URL_CTX = "avatar_url"
 
+# CSS/HTML validator test related
+VAL_TEST_PATH_PREFIX = 'val-test'
+
 # cloudinary related
 AVATAR_FOLDER = "rns_avatars"
 
@@ -113,3 +126,6 @@ IMAGE_FILE_TYPES.extend([
 ])
 
 MIN_PASSWORD_LEN = 8
+
+# date the site was last published
+LAST_PUBLISH_DATE = datetime(year=2023, month=3, day=9)

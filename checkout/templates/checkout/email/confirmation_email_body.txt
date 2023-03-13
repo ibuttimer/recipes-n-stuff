@@ -1,0 +1,22 @@
+Hello {{ order.full_name }},
+
+This is a confirmation of your {{ app_name | safe }} order:
+
+Order Number: {{ order.order_num }}
+Order Date: {{ order.date }}
+
+Subtotal: {{ order.subtotal }}
+Delivery: {{ order.delivery_desc }} - {{ order.delivery_charge }}
+Total:    {{ order.total }}
+
+Shipping address:
+  {% for line in order.address %}
+  {{ line }}
+  {% endfor %}
+
+If you have any questions, feel free to contact us at {{ contact_email }}.
+
+Thank you for your order
+
+Yours in food,
+The {{ app_name | safe }} team.

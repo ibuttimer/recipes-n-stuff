@@ -21,7 +21,9 @@
 #  DEALINGS IN THE SOFTWARE.
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
+
+from more_itertools import one
 
 from base.dto import BaseDto
 from utils.database import table_exists
@@ -42,9 +44,12 @@ class CurrencyDto(BaseDto):
         :param currency: model instance to populate DTO from
         :return: DTO instance
         """
-        dto = BaseDto.from_model_to_obj(currency, Currency())
+        dto = BaseDto.from_model_to_obj(currency, CurrencyDto())
         # custom handling for specific attributes
         return dto
+
+    def __str__(self):
+        return f'{self.code} {self.numeric_code}'
 
 
 _CURRENCIES: Optional[Dict[str, CurrencyDto]] = None
@@ -87,14 +92,19 @@ def get_currencies(copy: bool = True) -> Dict[str, CurrencyDto]:
     return deepcopy(_CURRENCIES) if copy else _CURRENCIES
 
 
-def get_currency(code: str) -> CurrencyDto:
+def get_currency(code: Union[str, int]) -> CurrencyDto:
     """
     Get a currency
-    :param code: currency code
+    :param code: currency code or numeric code
     :return: currency dto
     """
     currencies = get_currencies(copy=False)
-    return deepcopy(currencies[code.upper()])
+    if isinstance(code, str):
+        currency = currencies[code.upper()]
+    else:
+        currency = one(
+            filter(lambda ccy: ccy.numeric_code == code, currencies.values()))
+    return deepcopy(currency)
 
 
 def is_valid_code(code: str) -> bool:

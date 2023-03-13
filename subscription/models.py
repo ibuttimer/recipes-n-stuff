@@ -129,6 +129,18 @@ class FeatureType(NameChoiceMixin, Enum):
     FIRST_X_FREE = Feature('First number of items free', 'xif')
     FREE_AFTER_SPEND = Feature('Free after spending', 'fas')
 
+    @classmethod
+    def free_delivery(cls):
+        return [
+            FeatureType.FREE_DELIVERY, FeatureType.FREE_DELIVERY_OVER,
+            FeatureType.FREE_DELIVERY_AFTER, FeatureType.FIRST_X_FREE,
+            FeatureType.FREE_AFTER_SPEND
+        ]
+
+    @classmethod
+    def free_delivery_choices(cls):
+        return [feat.choice for feat in cls.free_delivery()]
+
     @staticmethod
     def from_choice(choice: str) -> Optional[TypeFeatureType]:
         """
@@ -203,6 +215,11 @@ class SubscriptionFeature(ModelMixin, models.Model):
     def numeric_fields(cls) -> list[str]:
         """ Get the list of numeric fields """
         return [SubscriptionFeature.AMOUNT_FIELD]
+
+    @classmethod
+    def boolean_fields(cls) -> list[str]:
+        """ Get the list of boolean fields """
+        return [SubscriptionFeature.IS_ACTIVE_FIELD]
 
     def __str__(self):
         return f'{self.feature_type} {self.description} {self.amount} ' \
@@ -306,6 +323,11 @@ class Subscription(ModelMixin, models.Model):
     def numeric_fields(cls) -> list[str]:
         """ Get the list of numeric fields """
         return [Subscription.FREQUENCY_FIELD, Subscription.AMOUNT_FIELD]
+
+    @classmethod
+    def boolean_fields(cls) -> list[str]:
+        """ Get the list of boolean fields """
+        return [Subscription.IS_ACTIVE_FIELD]
 
     @classmethod
     def get_default_subscription(cls) -> TypeSubscription:

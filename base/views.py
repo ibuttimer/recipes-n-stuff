@@ -20,6 +20,7 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 from dataclasses import dataclass
+from enum import Enum
 from string import capwords
 from typing import TypeVar, Optional, Union
 
@@ -27,14 +28,21 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.templatetags.static import static
+from django.views.decorators.http import require_GET
 
-
+from recipesnstuff import ADMIN_URL, ACCOUNTS_URL
+from recipesnstuff.constants import CHECKOUT_URL, ROBOTS_URL
 from utils import app_template_path
 from utils.views import REDIRECT_CTX
 
 from .constants import (
-    MODAL_LEVEL_CTX, TITLE_CLASS_CTX, InfoModalLevel, THIS_APP
+    MODAL_LEVEL_CTX, TITLE_CLASS_CTX, InfoModalLevel, THIS_APP,
+    TOAST_POSITION_CTX
 )
+
+DISALLOWED_URLS = [
+    ADMIN_URL, ACCOUNTS_URL, CHECKOUT_URL
+]
 
 TITLE_CTX = 'title'
 MESSAGE_CTX = 'message'
@@ -45,6 +53,8 @@ INFO_TOAST_CTX = 'info_toast'
 # workaround for self type hints from https://peps.python.org/pep-0673/
 TypeInfoModalTemplate = \
     TypeVar("TypeInfoModalTemplate", bound="InfoModalTemplate")
+TypeToastTemplate = \
+    TypeVar("TypeToastTemplate", bound="ToastTemplate")
 
 
 CAROUSEL_CTX = 'carousel'
@@ -71,6 +81,7 @@ class CarouselItem:
     active: bool
 
 
+@require_GET
 def get_landing(request: HttpRequest) -> HttpResponse:
     """
     Render landing page
@@ -86,9 +97,11 @@ def get_landing(request: HttpRequest) -> HttpResponse:
                   })
 
 
-@dataclass
+@dataclass(kw_only=True)
 class InfoModalTemplate:
     """ Info modal template data """
+    # require kw_only to avoid 'non-default argument follows default argument'
+    # https://docs.python.org/3.10/library/dataclasses.html#module-contents
     template: str
     context: Optional[dict] = None
     request: Optional[HttpRequest] = None
@@ -104,7 +117,7 @@ class InfoModalTemplate:
     def render(info: Union[str, TypeInfoModalTemplate]) -> str:
         """
         Render template
-        :param info: template info or string
+        :param info: modal template or string
         :return: rendered template or string
         """
         return render_to_string(
@@ -216,17 +229,69 @@ def render_level_info_modal(level: InfoModalLevel,
     )
 
 
-def info_toast_payload(message: Union[str, InfoModalTemplate]) -> dict:
+class ToastPosition(Enum):
+    """
+    Enum representing bootstrap toast positions
+    https://getbootstrap.com/docs/5.3/components/toasts/#placement
+    """
+    TOP_LEFT = "top-0 start-0"
+    TOP_CENTRE = "top-0 start-50 translate-middle-x"
+    TOP_RIGHT = "top-0 end-0"
+    MIDDLE_LEFT = "top-50 start-0 translate-middle-y"
+    MIDDLE_CENTRE = "top-50 start-50 translate-middle"
+    MIDDLE_RIGHT = "top-50 end-0 translate-middle-y"
+    BOTTOM_LEFT = "bottom-0 start-0"
+    BOTTOM_CENTRE = "bottom-0 start-50 translate-middle-x"
+    BOTTOM_RIGHT = "bottom-0 end-0"
+
+
+ToastPosition.DEFAULT = ToastPosition.TOP_RIGHT
+
+
+@dataclass(kw_only=True)
+class ToastTemplate(InfoModalTemplate):
+    """ Toast template data """
+    position: ToastPosition = ToastPosition.DEFAULT
+
+    def make(self) -> str:
+        """
+        Render this template
+        :return: rendered template or string
+        """
+        return self.render(self, position=self.position)
+
+    @staticmethod
+    def render(toast: Union[str, TypeToastTemplate],
+               position: ToastPosition = ToastPosition.DEFAULT) -> str:
+        """
+        Render template
+        :param toast: toast template or string
+        :param position: display position; default ToastPosition.DEFAULT
+        :return: rendered template or string
+        """
+        context = toast.context or {}
+        context[TOAST_POSITION_CTX] = position.value
+        return render_to_string(
+            toast.template, context=context, request=toast.request
+        ) if isinstance(toast, ToastTemplate) else toast
+
+
+def info_toast_payload(
+        message: Union[str, ToastTemplate],
+        position: ToastPosition = ToastPosition.DEFAULT) -> dict:
     """
     Generate payload for an info toast response.
     :param message: toast message
+    :param position: display position; default ToastPosition.DEFAULT
     :return: payload
     """
     return {
-        INFO_TOAST_CTX: InfoModalTemplate.render(message)
+        INFO_TOAST_CTX: ToastTemplate.render(message),
+        TOAST_POSITION_CTX: position.value
     }
 
 
+@require_GET
 def get_about(request: HttpRequest) -> HttpResponse:
     """
     Render about page
@@ -240,3 +305,36 @@ def get_about(request: HttpRequest) -> HttpResponse:
         request, app_template_path(THIS_APP, "about.html"),
         context=context
     )
+
+
+@require_GET
+def get_privacy(request: HttpRequest) -> HttpResponse:
+    """
+    Render privacy page
+    :param request: request
+    :return: response
+    """
+    return render(
+        request, app_template_path(THIS_APP, "privacy.html")
+    )
+
+
+@require_GET
+def robots_txt(request):
+    """
+    View function for robots.txt
+    Based on https://adamj.eu/tech/2020/02/10/robots-txt/
+    :param request: http request
+    :return: robots.txt response
+    """
+    lines = [
+        "User-Agent: *",
+    ]
+    lines.extend([
+        f"Disallow: /{url}" for url in DISALLOWED_URLS
+    ])
+    lines.append(
+        'Sitemap: {}'.format(
+            request.build_absolute_uri().replace(ROBOTS_URL, 'sitemap.xml'))
+    )
+    return HttpResponse("\n".join(lines), content_type="text/plain")

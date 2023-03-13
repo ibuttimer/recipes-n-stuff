@@ -32,13 +32,34 @@ UPDATED_FIELD = 'updated'
 STATUS_FIELD = 'status'
 AMOUNT_FIELD = 'amount'
 BASE_CURRENCY_FIELD = 'base_currency'
+AMOUNT_BASE_FIELD = 'amount_base'
 ORDER_NUM_FIELD = 'order_num'
 ITEMS_FIELD = 'items'
+WAS_1ST_X_FREE_FIELD = 'was_1st_x_free'
+INFO_FIELD = 'info'
+ADDRESS_FIELD = 'address'
 TYPE_FIELD = 'type'
 SUBSCRIPTION_FIELD = 'subscription'
 RECIPE_FIELD = 'recipe'
+COUNTRY_FIELD = 'country'
 UNIT_PRICE_FIELD = 'unit_price'
 SKU_FIELD = 'sku'
 DESCRIPTION_FIELD = 'description'
+ORDER_FIELD = 'order'
+ORDER_PROD_FIELD = 'order_prod'
+QUANTITY_FIELD = 'quantity'
+
+# Recipe routes related
+PK_PARAM_NAME = "pk"
+ORDERS_URL = ""
+ORDER_SEARCH_URL = url_path(ORDERS_URL, "search")
+ORDER_ID_URL = url_path(ORDERS_URL, f"<int:{PK_PARAM_NAME}>")
+
+# convention is orders route names begin with 'order'
+ORDERS_ROUTE_NAME = "orders"
+ORDER_SEARCH_ROUTE_NAME = "order_search"
+ORDER_ID_ROUTE_NAME = "order_id"
 
 # context related
+ORDER_LIST_CTX = 'order_list'
+ORDER_DTO_CTX = 'order_dto'

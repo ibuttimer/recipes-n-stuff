@@ -22,7 +22,7 @@
 #
 import random
 import string
-from typing import Union, List, Any, Callable, Optional, TypeVar
+from typing import Union, List, Any, Callable, Optional, TypeVar, Tuple
 
 import environ
 from enum import Enum
@@ -30,7 +30,6 @@ from enum import Enum
 from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.http import HttpRequest
-
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
 TypeCrud = TypeVar("TypeCrud", bound="Crud")
@@ -129,6 +128,9 @@ def permission_check(
     :raises PermissionDenied if user does not have permission and `raise_ex`
         is True
     """
+    # TODO including User in the arg type hint causes a circular import
+    # so leave out for now
+
     user = request.user if isinstance(request, HttpRequest) else request
     has_perm = user.is_superuser
     if not has_perm:
@@ -187,3 +189,23 @@ def find_index(
         search[index] = replace
 
     return index
+
+
+def dict_drill(obj: dict, *args) -> Tuple[bool, Any]:
+    """
+    Drill into a dict object to retrieve a value
+    :param obj: dict object
+    :param args: attrib names
+    :return: tuple of success flag and value
+    """
+    success = False
+    value = obj
+    for key in args:
+        if key in value:
+            value = value[key]
+        else:
+            value = None
+            break
+    else:
+        success = True
+    return success, value

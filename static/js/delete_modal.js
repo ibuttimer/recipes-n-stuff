@@ -53,15 +53,15 @@ function setupDeleteModalHandlers (delLinkSelector, delUrlSelector, delConfirmMo
             url: `${url}?ref=${window.location.pathname}`,
             headers: csrfHeader(),
         }).done(function(data) {
-            const modalDisplayed = redirectRewriteInfoResponseHandler(data);
-            if (!modalDisplayed) {
+            const feedbackDisplayed = redirectRewriteInfoResponseHandler(data);
+            if (!feedbackDisplayed) {
                 // show modal
                 $(deletedModalSelector).modal('show');
             }
         }).fail(function(data) {
             // display reason
-            const modalDisplayed = redirectRewriteInfoResponseHandler(data);
-            if (!modalDisplayed) {
+            const feedbackDisplayed = redirectRewriteInfoResponseHandler(data);
+            if (!feedbackDisplayed) {
                 // show modal
                 $(deletedModalSelector).modal('show');
             }

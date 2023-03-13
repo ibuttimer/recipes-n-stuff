@@ -283,7 +283,8 @@ def add_keyword_query(query_set_params: QuerySetParams,
                        query, key=key, query_type=query_type)
 
 
-def add_ingredient_query(query_set_params: QuerySetParams, value: Union[str, list],
+def add_ingredient_query(query_set_params: QuerySetParams,
+                         value: Union[str, list],
                          query: str = INGREDIENT_QUERY, key: str = None,
                          query_type: QueryTerm = QueryTerm.AND) -> None:
     """

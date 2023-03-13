@@ -194,3 +194,27 @@ function setLoading(isLoading) {
         document.querySelector("#id__stripe-submit-button-text").classList.remove("hidden");
     }
 }
+
+
+// payment method element
+const paymentMsgNode = document.getElementById("payment-message");
+// Options for the observer (which mutations to observe)
+const paymentMsgConfig = { attributes: true };
+
+// Callback function to execute when mutations are observed
+const paymentMsgCallback = (mutationList, observer) => {
+    for (const mutation of mutationList) {
+        if (mutation.type === "attributes") {
+            if (!paymentMsgNode.classList.contains("hidden")) {
+                // display payment message in a toast
+                showInfoToast(paymentMsgNode.innerText);
+            }
+        }
+    }
+};
+
+// Create an observer instance linked to the callback function
+const paymentMsgObserver = new MutationObserver(paymentMsgCallback);
+
+// Start observing the target node for configured mutations
+paymentMsgObserver.observe(paymentMsgNode, paymentMsgConfig);

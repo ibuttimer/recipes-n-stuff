@@ -18,14 +18,19 @@ from django.views.defaults import (
 )
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.contrib.sitemaps.views import sitemap
 from django.urls import path, include
 
+from base.sitemap import BaseSitemap
+from profiles.sitemap import ProfilesSitemap
+from recipes.sitemap import RecipeSitemap
 from recipesnstuff import settings
+from subscription.sitemap import SubscriptionSitemap
 from .constants import (
     BASE_APP_NAME, ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL,
     USERS_URL, USER_APP_NAME, PROFILES_APP_NAME, PROFILES_URL,
     SUBSCRIPTION_APP_NAME, SUBSCRIPTIONS_URL, CHECKOUT_URL, CHECKOUT_APP_NAME,
-    RECIPES_URL, RECIPES_APP_NAME
+    RECIPES_URL, RECIPES_APP_NAME, SITEMAP_URL, ORDER_APP_NAME, ORDERS_URL
 )
 from .settings import STATIC_URL
 
@@ -43,8 +48,15 @@ urlpatterns = [
     path(SUBSCRIPTIONS_URL, include(f'{SUBSCRIPTION_APP_NAME}.urls')),
     path(CHECKOUT_URL, include(f'{CHECKOUT_APP_NAME}.urls')),
     path(RECIPES_URL, include(f'{RECIPES_APP_NAME}.urls')),
+    path(ORDERS_URL, include(f'{ORDER_APP_NAME}.urls')),
 
     path('', include(f'{BASE_APP_NAME}.root_urls')),
+    path(SITEMAP_URL, sitemap, {'sitemaps': {
+        BASE_APP_NAME: BaseSitemap,
+        RECIPES_APP_NAME: RecipeSitemap,
+        PROFILES_APP_NAME: ProfilesSitemap,
+        SUBSCRIPTION_APP_NAME: SubscriptionSitemap,
+    }}, name='django.contrib.sitemaps.views.sitemap'),
 ]
 
 if settings.DEBUG and settings.DEVELOPMENT:

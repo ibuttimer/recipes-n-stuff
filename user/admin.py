@@ -30,3 +30,4 @@ class UserAdmin(SummernoteModelAdmin):
     """ Class representing the User model in the admin interface """
     # apply summernote only to specific TextField in model
     summernote_fields = (User.BIO_FIELD,)
+    ordering = (User.USERNAME_FIELD,)

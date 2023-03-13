@@ -57,6 +57,11 @@ scheme = {
     'DEBUG': (bool, False),
     'DEVELOPMENT': (bool, False),
     'TEST': (bool, False),
+    'DEFAULT_SEND_EMAIL': (str, ''),
+    'EMAIL_HOST': (str, ''),
+    'EMAIL_USE_TLS': (bool, True),
+    'EMAIL_PORT': (int, 587),
+    'EMAIL_HOST_USER': (str, ''),
 }
 REQUIRED_ENV_VARS = [key for key, _ in scheme.items()]
 REQUIRED_ENV_VARS.extend(['SITE_ID', 'SECRET_KEY', 'DATABASE_URL'])
@@ -147,6 +152,7 @@ INSTALLED_APPS = [
     # The following apps are required by 'allauth':
     #   django.contrib.auth, django.contrib.messages
     'django.contrib.sites',
+    'django.contrib.sitemaps',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -189,8 +195,6 @@ MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware"
 ] if DBG_TOOLBAR else []
 MIDDLEWARE.extend([
-    # "debug_toolbar.middleware.DebugToolbarMiddleware",
-
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -233,7 +237,17 @@ TEMPLATES = [
 ]
 
 # email
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+if DEVELOPMENT:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    DEFAULT_SEND_EMAIL = env('DEFAULT_SEND_EMAIL')
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS')
+    EMAIL_PORT = os.environ.get('EMAIL_PORT')
+    EMAIL_HOST = os.environ.get('EMAIL_HOST')
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+    DEFAULT_SEND_EMAIL = EMAIL_HOST_USER
 
 WSGI_APPLICATION = f'{MAIN_APP}.wsgi.application'
 
@@ -361,12 +375,12 @@ MESSAGE_TAGS = {
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en-gb'
 
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
-
+USE_L10N = True
 USE_TZ = True
 
 
@@ -429,23 +443,43 @@ DJANGO_LOG_LEVEL = os.getenv('DJANGO_LOG_LEVEL', 'INFO').upper()
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_true': {
-            '()': 'django.utils.log.RequireDebugTrue',
-        }
+    "filters": {
+        "require_debug_false": {
+            "()": "django.utils.log.RequireDebugFalse",
+        },
+        "require_debug_true": {
+            "()": "django.utils.log.RequireDebugTrue",
+        },
+    },
+    'formatters': {
+        'verbose': {
+            'format': '{name} {levelname} {asctime} {module} {process:d} '
+                      '{thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
     },
     'handlers': {
         'console': {
             'level': DJANGO_LOG_LEVEL,
             'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         }
     },
     'loggers': {
         'django.db.backends': {
             'level': DJANGO_LOG_LEVEL,
             'handlers': ['console'],
-        }
+        },
+        'django': {
+            'handlers': ['console'],
+            'level': DJANGO_LOG_LEVEL,
+            'propagate': True,
+        },
     }
 }
 
@@ -456,6 +490,7 @@ GOOGLE_SITE_VERIFICATION = env('GOOGLE_SITE_VERIFICATION', default='')
 # Stripe configuration
 STRIPE_PUBLISHABLE_KEY = env('STRIPE_PUBLISHABLE_KEY', default='')
 STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='')
+STRIPE_WEBHOOK_KEY = env('STRIPE_WEBHOOK_KEY', default='')
 
 # ISO 4217 code of the default currency
 DEFAULT_CURRENCY = 'eur'

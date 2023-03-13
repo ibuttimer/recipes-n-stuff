@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+<!-- order_view.html start -->
+{# --- order_view.html template variable defines for includes --- #}
+{# order view template expects: 'order_dto' as OrderDto #}
+
+{% load i18n %}
+{% load static %}
+{% load stock_image  human_readable_timedelta  has_permission  lookup_value  image_url %}
+
+{% block head_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <link href="{% static 'css/styles-orders.css' %}" rel="stylesheet" type="text/css">
+{% endblock extra_css %}
+
+{% block extra_js_head %}
+    {{ block.super }}
+{% endblock extra_js_head %}
+
+{% block content %}
+<article id="article-content" class="row d-flex justify-content-center mt-2">
+    <div class="row mb-1">
+        <div class="row m-0 p-0 g-0">
+            <div class="col-sm-3">
+                <p class="text-muted small mb-0">Date</p>
+                {{ order_dto.updated|date:"SHORT_DATE_FORMAT" }}
+            </div>
+            <div class="col-sm-6">
+                <p class="text-muted small mb-0">Order Number</p>
+                {{ order_dto.order_num }}
+            </div>
+            <div class="col-sm-3 text-end">
+                <p class="text-muted small mb-0">Total</p>
+                {{ order_dto.amount_str }}
+            </div>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="row m-0 p-0 g-0">
+            <div class="col-sm-12">
+                <p class="text-muted small mb-0">Address</p>
+                {{ order_dto.address.display_comma_separated }}
+            </div>
+        </div>
+    </div>
+    <div id="id--order-{{identifier}}" class="div__order-{{order_dto.id}} mb-3">
+        <div class="row mb-0">
+            <div class="col-sm-6 offset-sm-2">
+                <p class="text-muted small mb-0">Item Description</p>
+            </div>
+            <div class="col-sm-2 text-end">
+                <p class="text-muted small mb-0">Subtotal</p>
+            </div>
+            <div class="col-sm-2 text-end">
+                <p class="text-muted small mb-0">Quantity</p>
+            </div>
+        </div>
+        {% for item in order_dto.items %}
+        <div id="id__item-row-{{ forloop.counter0 }}" class="row mb-3">
+            <div class="col-sm-2 mb-2">
+                <img class="img__order-product-view" alt="product image" src="{% image_url item.image %}">
+            </div>
+            <div class="col-sm-6">
+                <p class="card-text">
+                    {% if item.url %}
+                        <a href="{{ item.url }}" aria-label="view product">{{ item.description }}</a>
+                    {% else %}
+                        {{ item.description | safe }}
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-sm-2 text-end">
+                <p class="mb-0">{{ item.quantity }}</p>
+            </div>
+            <div class="col-sm-2 text-end">
+                <p class="mb-0">{{ item.subtotal }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="row mb-3 text-center">
+        <div class="col-sm-2 offset-sm-5">
+            <a class="btn btn-primary btn__text" href="{% url 'checkout:reorder' order_dto.id %}">{% trans "Reorder" %}</a>
+        </div>
+    </div>
+
+</article>
+
+{% endblock content %}
+<!-- order_view.html end -->

@@ -1,0 +1,43 @@
+<!-- order_list_content.html start -->
+{# --- order_list_content.html template variable defines for includes --- #}
+{# order list content template expects: 'paginator' as a Paginator #}
+{#                                    : 'order_list' as a list of OrderDto #}
+
+{% load i18n %}
+{% load static %}
+
+{% block extra_css %}
+    {% for order_dto in order_list %}
+    <style>
+        .div__order-{{order_dto.id}} {
+        }
+    </style>
+    {% endfor %}
+{% endblock extra_css %}
+
+
+{% block order_list_content %}
+    <var id="var--repeat-search-term" hidden>{{ repeat_search_term }}</var>
+
+    {% if paginator.count == 0 %}
+        {% include "snippet/no_content.html" %}
+    {% else %}
+        {# below lg: 1 per row  lg-xxl: 2 per row  xxl: 3 per row #}
+        <div class="row row-cols-1 row-cols-lg-2 row-cols-xxl-3 mb-3">
+            {% for order_dto in order_list %}
+                {# --- order_dto.html template variable defines for includes --- #}
+                {# order dto template expects: 'order_dto' as OrderDto #}
+                {#                             'identifier' as individual identifier #}
+                {% with identifier=order_dto.id %}
+                    {% include "order/order_dto.html" %}
+                {% endwith %}
+            {% endfor %}
+        </div>
+
+        {# per page and page selection #}
+        {% with "Orders per page" as per_page_aria %}
+            {% include "snippet/per_page_pagination_select.html" %}
+        {% endwith %}
+    {% endif %}
+{% endblock order_list_content %}
+<!-- order_list_content.html end -->

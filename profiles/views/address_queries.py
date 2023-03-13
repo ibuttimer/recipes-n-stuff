@@ -224,56 +224,6 @@ def get_search_term(
     return query_set_params
 
 
-def get_yes_no_ignore_query(
-            query_set_params: QuerySetParams, query: str,
-            yes_choice: [ChoiceArg, list[ChoiceArg]],
-            no_choice: [ChoiceArg, list[ChoiceArg]],
-            ignore: [ChoiceArg, list[ChoiceArg]],
-            choice: ChoiceArg, clazz: Type[ChoiceArg],
-            chosen_qs: QuerySet
-        ) -> bool:
-    """
-    Get a query with yes/no/ignore optins
-    :param query_set_params: query params to update
-    :param query: query term from request
-    :param yes_choice: yes_choice choice in ChoiceArg
-    :param no_choice: no choice in ChoiceArg
-    :param ignore: ignore choice in ChoiceArg
-    :param choice: choice from request
-    :param clazz: ChoiceArg class
-    :param chosen_qs: query to get chosen item from db
-    :return: True if successfully added
-    """
-    success = True
-    if choice in ensure_list(ignore):
-        query_set_params.add_all_inclusive(query)
-    elif isinstance(choice, clazz):
-        # get ids of entities chosen by the user
-        query_params = {
-            f'{Address.id_field()}__in': chosen_qs
-        }
-
-        if choice in ensure_list(no_choice):
-            # exclude chosen entities
-            def qs_exclude(qry_set: QuerySet) -> QuerySet:
-                return qry_set.exclude(**query_params)
-            query_set = qs_exclude
-        elif choice in ensure_list(yes_choice):
-            # only chosen entities
-            def qs_filter(qry_set: QuerySet) -> QuerySet:
-                return qry_set.filter(**query_params)
-            query_set = qs_filter
-        else:
-            query_set = None
-
-        if query_set:
-            query_set_params.add_qs_func(query, query_set)
-        else:
-            success = False
-
-    return success
-
-
 # def get_category_query(query_set_params: QuerySetParams,
 #                        name: str) -> None:
 #     """

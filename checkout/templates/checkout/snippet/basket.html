@@ -26,9 +26,9 @@
                 </td>
                 <td>
                     {% if item.url %}
-                        <a href="{{ item.url }}" aria-label="view product">{{ item.description }}</a>
+                        <a href="{{ item.url }}" aria-label="view product">{{ item.description | safe }}</a>
                     {% else %}
-                        {{ item.description }}
+                        {{ item.description | safe }}
                     {% endif %}
                 </td>
                 <td>{{ item.amt_str }}</td>
@@ -57,7 +57,6 @@
     </tbody>
     <tfoot class="table-group-divider">
         <tr>
-            <!-- TODO bottom line of bottom row of basket not 100% even -->
             <td>
                 <div class="col-sm-12 d-flex justify-content-end align-content-center">
                     <em>Pay in</em>
@@ -77,7 +76,7 @@
             <td colspan="4">
             </td>
             <td><b><em>Total&nbsp;{{ basket.currency_symbol }}</em></b></td>
-            <td><em>{{ basket.total_str }}</em></td>
+            <td><em>{{ basket.subtotal_str }}</em></td>
         </tr>
     </tfoot>
 </table>

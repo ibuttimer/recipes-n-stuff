@@ -179,6 +179,18 @@ class Measure(ModelMixin, models.Model):
         """ Model metadata """
 
     @classmethod
+    def boolean_fields(cls) -> list[str]:
+        """ Get the list of boolean fields """
+        return [Measure.IS_DEFAULT_FIELD]
+
+    @classmethod
+    def numeric_fields(cls) -> list[str]:
+        """ Get the list of numeric fields """
+        return [
+            Measure.BASE_US_FIELD, Measure.BASE_METRIC_FIELD
+        ]
+
+    @classmethod
     def _get_default_instance(
             cls, name: str, abbrev: str, measure_type: str,
             system: str) -> TypeMeasure:

@@ -89,8 +89,8 @@
             url: `${url}${join}ref=${window.location.pathname}`,
             headers: csrfHeader(),
         }).done(function(data) {
-            const modalDisplayed = redirectRewriteInfoResponseHandler(data);
-            if (!modalDisplayed) {
+            const feedbackDisplayed = redirectRewriteInfoResponseHandler(data);
+            if (!feedbackDisplayed) {
                 // show modal
                 $(itemDeletedModalSelector).modal('show');
             }

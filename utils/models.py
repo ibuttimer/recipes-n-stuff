@@ -24,8 +24,8 @@ from inspect import isclass
 from typing import Union, Type, Any, TypeVar, Optional, List, Tuple
 from string import capwords
 
-from django.db.models import Model
-
+from django.db.models import Model, QuerySet
+from django.shortcuts import get_object_or_404
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
 TypeNameChoiceMixin = TypeVar("NameChoiceMixin", bound="NameChoiceMixin")
@@ -58,6 +58,55 @@ class ModelMixin:
     def id_field(cls):
         """ The id (primary key) field name """
         return cls._meta.pk.name
+
+    @classmethod
+    def id_field_query(cls, pk: int) -> dict:
+        """
+        Get an id field query
+        :param pk: id of entity to search for
+        :return: query dict
+        """
+        return {
+            cls.id_field(): pk
+        }
+
+    @classmethod
+    def get_by_field(cls, field: str, value: Any,
+                     get_or_404: bool = True) -> Model:
+        """
+        Get an entity by the value of a field
+        :param field: field to get by
+        :param value: value to match
+        :param get_or_404: get ot 404 flag; default True
+        :return: model
+        """
+        query_param = {
+            field: value
+        }
+        return get_object_or_404(cls, **query_param) if get_or_404 else \
+            cls.objects.get(**query_param)
+
+    @classmethod
+    def filter_by_field(cls, field: str, value: Any) -> QuerySet:
+        """
+        Filter an entity by the value of a field
+        :param field: field to filter by
+        :param value: value to match
+        :return: model
+        """
+        return cls.objects.filter(**{
+            field: value
+        })
+
+    @classmethod
+    def get_by_id_field(cls, pk: int, get_or_404: bool = True) -> Model:
+        """
+        Get an entity by its id field
+        :param pk: id of entity to search for
+        :param get_or_404: get ot 404 flag; default True
+        :return: model
+        """
+        return cls.get_by_field(cls.id_field(), pk, get_or_404=get_or_404)
 
     @classmethod
     def model_name(cls):
@@ -96,6 +145,11 @@ class ModelMixin:
     @classmethod
     def numeric_fields(cls) -> list[str]:
         """ Get the list of numeric fields """
+        return []
+
+    @classmethod
+    def boolean_fields(cls) -> list[str]:
+        """ Get the list of boolean fields """
         return []
 
     @classmethod
@@ -159,6 +213,17 @@ class ModelMixin:
         )
 
     @classmethod
+    def is_boolean_lookup(cls, lookup: str):
+        """
+        Check if the specified `lookup` represents a boolean Lookup
+        :param lookup: lookup string
+        :return: True if lookup is a boolean Lookup
+        """
+        return any(
+            map(lambda fld: fld in lookup, cls.boolean_fields())
+        )
+
+    @classmethod
     def is_id_lookup(cls, lookup: str):
         """
         Check if the specified `lookup` represents an id Lookup
@@ -176,7 +241,7 @@ class ModelMixin:
         :param lookup: lookup string
         :return: True if lookup is not a text lookup
         """
-        return cls.is_date_lookup(lookup) or \
+        return cls.is_date_lookup(lookup) or cls.is_boolean_lookup(lookup) or \
             cls.is_timedelta_lookup(lookup) or \
             cls.is_numeric_lookup(lookup) or cls.is_id_lookup(lookup)
 
@@ -249,7 +314,7 @@ class NameChoiceMixin:
         :param choice: choice to check
         :return: True if choice matches
         """
-        return self.value.choice == choice
+        return self.value.choice.lower() == choice.lower()
 
     @property
     def display_name(self):
@@ -271,8 +336,9 @@ class NameChoiceMixin:
         :param choice: choice to find
         :return: feature type or None of not found
         """
+        choice = choice.lower()
         result = list(
-            filter(lambda t: t.value.choice == choice, obj_type)
+            filter(lambda t: t.value.choice.lower() == choice, obj_type)
         )
         return result[0] if len(result) == 1 else None
 

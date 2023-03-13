@@ -27,21 +27,26 @@ from decimal import Decimal
 from django.http import HttpRequest
 import json_fix
 import jsonpickle
+from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 
 from base.dto import ImagePool
-from base.views import info_toast_payload, InfoModalTemplate
+from base.views import info_toast_payload, ToastTemplate
 from order.misc import generate_order_num
-from order.models import OrderProduct
-from order.queries import get_subscription_product, get_ingredient_box_product
+from order.models import OrderProduct, ProductType
+from order.queries import (
+    get_subscription_product, get_ingredient_box_product, get_delivery_product
+)
 from profiles.enums import AddressType
 from profiles.models import Address
 from profiles.views import addresses_query
 from recipes.constants import RECIPE_ID_ROUTE_NAME
 from recipes.models import Recipe
 from recipesnstuff import BASE_APP_NAME, RECIPES_APP_NAME
-from recipesnstuff.settings import FINANCIAL_FACTOR, DEFAULT_CURRENCY
-from subscription.models import Subscription
+from recipesnstuff.settings import (
+    FINANCIAL_FACTOR, DEFAULT_CURRENCY, PRICING_FACTOR
+)
+from subscription.models import Subscription, FeatureType
 from user.models import User
 from utils import (
     replace_inner_html_payload, app_template_path, reverse_q, namespaced_url
@@ -53,6 +58,7 @@ from .constants import (
 )
 from .currency import is_valid_code, get_currency
 from .forex import NumType, convert_forex, normalise_amount
+from .misc import calc_cost, format_amount_str, calc_ccy_cost
 
 # workaround for self type hints from https://peps.python.org/pep-0673/
 TypeBasketItem = TypeVar("TypeBasketItem", bound="BasketItem")
@@ -85,31 +91,14 @@ class BasketItem:
         :param as_decimal: as Decimal flag; default False
         :return: total cost
         """
-        cost = self.amount * self.count \
-            if not isinstance(self.amount, Decimal) else \
-            self.amount * Decimal.from_float(self.count)
-        return cost if not as_decimal else cost \
-            if isinstance(cost, Decimal) else Decimal.from_float(cost)
+        return calc_cost(self.amount, self.count, as_decimal=as_decimal)
 
     @property
     def item_total(self):
         return self.cost(as_decimal=False)
 
-    @staticmethod
-    def format_amount_str(amt: float, code: str, with_symbol: bool = False):
-        """
-        Get a formatted amount string
-        :param amt: amount
-        :param code: currency code
-        :param with_symbol: include currency symbol flag; default False
-        :return: formatted string
-        """
-        currency = get_currency(code)
-        symbol = f'{currency.symbol} ' if with_symbol else ''
-        return f'{symbol}{amt:.{currency.digits}f}'
-
     def _format_amt_str(self, amt: float):
-        return self.format_amount_str(amt, self.currency)
+        return format_amount_str(amt, self.currency)
 
     @property
     def amt_str(self):
@@ -127,10 +116,11 @@ class BasketItem:
         return {
             'sku': self.sku,
             'description': self.description,
-            'price': self.amount,
+            'price': self.amount
+            if isinstance(self.amount, float) else float(self.amount),
             'currency': self.currency,
             'units': self.count,
-            'instructions': self.instructions,
+            'instructions': self.instructions
         }
 
     TYPE_MARKER = 'type'
@@ -162,12 +152,17 @@ class Basket:
     _currency: str = ''
     _currency_symbol: str = ''
     items: List[BasketItem] = []
-    subtotals: List[float]
-    _total: Decimal
+    subtotals: List[float]          # item subtotals ex delivery
+    _subtotal: Decimal              # subtotal ex delivery
+    _delivery_charge: Decimal       # delivery change
+    _total: Decimal                 # total inc delivery
     order_num: str = ''
     closed: bool = True
     user: User
     address: Address = None
+    _delivery: OrderProduct = None
+    # subscription feature type for a free delivery
+    _feature_type: FeatureType = None
 
     def __init__(self, currency: str = None, request: HttpRequest = None):
         self._initialise(currency)
@@ -176,13 +171,17 @@ class Basket:
     def _initialise(self, currency: str):
         """
         Initialise the basket
-        :param currency: basket currency code
+        :param currency: currency code for basket
         """
         self.currency = (currency or DEFAULT_CURRENCY).upper()
         self.items = []
         self.subtotals = []
-        self._total = Decimal.from_float(0)
+        self._subtotal = Decimal(0)
+        self._delivery_charge = Decimal(0)
+        self._total = Decimal(0)
         self.address = None
+        self._delivery = None
+        self._feature_type = None
 
     def _new_order(self, request: HttpRequest):
         """
@@ -196,6 +195,11 @@ class Basket:
                 self.user = request.user
                 self.address = addresses_query(
                     user=self.user, address_type=AddressType.DEFAULT).first()
+                self._delivery = get_delivery_product(
+                    self.address.country,
+                    del_type=ProductType.STANDARD_DELIVERY
+                ).first() if self.address else None
+                self._feature_type = None
                 self.closed = False
             else:
                 self.order_num = ''
@@ -240,7 +244,7 @@ class Basket:
             basket_item.count += count
             added = False
 
-        self._calc_total()
+        self._calc_totals()
 
         return BasketUpdate(
             added=added, updated=not added, count=basket_item.count)
@@ -291,7 +295,7 @@ class Basket:
         if 0 <= index < self.num_items:
             del self.items[index]
             del self.subtotals[index]
-            self._calc_total()
+            self._calc_totals()
             success = True
         return success
 
@@ -317,30 +321,50 @@ class Basket:
         if request:
             request.session[BASKET_SES] = self
 
-    def _calc_total(self):
-        """ Calculate the current basket total """
-        total = Decimal.from_float(0)
+    def calc_delivery(self, delivery_opt: OrderProduct) -> Decimal:
+        """
+        Calculate the current basket delivery charge for the specified option
+        :param delivery_opt: delivery option
+        :return: charge
+        """
+        return Decimal(0) if not delivery_opt else calc_ccy_cost(
+            delivery_opt.unit_price, delivery_opt.base_currency,
+            self._currency, count=self.num_items, as_decimal=True)
+
+    def _calc_totals(self):
+        """ Calculate the current basket totals """
+        total = Decimal(0)
         for index, item in enumerate(self.items):
             cost = item.cost(as_decimal=True)
             if item.currency != self._currency:
                 cost = convert_forex(cost, item.currency, self._currency,
                                      factor=FINANCIAL_FACTOR,
                                      result_as=NumType.DECIMAL)
-            self.subtotals[index] = \
-                BasketItem.format_amount_str(cost, self._currency)
+            self.subtotals[index] = format_amount_str(cost, self._currency)
             total += cost
 
-        self._total = total
+        self._subtotal = total
+        self._delivery_charge = self.calc_delivery(self._delivery)
+        self._total = total + self._delivery_charge
 
     @property
     def num_items(self) -> int:
         """
-        Get number of items in the basket
+        Get number of individual items in the basket i.e. sum of units of all
+        basket entries
         :return: number of items
         """
         return sum(
             map(lambda item: item.count, self.items)
         )
+
+    @property
+    def num_products(self) -> int:
+        """
+        Get number of products in the basket i.e. products not units
+        :return: number of items
+        """
+        return len(self.items)
 
     @property
     def currency(self):
@@ -362,9 +386,46 @@ class Basket:
             currency = get_currency(code)
             self._currency = currency.code
             self._currency_symbol = currency.symbol
-            self._calc_total()
+            self._calc_totals()
         else:
             raise ValueError(f'Unsupported currency: {code}')
+
+    @property
+    def delivery(self) -> Optional[OrderProduct]:
+        """ Get the delivery product of the basket """
+        return self._delivery
+
+    @delivery.setter
+    def delivery(self, delivery_opt: Union[OrderProduct, int]):
+        """
+        Set the delivery option of the basket
+        :param delivery_opt: delivery option or id of option
+        """
+        if isinstance(delivery_opt, int):
+            delivery_opt = get_object_or_404(OrderProduct, **{
+                f'{OrderProduct.id_field()}': delivery_opt
+            })
+
+        if delivery_opt.type in list(
+                map(lambda opt: opt.choice, ProductType.delivery_options())):
+            self._delivery = delivery_opt
+            self._calc_totals()
+        else:
+            raise ValueError(f'Invalid delivery option: {delivery_opt}')
+
+    @property
+    def feature_type(self) -> Optional[FeatureType]:
+        """ Get the free delivery feature type of the basket """
+        return self._feature_type
+
+    @feature_type.setter
+    def feature_type(self, f_type: Union[FeatureType, str]):
+        """
+        Set the free delivery feature type of the basket
+        :param f_type: feature type or choice representing feature type
+        """
+        self._feature_type = FeatureType.from_choice(f_type) \
+            if isinstance(f_type, str) else f_type
 
     def update_item_units(self, index: int, units: int):
         """
@@ -376,31 +437,106 @@ class Basket:
         success = False
         if 0 <= index < self.num_items and units > 0:
             self.items[index].count = units
-            self._calc_total()
+            self._calc_totals()
             success = True
 
         return success
 
     @property
+    def subtotal(self) -> float:
+        """
+        The current basket subtotal (excluding delivery) in basket currency
+        for display purposes
+        """
+        return normalise_amount(self._subtotal, self._currency)
+
+    @property
+    def subtotal_base_ccy(self) -> float:
+        """
+        The current basket subtotal (including delivery) in base currency
+        for display purposes
+        """
+        return convert_forex(self._subtotal, self._currency, DEFAULT_CURRENCY,
+                             factor=PRICING_FACTOR, result_as=NumType.FLOAT)
+
+    @property
+    def delivery_charge(self) -> float:
+        """
+        The current basket delivery charge in basket currency for display
+        purposes
+        """
+        return normalise_amount(self._delivery_charge, self._currency)
+
+    @property
     def total(self) -> float:
         """
-        Get the current basket total in basket currency for display purposes
-        :return: total
+        The current basket total (including delivery) in basket currency
+        for display purposes
         """
         return normalise_amount(self._total, self._currency)
 
     @property
-    def total_str(self):
-        return BasketItem.format_amount_str(self.total, self._currency)
-
-    def format_total_str(self, with_symbol: bool = False):
+    def total_base_ccy(self) -> float:
         """
-        Get a formatted basket total amount string
+        The current basket total (including delivery) in base currency
+        for display purposes
+        """
+        return convert_forex(self._total, self._currency, DEFAULT_CURRENCY,
+                             factor=PRICING_FACTOR, result_as=NumType.FLOAT)
+
+    @property
+    def subtotal_str(self):
+        """
+        Formatted basket subtotal (excluding delivery) amount string
+        (excluding currency)
+        """
+        return format_amount_str(self.subtotal, self._currency)
+
+    @property
+    def delivery_charge_str(self):
+        """
+        Formatted basket delivery charge amount string (excluding currency)
+        """
+        return format_amount_str(self.subtotal, self._currency)
+
+    @property
+    def total_str(self):
+        """
+        Formatted basket total (including delivery) amount string
+        (excluding currency)
+        """
+        return format_amount_str(self.total, self._currency)
+
+    def format_subtotal_str(self, with_symbol: bool = False):
+        """
+        Get a formatted basket subtotal (excluding delivery) amount string
         :param with_symbol: include currency symbol flag; default False
         :return: formatted string
         """
-        return BasketItem.format_amount_str(
-            self.total, self._currency, with_symbol=with_symbol)
+        return format_amount_str(self.subtotal, self._currency,
+                                 with_symbol=with_symbol)
+
+    def format_delivery_charge_str(self, with_symbol: bool = False,
+                                   delivery_opt: OrderProduct = None):
+        """
+        Get a formatted basket delivery charge amount string
+        :param with_symbol: include currency symbol flag; default False
+        :param delivery_opt: delivery option; default current basket setting
+        :return: formatted string
+        """
+        charge = self.delivery_charge if delivery_opt is None else \
+            self.calc_delivery(delivery_opt)
+        return format_amount_str(charge, self._currency,
+                                 with_symbol=with_symbol)
+
+    def format_total_str(self, with_symbol: bool = False):
+        """
+        Get a formatted basket total (including delivery) amount string
+        :param with_symbol: include currency symbol flag; default False
+        :return: formatted string
+        """
+        return format_amount_str(self.total, self._currency,
+                                 with_symbol=with_symbol)
 
     @property
     def payment_total(self) -> int:
@@ -421,6 +557,8 @@ class Basket:
             'items': [
                 item.receipt_dict() for item in self.items
             ],
+            'subtotal': self.subtotal,
+            'delivery': self.total - self.subtotal,
             'total': self.total,
             'currency': self.currency,
         }
@@ -452,7 +590,7 @@ def get_session_basket(request: HttpRequest) -> Tuple[Basket, bool]:
         session_attrib = request.session[BASKET_SES]
         basket = session_attrib if isinstance(session_attrib, Basket) else \
             Basket.from_jsonable(session_attrib)
-    request.session[BASKET_SES] = basket
+    basket.add_to_request(request)
     return basket, new_order
 
 
@@ -480,16 +618,20 @@ def add_subscription_to_basket(
 
 def add_ingredient_box_to_basket(
         request: HttpRequest, recipe: Union[Recipe, int], count: int = 1,
-        instructions: str = None) -> dict:
+        instructions: str = None, basket: Basket = None) -> dict:
     """
     Add an item to the request basket
     :param request: http request
     :param recipe: recipe, or it's id
     :param count: number of items; default 1
     :param instructions: additional instructions; default None
+    :param basket: basket to update; default None i.e. session basket
     :return navbar basket html payload
     """
-    basket, _ = get_session_basket(request)
+    if not basket:
+        basket, _ = get_session_basket(request)
+    if isinstance(recipe, int):
+        recipe = Recipe.get_by_id_field(recipe)
 
     order_prod = get_ingredient_box_product(recipe)
 
@@ -523,8 +665,9 @@ def navbar_basket_html(basket: Basket, result: BasketUpdate = None):
     )
     if result:
         payload.update(
-            info_toast_payload(InfoModalTemplate(app_template_path(
-                THIS_APP, "messages", "basket_updated.html"),
+            info_toast_payload(ToastTemplate(
+                template=app_template_path(
+                    THIS_APP, "messages", "basket_updated.html"),
                 context={
                     ADDED_CTX: result.added,
                     UPDATED_CTX: result.updated,
@@ -543,5 +686,5 @@ def navbar_basket_context(basket: Basket) -> dict:
     return {
         BASKET_ITEM_COUNT_CTX: 0 if basket.closed else basket.num_items
         if basket.num_items <= MAX_DISPLAY_COUNT else f'{MAX_DISPLAY_COUNT}+',
-        BASKET_TOTAL_CTX: basket.format_total_str(with_symbol=True)
+        BASKET_TOTAL_CTX: basket.format_subtotal_str(with_symbol=True)
     }

@@ -46,12 +46,12 @@ from utils import (
     namespaced_url, redirect_on_success_or_render,
     replace_inner_html_payload, GET, STATUS_CTX
 )
+from subscription.middleware import subscription_payment_completed
+from subscription.models import SubscriptionStatus
 from .subscription_create import (
     for_subscription_form_render, SubscriptionCreate
 )
 from .utils import subscription_permission_check, is_eligilble_for_free_trial
-from ..middleware import subscription_payment_completed
-from ..models import SubscriptionStatus
 
 TITLE_UPDATE = 'Update Subscription'
 

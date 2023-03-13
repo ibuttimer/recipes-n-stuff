@@ -39,6 +39,9 @@
         <div class="nav nav-tabs mb-3 justify-content-around" id="nav-tab" role="tablist">
             <button class="nav-link active" id="{{ nav_tab_btn }}basket" data-bs-toggle="tab" data-bs-target="#{{ nav_tab_div }}basket" type="button" role="tab" aria-controls="{{ nav_tab_div }}basket" aria-selected="false" tabindex="-1">Basket</button>
             <button class="nav-link" id="{{ nav_tab_btn }}addr" data-bs-toggle="tab" data-bs-target="#{{ nav_tab_div }}addr" type="button" role="tab" aria-controls="{{ nav_tab_div }}addr" aria-selected="false" tabindex="-1">Address</button>
+            {% if delivery_req %}
+            <button class="nav-link" id="{{ nav_tab_btn }}del" data-bs-toggle="tab" data-bs-target="#{{ nav_tab_div }}del" type="button" role="tab" aria-controls="{{ nav_tab_div }}del" aria-selected="false" tabindex="-1">Delivery</button>
+            {% endif %}
             <button class="nav-link" id="{{ nav_tab_btn }}pay" data-bs-toggle="tab" data-bs-target="#{{ nav_tab_div }}pay" type="button" role="tab" aria-controls="{{ nav_tab_div }}pay" aria-selected="true">Pay</button>
         </div>
     </nav>
@@ -101,6 +104,28 @@
                 </article>
             </div>
         </div>
+        {% if delivery_req %}
+        <div class="tab-pane fade" id="{{ nav_tab_div }}del" role="tabpanel" aria-labelledby="{{ nav_tab_btn }}del">
+            {# delivery #}
+            <div class="row flex-grow-1 overflow-auto d-flex justify-content-center">
+                <article id="id__del-article" class="row d-flex justify-content-center">
+
+                    <div class="row mb-3" id="id__del-div">
+                        {% include 'checkout/snippet/delivery_options.html' %}
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-3 mt-2 offset-md-3">
+                            <button id="{{ prev_btn_id }}del" class="btn btn-secondary btn__text" type="button">{% trans 'Previous' %}</button>
+                        </div>
+                        <div class="col-md-3 mt-2">
+                            <button id="{{ next_btn_id }}del" class="btn btn-secondary btn__text" type="button">{% trans 'Next' %}</button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+        {% endif %}
         <div class="tab-pane fade" id="{{ nav_tab_div }}pay" role="tabpanel" aria-labelledby="{{ nav_tab_btn }}pay">
             {# pay #}
             <div class="row flex-grow-1 overflow-auto d-flex justify-content-center">
@@ -162,7 +187,11 @@
 
         const tabPostfix = [
             // postfix to uniquely identify each tab in order
-            'basket', 'addr', 'pay'
+            'basket', 'addr',
+            {% if delivery_req %}
+            'del',
+            {% endif %}
+            'pay'
         ];
         let currentTab = 0;     // index of current tab
         let furthestTab = 0;    // index of furthest viewed tab
@@ -178,17 +207,19 @@
 
         /**
          * Change tab
-         * @param current - tag of current tab
+         * @param currentTag - tag of current tab
          * @param step - step; 1 next tab or -1 previous tab
          */
-        function changeTab(current, step) {
-            const currentTabSelector = tabButtonSelector(current);
-            const newTab = tabPostfix[tabPostfix.indexOf(current) + step];
+        function changeTab(currentTag, step) {
+            const prevTab = currentTab;
+            currentTab = tabPostfix.indexOf(currentTag) + step;
+
+            const currentTabSelector = tabButtonSelector(currentTag);
+            const newTab = tabPostfix[currentTab];
             const newTabSelector = tabButtonSelector(newTab);
 
             // update the furthest tab index and enable next/prev buttons; will only do on first time through
-            if ((step > 0) && (currentTab === furthestTab) && (furthestTab < tabPostfix.length)) {
-                currentTab += step;
+            if ((step > 0) && (prevTab === furthestTab) && (furthestTab < tabPostfix.length)) {
                 furthestTab = currentTab;
                 for (const selector of [newTabSelector, nextButtonSelector(newTab), prevButtonSelector(newTab)]) {
                     $(selector).removeAttr('disabled');
@@ -201,13 +232,20 @@
             $(newTabSelector).addClass("active");
             $(newTabSelector).attr("aria-selected", "true");
             // hide current tab content
-            $(navTabDivSelector(current)).removeClass("active show");
+            $(navTabDivSelector(currentTag)).removeClass("active show");
             // show next tab content
             $(navTabDivSelector(newTab)).addClass("active show");
+
+            if (currentTab == tabPostfix.length - 1) {
+                // last tab i.e. pay, so get a payment intent
+                initialize().then();
+                checkStatus().then();
+            }
         }
 
         /** Set address change handlers */
         function setChangeAddressHandlers() {
+            // templates/profiles/address_select_item.html
             $('.a__addr-set').on('click', function (event) {
                 const url = event.currentTarget.attributes['href'].textContent;
                 fetch(url, {
@@ -228,8 +266,6 @@
         }
 
         $(document).ready(function() {
-            initialize().then();
-            checkStatus().then();
 
             // setup handlers
             setBasketChangeHandler();
@@ -237,7 +273,7 @@
             setChangeAddressHandlers();
 
             // setup clear basket
-            $('#id--cancel-checkout').on('click', function (event) {
+            $('#id__cancel-checkout').on('click', function (event) {
                 fetch(CLEAR_BASKET_URL, {
                     method: 'delete',
                     headers: csrfHeader()
@@ -255,15 +291,20 @@
             $(nextButtonsSelector).attr('disabled', 'disabled');
             $(nextButtonSelector(tabPostfix[0])).removeAttr('disabled');
             $(nextButtonsSelector).on('click', function (event) {
-                const tab = event.currentTarget.id.substring('{{ next_btn_id }}'.length);
-                changeTab(tab, 1);
+                const currentTag = event.currentTarget.id.substring('{{ next_btn_id }}'.length);
+                changeTab(currentTag, 1);
             });
 
             // setup prev buttons; disable all & set handlers
             $(prevButtonsSelector).attr('disabled', 'disabled');
             $(prevButtonsSelector).on('click', function (event) {
-                const tab = event.currentTarget.id.substring('{{ prev_btn_id }}'.length);
-                changeTab(tab, -1);
+                const currentTag = event.currentTarget.id.substring('{{ prev_btn_id }}'.length);
+                changeTab(currentTag, -1);
+            });
+
+            $(navTabButtonsSelector).on('click', function (event) {
+                const currentTag = event.currentTarget.id.substring('{{ nav_tab_btn }}'.length);
+                changeTab(currentTag, 0);
             });
 
             // setup tab buttons; disable all except first
