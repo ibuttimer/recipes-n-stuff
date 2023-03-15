@@ -136,63 +136,20 @@
 
     {% if read_only %}
         <script>
-                $(document).ready(function() {
-                    {% form_field form 'bio' as bio_field %}
-                    $('#readonly_content').html('{{ bio_field.initial | safe }}');
-                });
+            $(document).ready(function() {
+                {% form_field form 'bio' as bio_field %}
+                $('#readonly_content').html('{{ bio_field.initial | safe }}');
+            });
         </script>
     {% endif %}
+    <script type='text/javascript' src="{% static 'js/image_previewer.js' %}"></script>
+    {# https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types #}
+    {{ image_file_types|json_script:"id__file-types" }}
     <script>
-        /* Update preview image when file selected.
-           Based on https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/file#examples */
-
-        const input = document.querySelector('#id_avatar'); /* file input */
-        const preview = document.querySelector('.preview'); /* div containing preview image */
-
-        function updateImageDisplay() {
-            /* Update avatar preview */
-            const curFiles = input.files;
-            if (curFiles.length === 0) {
-                alert("No files currently selected for upload");
-            } else {
-                for (const file of curFiles) {
-                    if (validFileType(file)) {
-                        $(".preview img").prop("src", URL.createObjectURL(file));
-                    } else {
-                        alert(`${file.name} is not a valid file type. Please update your selection.`);
-                    }
-                }
-            }
-        }
-
-        // https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types
-        const fileTypes = [
-            {% for a in image_file_types %}
-                "{{ a }}"{% if forloop.revcounter0 > 0 %},{% endif %}
-            {% endfor %}
-        ];
-
-        function validFileType(file) {
-          return fileTypes.includes(file.type);
-        }
-
-        function returnFileSize(number) {
-          if (number < 1024) {
-            return `${number} bytes`;
-          } else if (number >= 1024 && number < 1048576) {
-            return `${(number / 1024).toFixed(1)} KB`;
-          } else if (number >= 1048576) {
-            return `${(number / 1048576).toFixed(1)} MB`;
-          }
-        }
+        const avatarPreviewer = new ImagePreviewer('#id_avatar', '.preview > img', JSON.parse(document.getElementById('id__file-types').textContent));
 
         $(document).ready(function() {
-            $('#id_avatar').on('change',
-                function(e) {
-                    updateImageDisplay();
-                });
+            avatarPreviewer.initialise();
         });
     </script>
-
-
 {% endblock extra_js_body %}

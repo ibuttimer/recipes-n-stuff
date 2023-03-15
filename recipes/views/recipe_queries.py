@@ -442,19 +442,22 @@ def get_recipe_instruction(pk: int) -> Tuple[Instruction, dict]:
     return entity, query_param
 
 
-def get_recipe_box_product(pk: int) -> Tuple[OrderProduct, Currency]:
+def get_recipe_box_product(pk: int,
+                           get_or_404: bool = True) -> Tuple[OrderProduct, Currency]:
     """
     Get the ingredient box product for a recipe
     :param pk: id of recipe
+    :param get_or_404: get ot 404 flag; default True
     :return: tuple of order product and base currency
     """
     query_param = {
         f'{OrderProduct.RECIPE_FIELD}': pk
     }
-    entity = get_object_or_404(OrderProduct, **query_param)
+    entity = get_object_or_404(OrderProduct, **query_param) \
+        if get_or_404 else OrderProduct.objects.filter(**query_param).first()
     currency = Currency.objects.get(**{
         f'{Currency.CURRENCY_CODE_FIELD}': entity.base_currency
-    })
+    }) if entity else None
     return entity, currency
 
 
@@ -474,3 +477,15 @@ def get_recipe_count(user: Union[User, int, str]) -> int:
     return Recipe.objects.filter(**{
         f'{Recipe.AUTHOR_FIELD}': user
     }).count()
+
+
+def nutritional_info_valid(pk: int) -> bool:
+    """
+    Check the nutritional info for a recipe is valid
+    :param pk: id of recipe
+    :return: True if valid
+    """
+    fields = Recipe.objects.filter(**Recipe.id_field_query(pk)).values_list(
+        *Recipe.nutritional_fields()
+    )
+    return any(fields.first())

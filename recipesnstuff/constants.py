@@ -115,6 +115,7 @@ VAL_TEST_PATH_PREFIX = 'val-test'
 
 # cloudinary related
 AVATAR_FOLDER = "rns_avatars"
+IMAGES_FOLDER = "rns_images"
 
 # https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types#common_image_file_types
 # Pillow which is used by ImageField in dev mode doesn't support avif or svg

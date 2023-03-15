@@ -37,7 +37,7 @@ from utils.content_list_mixin import get_query_args
 from .dto import RecipeDto
 from .recipe_queries import (
     get_recipe, get_recipe_ingredients_list, get_recipe_box_product,
-    get_recipe_count
+    get_recipe_count, nutritional_info_valid
 )
 from ..constants import (
     THIS_APP, INGREDIENTS_CTX, NEW_INGREDIENT_FORM_CTX,
@@ -46,7 +46,8 @@ from ..constants import (
     INSTRUCTIONS_CTX, NEW_INSTRUCTION_FORM_CTX,
     RECIPE_ID_INSTRUCTION_NEW_ROUTE_NAME, COUNT_OPTIONS_CTX,
     SELECTED_COUNT_CTX, CUSTOM_COUNT_CTX, CCY_SYMBOL_CTX, UNIT_PRICE_CTX,
-    QUANTITY_FIELD, NEXT_QUERY, INGREDIENT_LIST_CTX, RECIPE_COUNT_CTX
+    QUANTITY_FIELD, NEXT_QUERY, INGREDIENT_LIST_CTX, RECIPE_COUNT_CTX,
+    CAN_PURCHASE_CTX, IS_OWN_CTX, NUTRITIONAL_INFO_CTX
 )
 from utils import (
     Crud, app_template_path, reverse_q,
@@ -97,20 +98,29 @@ class RecipeDetail(LoginRequiredMixin, View):
 
         recipe_dto = RecipeDto.from_id(pk, nutri_text=True)
 
-        box_product, currency = get_recipe_box_product(pk)
+        box_product, currency = get_recipe_box_product(pk, get_or_404=False)
 
-        return render(
-            request, app_template_path(THIS_APP, 'recipe_view.html'),
-            context={
-                TITLE_CTX: recipe_dto.name,
-                RECIPE_DTO_CTX: recipe_dto,
-                RECIPE_COUNT_CTX: get_recipe_count(recipe_dto.author.username),
+        can_purchase = box_product is not None
+        context = {
+            TITLE_CTX: recipe_dto.name,
+            RECIPE_DTO_CTX: recipe_dto,
+            RECIPE_COUNT_CTX: get_recipe_count(recipe_dto.author.username),
+            CAN_PURCHASE_CTX: can_purchase,
+            IS_OWN_CTX: recipe_dto.author == request.user,
+            NUTRITIONAL_INFO_CTX: nutritional_info_valid(recipe_dto.id),
+        }
+        if can_purchase:
+            context.update({
                 COUNT_OPTIONS_CTX: BOX_COUNT_OPTIONS,
                 SELECTED_COUNT_CTX: 0,
                 CUSTOM_COUNT_CTX: CUSTOM_BOX_COUNT,
                 CCY_SYMBOL_CTX: currency.symbol,
                 UNIT_PRICE_CTX: box_product.unit_price,
-            }
+            })
+
+        return render(
+            request, app_template_path(THIS_APP, 'recipe_view.html'),
+            context=context
         )
 
     # def post(self, request: HttpRequest, pk: int,
@@ -195,7 +205,8 @@ class RecipeDetail(LoginRequiredMixin, View):
     #
     #     return JsonResponse(payload, status=status)
 
-    def url(self, pk: int) -> str:
+    @staticmethod
+    def url(pk: int) -> str:
         """
         Get url for address update/delete
         :param pk: id of entity

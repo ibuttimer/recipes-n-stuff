@@ -198,8 +198,7 @@ class OrderIdsBundle(BaseDto):
                     prod_type=ProductType.from_choice(
                         order_item.order_prod.type),
                     type_id=order_prod_type_id(order_item)
-                ), order.orderitem_set.all()
-            )
+                ), order.orderitem_set.all())
         )
         return dto
 

@@ -26,8 +26,10 @@ from string import Template, capwords
 
 from typing import Type, Union, NoReturn, List, Tuple, Optional
 
-from django.core.validators import MaxValueValidator, MinValueValidator, \
-    MinLengthValidator, MaxLengthValidator
+from django.core.validators import (
+    MaxValueValidator, MinValueValidator, MinLengthValidator,
+    MaxLengthValidator
+)
 from django.forms import BaseForm
 from django.utils.translation import gettext_lazy as _
 

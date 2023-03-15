@@ -254,7 +254,7 @@ class RecipeDto(BaseDto):
         :return: url str
         """
         return f'https://www.food.com/recipe/' \
-               f'{slugify(self.name)}-{self.food_id}'
+               f'{slugify(self.name)}-{self.food_id}' if self.food_id else ''
 
 
 def scan_alternatives(entities: List[Union[Instruction, RecipeIngredient]],

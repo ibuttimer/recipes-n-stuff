@@ -436,8 +436,9 @@ FIXTURE_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# url for blank avatar image
+# url for placeholder images
 AVATAR_BLANK_URL = env.get_value('AVATAR_BLANK_URL', default='')
+RECIPE_BLANK_URL = env.get_value('RECIPE_BLANK_URL', default='')
 
 DJANGO_LOG_LEVEL = os.getenv('DJANGO_LOG_LEVEL', 'INFO').upper()
 LOGGING = {

@@ -1,6 +1,6 @@
 #  MIT License
 #
-#  Copyright (c) 2023 Ian Buttimer
+#  Copyright (c) 2022 Ian Buttimer
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to
@@ -19,36 +19,22 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from .recipe_create import RecipeCreate
-from .recipe_list import RecipeList, SearchRecipeList
-from .recipe_by import RecipeDetail, RecipeDetailUpdate, add_recipe_to_basket
-from .ingredient_by import RecipeIngredientDetail
-from .ingredient_create import create_recipe_ingredient
-from .instruction_by import InstructionDetail
-from .instruction_create import create_recipe_instruction
-from .category_list import CategoryList
-from .dto import RecipeDto
+#
+
+from django import template
+
+from .form_submit_btn_id import tag_id
+
+register = template.Library()
+
+# https://docs.djangoproject.com/en/4.1/howto/custom-template-tags/#simple-tags
 
 
-__all__ = [
-    'RecipeCreate',
-
-    'RecipeList',
-    'SearchRecipeList',
-
-    'RecipeDetail',
-    'RecipeDetailUpdate',
-    'add_recipe_to_basket',
-
-    'RecipeIngredientDetail',
-
-    'create_recipe_ingredient',
-
-    'InstructionDetail',
-
-    'create_recipe_instruction',
-
-    'RecipeDto',
-
-    'CategoryList',
-]
+@register.simple_tag
+def form_auto_id(identifier: str):
+    """
+    Generate a form element id like django.forms.formsets.BaseFormSet::auto_id
+    :param identifier: element identifier
+    :return: id
+    """
+    return f'id_{identifier}'

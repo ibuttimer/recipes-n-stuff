@@ -40,9 +40,12 @@ class Migration(migrations.Migration):
                      "recipe_id=%s;", [recipe_id])
                 ]
             ) for sku, recipe_id, name in [
-                (generate_sku(ProductType.INGREDIENT_BOX, recipe=recipe),
-                 recipe.id, recipe.name)
-                for recipe in list(Recipe.objects.all())
+                (generate_sku(ProductType.INGREDIENT_BOX,
+                              recipe=recipe.get(Recipe.id_field())),
+                 recipe.get(Recipe.id_field()), recipe.get(Recipe.NAME_FIELD))
+                for recipe in list(Recipe.objects.values(
+                    Recipe.id_field(), Recipe.NAME_FIELD
+                ).all())
             ]
         ])
 

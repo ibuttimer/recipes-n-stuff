@@ -41,8 +41,8 @@
                                 <img src="{{ avatar_url }}" alt="user avatar" width="32" height="32" class="rounded-2">&nbsp;{{ recipe_dto.author.username }}
                             </a>
                         </span>
-                        {% if food_dot_com %}
-                            <span class="ms-2" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="View recipe on Food.com">
+                        {% if food_dot_com and recipe_dto.food_dot_com_url %}
+                        <span class="ms-2" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="View recipe on Food.com">
                                 <a href="{{ recipe_dto.food_dot_com_url }}" aria-label="view recipe on food.com in another tab" target="_blank" rel="noopener">
                                     <img src="{% static 'img/internet.png' %}" alt="internet icon" width="30" height="30">
                                 </a>
@@ -85,6 +85,7 @@
                     <p><i class="fa-solid fa-people-group"></i> {{ recipe_dto.servings }}</p>
                 </div>
             </div>
+            {% if can_purchase %}
             <div class="row">
                 <div class="col-sm-4">
                     <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="price {{ ccy_symbol }}{{ unit_price }} per person">
@@ -134,6 +135,8 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
+            {% if nutritional_info %}
             <div class="row">
                 <div class="col-sm-12">
                     <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#id__nutrition-info-modal">
@@ -141,6 +144,12 @@
                     </button>
                 </div>
             </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-12">
+            <p>{{ recipe_dto.description }}</p>
         </div>
     </div>
     <div class="row">
@@ -149,7 +158,7 @@
             <div class="row">
                 <div class="col-sm-12 mb-3">
                     <h6 class="d-inline p-2">Ingredients</h6>
-                    {% if can_update %}
+                    {% if can_update or is_own %}
                         <a class="btn btn-sm btn-outline-primary d-inline p-2" href="{% url 'recipes:recipe_id_update' recipe_dto.id %}?ingredients=y"
                            data-bs-toggle="tooltip" data-bs-placement="top"
                            data-bs-title="Edit ingredients"
@@ -181,7 +190,7 @@
             <div class="row">
                 <div class="col-sm-12 mb-3">
                     <h6 class="d-inline p-2">Instructions</h6>
-                    {% if can_update %}
+                    {% if can_update or is_own %}
                     <a class="btn btn-sm btn-outline-primary d-inline p-2" href="{% url 'recipes:recipe_id_update' recipe_dto.id %}?instructions=y"
                        data-bs-toggle="tooltip" data-bs-placement="top"
                        data-bs-title="Edit instructions"

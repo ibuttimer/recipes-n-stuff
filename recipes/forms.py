@@ -20,17 +20,24 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 from dataclasses import dataclass
+from datetime import timedelta
 from typing import Tuple, List
 
+from cloudinary.forms import CloudinaryFileField
 from django import forms
+from django.core.exceptions import ValidationError
+from django.forms import CharField
 from django.utils.translation import gettext_lazy as _
 
-from utils import error_messages, ErrorMsgs, update_field_widgets
+from recipesnstuff import DEV_IMAGE_FILE_TYPES, DEVELOPMENT, IMAGE_FILE_TYPES
+from user.forms import NoCurrentClearableFileInput
+from utils import error_messages, ErrorMsgs, update_field_widgets, FormMixin
 
 from .constants import (
     INGREDIENT_FIELD, QUANTITY_FIELD, INDEX_FIELD, TEXT_FIELD, MEASURE_FIELD
 )
-from .models import RecipeIngredient, Instruction, Measure
+from .models import RecipeIngredient, Instruction, Measure, Recipe, Category
+from .views.utils import parse_duration, DURATION_FORMAT_STR
 
 
 class RecipeIngredientForm(forms.ModelForm):
@@ -257,3 +264,160 @@ class RecipeInstructionForm(forms.ModelForm):
             self,
             RecipeInstructionForm.Meta.select_fields,
             {'class': 'form-select'})
+
+
+def validate_duration(value) -> timedelta:
+    """
+    Validate duration strings
+    :param value: string to validate
+    :raises: ValidationError if fails validation
+    """
+    is_valid, duration = parse_duration(value)
+    if not is_valid:
+        raise ValidationError(
+            _('%(value)s is not a valid duration. Correct format is %(fmt)s.'),
+            params={'value': value, 'fmt': DURATION_FORMAT_STR},
+        )
+    return duration
+
+
+class CategoryCharField(CharField):
+    """ Custom CharField to return Category from name entered """
+    def to_python(self, value):
+        """Return a category."""
+        category = super().to_python(value)
+        if category:
+            category = Category.get_by_field(Category.NAME_FIELD, category,
+                                             get_or_404=False)
+            if not category:
+                raise ValidationError(
+                    _('%(value)s is not a valid category'),
+                    params={'value': value},
+                )
+        return category
+
+
+class DurationCharField(CharField):
+    """ Custom CharField to return timedelta from value entered """
+    # Note: don't put max_length etc. on this form field, it'll fail as
+    #       timedelta doesn't have a len
+    def to_python(self, value) -> timedelta:
+        """Return a category."""
+        duration = super().to_python(value)
+        if duration:
+            duration = validate_duration(duration)
+        return duration
+
+
+class RecipeForm(FormMixin, forms.ModelForm):
+    """
+    Form to update a recipe.
+    """
+    NAME_FF = Recipe.NAME_FIELD
+    PREP_TIME_FF = Recipe.PREP_TIME_FIELD
+    COOK_TIME_FF = Recipe.COOK_TIME_FIELD
+    PICTURE_FF = Recipe.PICTURE_FIELD
+    SERVINGS_FF = Recipe.SERVINGS_FIELD
+    CATEGORY_FF = Recipe.CATEGORY_FIELD
+    DESCRIPTION_FF = Recipe.DESCRIPTION_FIELD
+
+    name = forms.CharField(
+        label=_("Name"), max_length=Recipe.RECIPE_ATTRIB_NAME_MAX_LEN,
+        required=True, widget=forms.TextInput(attrs={
+            'placeholder': 'Recipe name',
+        }))
+    prep_time = DurationCharField(
+        label=_("Prep time"), required=True, widget=forms.TextInput(attrs={
+            'placeholder': f'Prep time {DURATION_FORMAT_STR}',
+        }), validators=[validate_duration]
+    )
+    cook_time = DurationCharField(
+        label=_("Cook time"), required=True, widget=forms.TextInput(attrs={
+            'placeholder': f'Cook time {DURATION_FORMAT_STR}',
+        }), validators=[validate_duration]
+    )
+
+    image_args = {
+        "label": _("Image"),
+        "required": False,
+        "widget": NoCurrentClearableFileInput(attrs={
+            # not all image types supported by Pillow which is used by
+            # ImageField in dev mode
+            "accept": ", ".join(
+                DEV_IMAGE_FILE_TYPES if DEVELOPMENT else IMAGE_FILE_TYPES)
+        })
+    }
+    # ImageField for local dev, CloudinaryFileField for production
+    picture = forms.ImageField(
+        **image_args
+    ) if DEVELOPMENT else CloudinaryFileField(
+        options={
+            'folder': Recipe.picture.field.options['folder'],
+        },
+        **image_args
+    )
+
+    servings = forms.IntegerField(
+        label=_("Servings"), min_value=1, required=True)
+    category = CategoryCharField(
+        required=True, widget=forms.TextInput(attrs={
+            'list': 'id__category-datalist',
+            'placeholder': 'Type to search...',
+            'id': 'id__recipe-category-input-new'
+        })
+    )
+    description = forms.CharField(
+        label=_("Description"), max_length=Recipe.RECIPE_ATTRIB_DESC_MAX_LEN,
+        required=True, widget=forms.Textarea(attrs={
+            'placeholder': 'Recipe description',
+        }))
+
+    @dataclass
+    class Meta:
+        """ Form metadata """
+        model = Recipe
+        fields = [
+            Recipe.NAME_FIELD, Recipe.PREP_TIME_FIELD, Recipe.COOK_TIME_FIELD,
+            Recipe.PICTURE_FIELD, Recipe.SERVINGS_FIELD, Recipe.CATEGORY_FIELD,
+            Recipe.DESCRIPTION_FIELD
+        ]
+        non_bootstrap_fields = [Recipe.PICTURE_FIELD]
+        help_texts = {
+            Recipe.NAME_FIELD: 'Recipe name.',
+            Recipe.PREP_TIME_FIELD: 'Recipe preparation time.',
+            Recipe.COOK_TIME_FIELD: 'Recipe cook time.',
+            Recipe.PICTURE_FIELD: 'Recipe picture',
+            Recipe.SERVINGS_FIELD: 'Number of servings',
+            Recipe.CATEGORY_FIELD: 'Recipe category',
+            Recipe.DESCRIPTION_FIELD: 'Recipe description',
+        }
+        _error_messages = error_messages(
+            model.model_name_caps(),
+            ErrorMsgs(Recipe.NAME_FIELD, required=True,
+                      max_length=Recipe.RECIPE_ATTRIB_NAME_MAX_LEN)
+        )
+        _error_messages.update(error_messages(
+            model.model_name_caps(),
+            ErrorMsgs(Recipe.DESCRIPTION_FIELD,
+                      max_length=Recipe.RECIPE_ATTRIB_DESC_MAX_LEN)
+        ))
+        _error_messages.update(error_messages(
+            model.model_name_caps(),
+            *[ErrorMsgs(
+                field, required=True) for field in [
+                    Recipe.PREP_TIME_FIELD, Recipe.COOK_TIME_FIELD,
+                    Recipe.CATEGORY_FIELD
+                ]]
+        ))
+        _error_messages.update(error_messages(
+            model.model_name_caps(),
+            ErrorMsgs(Recipe.SERVINGS_FIELD, required=True, min_value=1)
+        ))
+        error_messages = _error_messages
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # add the bootstrap class to the widget
+        self.add_form_control(
+            RecipeForm.Meta.fields,
+            exclude=RecipeForm.Meta.non_bootstrap_fields)
