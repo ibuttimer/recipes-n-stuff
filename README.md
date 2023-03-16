@@ -667,7 +667,8 @@ The following resources were used to build the website.
 - [Confusion icon](static/img/confusion.png) created by [Freepik - Flaticon](https://www.flaticon.com/free-icons/confusion)
 - [Internet icon](static/img/internet.png) created by [Freepik - Flaticon](https://www.flaticon.com/free-icons/internet)
 - [Empty serving dish icon](static/img/serving-dish.png) created by [Freepik - Flaticon](https://www.flaticon.com/free-icons/empty)
-- Privacy policy courtesy of [Privacy Policy Generator](https://www.privacypolicygenerator.info/). [Privacy Policy Generator hosted](https://www.privacypolicygenerator.info/live.php?token=xSZn3GRjS2md31oUpTTjIsOCGo8rY8K9) version. 
+- Privacy policy courtesy of [Privacy Policy Generator](https://www.privacypolicygenerator.info/). [Privacy Policy Generator hosted](https://www.privacypolicygenerator.info/live.php?token=xSZn3GRjS2md31oUpTTjIsOCGo8rY8K9) version.
+- [HTML entity data](base/entities.json) courtesy of [HTML Living Standard - Named character references](https://html.spec.whatwg.org/multipage/named-characters.html)
 
 ### Code
 
