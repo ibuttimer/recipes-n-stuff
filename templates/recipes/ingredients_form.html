@@ -75,7 +75,7 @@
                         </div>
                         {% endfor %}
                         <div class="col-sm-3">
-                            {{ ingredient.name }}
+                            {{ ingredient.name | safe }}
                         </div>
                         <div class="col-sm-3">
                             {# update/delete buttons form template expects: 'entity' as entity name #}
@@ -151,11 +151,15 @@
 
     {% delete_modal_ids entity as ids %}
 
+    {{ ingredient_id_map|json_script:"id__ingredient_id_map" }}
+
     <script type='text/javascript' src="{% static 'js/update_delete_button.js' %}"></script>
     <script type='text/javascript' src="{% static 'js/delete_modal.js' %}"></script>
     <script>
         // copy of all valid ingredient names
         const ingredientList = [...document.querySelectorAll('#id__ingredient-datalist option')].map(option => option.value);
+        const ingredientIdMap = JSON.parse(document.getElementById('id__ingredient_id_map').textContent);
+
         const newIngredientFormSelector = '#id__ingredient-form-new';
         const newIngredientInputSelector = '#id__ingredient-input-new';
         const newIngredientUploadSelector = "#{% form_submit_btn_id 'ingredient-new' %}";
@@ -170,6 +174,7 @@
          */
         function newIngredientIsValid(event) {
             // https://getbootstrap.com/docs/5.2/forms/validation/
+            // entered value has to be one of the entries in the datalist
             let isValid = ingredientList.includes(
                 $(newIngredientInputSelector).first().val()
             );
@@ -208,6 +213,12 @@
                     event.preventDefault();
 
                     showIconHideSpinner(newIngredientUploadSelector);
+                } else {
+                    const ingredientName = $(newIngredientInputSelector).val();
+                    if (ingredientIdMap.hasOwnProperty(ingredientName)) {
+                        const ingredientId = ingredientIdMap[ingredientName];
+                        $(newIngredientInputSelector).val(ingredientId);
+                    }
                 }
             });
         });

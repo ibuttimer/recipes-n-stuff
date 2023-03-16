@@ -45,13 +45,18 @@ _MAX_VAL = MaxValueValidator.code
 _MIN_VAL = MinValueValidator.code
 # from django.forms.fields.Field.default_error_messages dict
 _REQUIRED = 'required'
+_FROM_LIST = 'from_list'
 # combined error message combining all the other messages
 _COMBINED = 'combined'
 
+_STATEMENT_ATTRIBS = [_REQUIRED, _FROM_LIST]
+_NO_VAL_ATTRIBS = _STATEMENT_ATTRIBS.copy()
+_NO_VAL_ATTRIBS.append(_ATTRIB)
+
 ErrorMsgs: Type[tuple] = namedtuple(
     'ErrorMsgs',
-    [_ATTRIB, _MAX_LEN, _MIN_LEN, _MAX_VAL, _MIN_VAL, _REQUIRED],
-    defaults=['', None, None, None, None, None]
+    [_ATTRIB, _MAX_LEN, _MIN_LEN, _MAX_VAL, _MIN_VAL, _REQUIRED, _FROM_LIST],
+    defaults=['', None, None, None, None, None, None]
 )
 
 # keys are error codes of ValidationError raised by validator
@@ -61,13 +66,16 @@ _msg_templates = {
     _MAX_LEN: Template(f'Maximum length for ${_ATTRIB} is ${_ATTRIB_VAL}.'),
     _MIN_VAL: Template(f'Minimum value for ${_ATTRIB} is ${_ATTRIB_VAL}.'),
     _MAX_VAL: Template(f'Maximum value for ${_ATTRIB} is ${_ATTRIB_VAL}.'),
-    _REQUIRED: Template(f'Please enter ${_ATTRIB}, it is required.')
+    _REQUIRED: Template(f'Please enter ${_ATTRIB}, it is required.'),
+    _FROM_LIST: Template(f'Please select ${_ATTRIB} from list.')
 }
 _description = {
     _MIN_LEN: 'minimum length',
     _MAX_LEN: 'maximum length',
     _MIN_VAL: 'minimum value',
     _MAX_VAL: 'maximum value',
+    _REQUIRED: 'is required',
+    _FROM_LIST: 'select from list',
 }
 
 
@@ -87,13 +95,15 @@ def error_messages(model: str, *args: ErrorMsgs) -> dict:
 
     def combined_msg(err_msg: ErrorMsgs):
         msg = capwords(getattr(err_msg, _ATTRIB))
-        msg = f'{msg}' if getattr(err_msg, _REQUIRED) is None \
-            else f'{msg} is required'
         terms = [
+            f'{_description[k]}' for k in _STATEMENT_ATTRIBS
+            if inc_msg(k, entry)
+        ]
+        terms.extend([
             f'{_description[k]} {getattr(entry, k)}'
             for k in ErrorMsgs._fields
-            if inc_msg(k, entry, exclude=[_ATTRIB, _REQUIRED])
-        ]
+            if inc_msg(k, entry, exclude=_NO_VAL_ATTRIBS)
+        ])
         if len(terms) > 1:
             msg = f'{msg}, {",".join(terms[:-1])} and {terms[-1]}'
         elif len(terms) > 0:

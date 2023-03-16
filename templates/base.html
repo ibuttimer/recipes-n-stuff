@@ -76,6 +76,7 @@
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{% url 'recipes:recipes' %}">All</a></li>
                                     <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{% url 'recipes:recipes' %}?user={{user.username}}">Mine</a></li>
                                     <li><a class="dropdown-item" href="{% url 'recipes:recipe_new' %}">New</a></li>
                                 </ul>
                             </li>

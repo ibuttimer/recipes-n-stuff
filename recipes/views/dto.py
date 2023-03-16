@@ -24,6 +24,8 @@ from datetime import timedelta
 from typing import List, Union, TypeVar
 import re
 
+from cloudinary.models import CloudinaryField
+from django.db.models.fields.files import ImageFieldFile
 from django.utils.text import slugify
 
 from base.dto import BaseDto, ImagePool
@@ -34,6 +36,7 @@ from recipes.models import (
     Recipe, RecipeIngredient, Instruction
 )
 from recipes.images import recipe_main_image
+from recipesnstuff import DEVELOPMENT
 from utils import html_tag
 
 TypeRecipeDto = TypeVar("TypeRecipeDto", bound="RecipeDto")
@@ -166,7 +169,10 @@ class RecipeDto(BaseDto):
             dto._instruction_alts = scan_alternatives(
                 dto.instructions, Instruction.INDEX_FIELD)
         if all_attrib or Recipe.IMAGES_FIELD in args:
-            dto.images = list(recipe.image_set.all())
+            _images = [] if RecipeDto.has_no_uploaded_picture(
+                recipe.picture) else [recipe.picture]
+            _images.extend(list(recipe.image_set.all()))
+            dto.images = _images
         if all_attrib or Recipe.AUTHOR_FIELD in args:
             dto.author = recipe.author
         if all_attrib or Recipe.CATEGORY_FIELD in args:
@@ -201,6 +207,19 @@ class RecipeDto(BaseDto):
         recipe, _ = get_recipe(pk)
         return RecipeDto.from_model(recipe, *args, all_attrib=all_attrib,
                                     nutri_text=nutri_text)
+
+    @staticmethod
+    def has_no_uploaded_picture(
+            picture: Union[ImageFieldFile, CloudinaryField]):
+        # pristine has no name and name is 'False' if the image was cleared
+        no_uploaded = True
+        if picture:
+            if DEVELOPMENT:     # ImageFieldFile
+                no_uploaded = not picture.name or \
+                              picture.name.lower() == 'false'
+            else:
+                no_uploaded = picture.public_id is not None
+        return no_uploaded
 
     @property
     def total_time(self) -> timedelta:

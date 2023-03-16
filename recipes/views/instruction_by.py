@@ -35,9 +35,9 @@ from utils import (
     entity_delete_result_payload
 )
 from .recipe_by import RecipeDetailUpdate
-from .ingredient_by import check_ordering, own_recipe_check
+from .ingredient_by import check_ordering
 from .recipe_queries import (
-    get_recipe, get_recipe_instruction, get_recipe_ingredients_list
+    get_recipe, get_recipe_instruction, own_recipe_check
 )
 from .utils import recipe_permission_check
 from ..constants import (

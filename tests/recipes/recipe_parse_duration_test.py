@@ -19,22 +19,21 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-import unittest
 from datetime import timedelta
 from typing import Tuple, List
-from unittest import TestCase
+from unittest import TestCase, skip
 
 import pytest
 from more_itertools import distinct_permutations
 
 from recipes.views.utils import (
-    YEAR, MTH, WK, DAY, HOUR, MIN, SEC, parse_duration
+    YEAR, MTH, WK, DAY, HOUR, MIN, SEC, parse_duration, encode_timedelta
 )
 
 ALL_SYMBOLS = [YEAR, MTH, WK, DAY, HOUR, MIN, SEC]
 
 
-class TestParseDuration(unittest.TestCase):
+class TestParseDuration(TestCase):
 
     def check_symbol_decode_success(
             self, num: int, symbol: str, expected: timedelta):
@@ -161,3 +160,56 @@ class TestParseDuration(unittest.TestCase):
                 vals.append((nums[idx], ALL_SYMBOLS[idx]))
 
             self.check_multi_symbol_decode_success(vals, expected)
+
+    def test_encode_timedelta(self):
+        """ Test duration encoding """
+
+        num = 5
+        encoded = encode_timedelta(timedelta(seconds=num))
+        self.assertEqual(f'{num}{SEC}', encoded)
+
+        encoded = encode_timedelta(timedelta(minutes=num))
+        self.assertEqual(f'{num}{MIN}', encoded)
+
+        encoded = encode_timedelta(timedelta(hours=num))
+        self.assertEqual(f'{num}{HOUR}', encoded)
+
+        encoded = encode_timedelta(timedelta(days=num))
+        self.assertEqual(f'{num}{DAY}', encoded)
+
+        encoded = encode_timedelta(timedelta(days=num))
+        self.assertEqual(f'{num}{DAY}', encoded)
+
+        SEC_MIN = 60
+        MIN_HR = 60
+        SEC_HR = SEC_MIN * MIN_HR
+        HR_DAY = 24
+        SEC_DAY = SEC_HR * HR_DAY
+
+        num = SEC_DAY + 1
+        encoded = encode_timedelta(timedelta(seconds=num))
+        day = int(num/SEC_DAY)
+        sec = num - (day * SEC_DAY)
+        self.assertEqual(f'{day}{DAY} {sec}{SEC}', encoded)
+
+        num = SEC_HR + 1
+        encoded = encode_timedelta(timedelta(seconds=num))
+        hour = int(num/SEC_HR)
+        sec = num - (hour * SEC_HR)
+        self.assertEqual(f'{hour}{HOUR} {sec}{SEC}', encoded)
+
+        DY_MTH = 31
+        MTH_YR = 12
+        DAY_YR = MTH_YR * DY_MTH
+
+        num = 32
+        encoded = encode_timedelta(timedelta(days=num))
+        mth = int(num/DY_MTH)
+        day = num - (mth * DY_MTH)
+        self.assertEqual(f'{mth}{MTH} {day}{DAY}', encoded)
+
+        num = MTH_YR * DY_MTH + 1
+        year = int(num/DAY_YR)
+        day = num - (int(num/DAY_YR) * DAY_YR)
+        encoded = encode_timedelta(timedelta(days=num))
+        self.assertEqual(f'{year}{YEAR} {day}{DAY}', encoded)

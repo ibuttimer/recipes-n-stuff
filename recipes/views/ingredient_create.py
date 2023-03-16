@@ -25,8 +25,7 @@ from django.http import HttpRequest, HttpResponse
 from django.views.decorators.http import require_http_methods
 
 from utils import (
-    Crud, redirect_on_success_or_render,
-    POST, get_object_and_related_or_404
+    Crud, redirect_on_success_or_render, POST
 )
 from . import RecipeDetailUpdate
 from .recipe_queries import get_recipe
@@ -53,11 +52,16 @@ def create_recipe_ingredient(request: HttpRequest, pk: int) -> HttpResponse:
     form = RecipeIngredientNewForm(data=request.POST)
 
     if form.is_valid():
-
-        ingredient = get_object_and_related_or_404(Ingredient, **{
-            f'{Ingredient.NAME_FIELD}':
-                form.cleaned_data[RecipeIngredient.INGREDIENT_FIELD]
-        })
+        # Due to mixed html entity encoding on ingredient names from the
+        # kaggle dataset, can't look up ingredient by name. The input
+        # validation on the client ensures the entered value is one of the
+        # entries in the datalist, and form submit handler converts the
+        # entered name to the corresponding ingredient id
+        ingredient_name = form.cleaned_data[RecipeIngredient.INGREDIENT_FIELD]
+        if ingredient_name.isnumeric():
+            ingredient = Ingredient.get_by_id_field(int(ingredient_name))
+        else:
+            raise ValueError
 
         # save object
         # django autocommits changes

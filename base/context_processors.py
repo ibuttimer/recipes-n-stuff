@@ -30,7 +30,8 @@ from recipesnstuff.constants import (
 )
 from utils import resolve_req, add_navbar_attr
 
-from .constants import APP_NAME_CTX, VAL_TEST_CTX
+from .constants import APP_NAME_CTX, VAL_TEST_CTX, TOAST_POSITION_CTX
+from .views import ToastPosition
 
 
 def base_context(request: HttpRequest) -> dict:
@@ -56,16 +57,16 @@ def base_context(request: HttpRequest) -> dict:
             add_navbar_attr(
                 context, ctx, is_active=called_by.url_name in routes)
 
+        # set no robots
         # allauth route names start with 'account_' and have no app name
         no_robots = called_by.app_name == '' and \
             called_by.url_name.startswith('account_')
         # admin routes have app name 'admin'
         no_robots = no_robots or called_by.app_name == 'admin'
 
-    if no_robots:
-        # no robots in checkout app urls
-        context.update({
-            NO_ROBOTS_CTX: True
-        })
+    context.update({
+        NO_ROBOTS_CTX: no_robots,
+        TOAST_POSITION_CTX: ToastPosition.DEFAULT.value
+    })
 
     return context

@@ -22,13 +22,13 @@
 {% block content %}
 <div class="row mt-2 mb-2">
     <div class="col-12 text-center">
-        <h3>Create Recipe</h3>
+        <h3>{{ page_heading }}</h3>
     </div>
 </div>
 
 <article id="article-content" class="row d-flex justify-content-center">
     <row class="col-lg-10 col-md-11 col-sm-12">
-        <form {% if not read_only %} method="post" class="needs-validation" novalidate action="{{ submit_url }}" enctype="multipart/x-www-form-urlencoded" {% endif %}
+        <form {% if not read_only %} method="post" class="needs-validation" novalidate action="{{ submit_url }}" enctype="multipart/form-data" {% endif %}
               id="id__recipe-form-new">
             {% if not read_only %}
                 {% csrf_token %}
@@ -42,7 +42,7 @@
 
             <fieldset {% if read_only %} disabled {% endif %}>
                 <div class="row mb-3">
-                    <div class="col-6">
+                    <div class="col-6 text-center">
                         {# picture field #}
                         <div class="preview">
                             <img src="{{ recipe_url }}" width="100" height="100" alt="Recipe picture">
@@ -99,7 +99,7 @@
             {#                                  'index' as form index #}
             {#                                  'large' as large button flag #}
             {% url 'recipes:recipes' as cancel_url %}
-            {% with identifier='recipe' submit_text=submit_btn_text %}
+            {% with identifier='recipe' submit_text=submit_btn_text index=0 %}
                 {% include 'snippet/form_ok_cancel.html' %}
             {% endwith %}
         </form>
@@ -140,7 +140,7 @@
             new ValTester("#{% form_auto_id 'cook_time' %}", cookTest),
             new ValTester("#{% form_auto_id 'servings' %}", servingTest),
             new ValTester("#id__recipe-category-input-new", categoryTest),
-            new ValTester("'{% form_auto_id 'description' %}'", descTest)
+            new ValTester("#{% form_auto_id 'description' %}", descTest)
         ]);
 
         const recipePreviewer = new ImagePreviewer('#id_picture', '.preview > img',

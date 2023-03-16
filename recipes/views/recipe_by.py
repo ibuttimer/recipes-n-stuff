@@ -31,13 +31,15 @@ from django.shortcuts import render
 from django.views import View
 from django.views.decorators.http import require_http_methods
 
+from base.entity_conv import unescape_entities
 from checkout.basket import add_ingredient_box_to_basket
 from order.views.utils import order_permission_check
-from utils.content_list_mixin import get_query_args
+from utils.content_list_mixin import get_query_args, SUBMIT_URL_CTX
 from .dto import RecipeDto
+from .recipe_create import for_recipe_form_render, handle_image
 from .recipe_queries import (
     get_recipe, get_recipe_ingredients_list, get_recipe_box_product,
-    get_recipe_count, nutritional_info_valid
+    get_recipe_count, nutritional_info_valid, own_recipe_check
 )
 from ..constants import (
     THIS_APP, INGREDIENTS_CTX, NEW_INGREDIENT_FORM_CTX,
@@ -47,17 +49,19 @@ from ..constants import (
     RECIPE_ID_INSTRUCTION_NEW_ROUTE_NAME, COUNT_OPTIONS_CTX,
     SELECTED_COUNT_CTX, CUSTOM_COUNT_CTX, CCY_SYMBOL_CTX, UNIT_PRICE_CTX,
     QUANTITY_FIELD, NEXT_QUERY, INGREDIENT_LIST_CTX, RECIPE_COUNT_CTX,
-    CAN_PURCHASE_CTX, IS_OWN_CTX, NUTRITIONAL_INFO_CTX
+    CAN_PURCHASE_CTX, IS_OWN_CTX, NUTRITIONAL_INFO_CTX, RECIPE_QUERY,
+    RECIPE_FORM_CTX, INGREDIENT_ID_MAP_CTX
 )
 from utils import (
     Crud, app_template_path, reverse_q,
     namespaced_url, PAGE_HEADING_CTX, TITLE_CTX, QueryOption, PATCH,
-    redirect_payload
+    redirect_payload, redirect_on_success_or_render
 )
-from .utils import recipe_permission_check
+from .utils import recipe_permission_check, encode_timedelta
 from ..constants import RECIPE_ID_ROUTE_NAME, RECIPE_DTO_CTX
 from ..forms import (
-    RecipeIngredientForm, RecipeIngredientNewForm, RecipeInstructionForm
+    RecipeIngredientForm, RecipeIngredientNewForm, RecipeInstructionForm,
+    RecipeForm
 )
 from ..models import Recipe, Instruction, Ingredient
 
@@ -66,6 +70,7 @@ TITLE_UPDATE = 'Update Recipe'
 UPDATE_QUERY_ARGS = [
     QueryOption.of_no_cls_dflt(INGREDIENTS_QUERY),
     QueryOption.of_no_cls_dflt(INSTRUCTIONS_QUERY),
+    QueryOption.of_no_cls_dflt(RECIPE_QUERY),
 ]
 
 MAX_PRESET_BOX_COUNT = 10
@@ -77,6 +82,8 @@ BOX_COUNT_OPTIONS = [
 ]
 
 TypeRedirectNext = TypeVar("TypeRedirectNext", bound="RedirectNext")
+
+TITLE_UPDATE = 'Update Recipe'
 
 
 class RecipeDetail(LoginRequiredMixin, View):
@@ -249,24 +256,89 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
         """
         recipe_permission_check(request, Crud.UPDATE)
 
+        recipe, _ = get_recipe(pk)
+
         query_args = get_query_args(request, UPDATE_QUERY_ARGS)
 
-        for query, field in [
-            (INGREDIENTS_QUERY, Recipe.INGREDIENTS_FIELD),
-            (INSTRUCTIONS_QUERY, Recipe.INSTRUCTIONS_FIELD),
+        for query in [
+            INGREDIENTS_QUERY, INSTRUCTIONS_QUERY, RECIPE_QUERY
         ]:
             if query_args[query].was_set_to_boolean_true():
-                field_name = field
+                field_name = query
                 break
         else:
             raise BadRequest('Malformed request; query not specified')
 
-        if field_name == Recipe.INGREDIENTS_FIELD:
+        if field_name == INGREDIENTS_QUERY:
             template, context = self.render_update_ingredients(request, pk)
-        else:
+        elif field_name == INSTRUCTIONS_QUERY:
             template, context = self.render_update_instructions(request, pk)
+        else:
+            form = RecipeForm(instance=recipe)
+
+            form.initial[RecipeForm.PREP_TIME_FF] = \
+                encode_timedelta(recipe.prep_time)
+            form.initial[RecipeForm.COOK_TIME_FF] = \
+                encode_timedelta(recipe.cook_time)
+            form.initial[RecipeForm.CATEGORY_FF] = recipe.category.name
+
+            template, context = self.render_info(form, pk)
 
         return render(request, template, context=context)
+
+    def render_info(self, form: RecipeForm, pk: int, query: str = None):
+        """
+        Get info to render a recipe form
+        :param form: form to use
+        :param pk: id of recipe
+        :param query: query field
+        :return: tuple of template path and context
+        """
+        return for_recipe_form_render(
+            TITLE_UPDATE, Crud.UPDATE, **{
+                SUBMIT_URL_CTX: self.url(pk, query),
+                RECIPE_FORM_CTX: form
+            })
+
+    def post(self, request: HttpRequest, pk: int,
+             *args, **kwargs) -> HttpResponse:
+        """
+        POST method for Recipe
+        :param request: http request
+        :param pk: id of recipe
+        :param args: additional arbitrary arguments
+        :param kwargs: additional keyword arguments
+        :return: http response
+        """
+        recipe_permission_check(request, Crud.UPDATE)
+
+        recipe, _ = get_recipe(pk)
+        own_recipe_check(request, recipe)
+
+        form = RecipeForm(
+            data=request.POST, files=request.FILES, instance=recipe)
+        form.full_clean()
+
+        if form.is_valid():
+            # update object
+            handle_image(form, form.instance)
+
+            recipe = form.save()
+            # django autocommits changes
+            # https://docs.djangoproject.com/en/4.1/topics/db/transactions/#autocommit
+
+            redirect_to = reverse_q(
+                namespaced_url(THIS_APP, RECIPE_ID_ROUTE_NAME),
+                args=[recipe.id]
+            )
+            template_path, context = None, None
+        else:
+            redirect_to = None
+            template_path, context = self.render_info(form, pk)
+
+        return redirect_on_success_or_render(
+            request, redirect_to is not None, redirect_to=redirect_to,
+            template_path=template_path, context=context)
 
     @staticmethod
     def render_update_ingredients(
@@ -289,7 +361,7 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
         if not new_form:
             new_form = RecipeIngredientNewForm()
             new_form.initial[RecipeIngredientForm.INDEX_FF] = \
-                ingredients[-1].index + 1
+                ingredients[-1].index + 1 if len(ingredients) else 1
 
         context = {
             TITLE_CTX: 'Update Ingredients',
@@ -306,6 +378,14 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
                 map(lambda ingred: ingred.name,
                     Ingredient.objects.order_by(Ingredient.NAME_FIELD).all())
             ),
+            # due to mixed html entity encoding on ingredient names from the
+            # kaggle dataset, can't look up ingredient by name, so provide a
+            # map with unescaped name as the key and id as the value
+            INGREDIENT_ID_MAP_CTX: {
+                iname: ikey for iname, ikey in map(
+                    lambda ingred: (unescape_entities(ingred.name), ingred.id),
+                    Ingredient.objects.order_by(Ingredient.NAME_FIELD).all())
+            },
             NEW_URL_CTX: reverse_q(
                 namespaced_url(THIS_APP, RECIPE_ID_INGREDIENT_NEW_ROUTE_NAME),
                 args=[recipe.id]
@@ -339,7 +419,7 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
         if not new_form:
             new_form = RecipeInstructionForm()
             new_form.initial[RecipeInstructionForm.INDEX_FF] = \
-                instructions[-1].index + 1
+                instructions[-1].index + 1 if len(instructions) else 1
 
         context = {
             TITLE_CTX: 'Update Instructions',
@@ -363,7 +443,7 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
         return app_template_path(THIS_APP, 'instructions_form.html'), context
 
     @staticmethod
-    def url(pk: int, query: str) -> str:
+    def url(pk: int, query: str = None) -> str:
         """
         Get url for address update/delete
         :param pk: id of entity
@@ -374,7 +454,7 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
             namespaced_url(THIS_APP, RECIPE_ID_UPDATE_ROUTE_NAME),
             args=[pk], query_kwargs={
                 query: 'y'
-            }
+            } if query else None
         )
 
 

@@ -163,7 +163,7 @@ class RecipeIngredientNewForm(forms.ModelForm):
             _error_msgs.update(error_messages(
                 RecipeIngredient.model_name_caps(),
                 *[ErrorMsgs(
-                    field, required=True,
+                    field, required=True, from_list=True
                 ) for field in (
                     INGREDIENT_FIELD,
                 )]
@@ -320,6 +320,7 @@ class RecipeForm(FormMixin, forms.ModelForm):
     SERVINGS_FF = Recipe.SERVINGS_FIELD
     CATEGORY_FF = Recipe.CATEGORY_FIELD
     DESCRIPTION_FF = Recipe.DESCRIPTION_FIELD
+    YIELD_FF = Recipe.RECIPE_YIELD_FIELD
 
     name = forms.CharField(
         label=_("Name"), max_length=Recipe.RECIPE_ATTRIB_NAME_MAX_LEN,
@@ -371,6 +372,11 @@ class RecipeForm(FormMixin, forms.ModelForm):
         required=True, widget=forms.Textarea(attrs={
             'placeholder': 'Recipe description',
         }))
+    recipe_yield = forms.CharField(
+        label=_("Yield"), max_length=Recipe.RECIPE_ATTRIB_YIELD_MAX_LEN,
+        required=False, widget=forms.TextInput(attrs={
+            'placeholder': 'Recipe yield',
+        }))
 
     @dataclass
     class Meta:
@@ -379,7 +385,7 @@ class RecipeForm(FormMixin, forms.ModelForm):
         fields = [
             Recipe.NAME_FIELD, Recipe.PREP_TIME_FIELD, Recipe.COOK_TIME_FIELD,
             Recipe.PICTURE_FIELD, Recipe.SERVINGS_FIELD, Recipe.CATEGORY_FIELD,
-            Recipe.DESCRIPTION_FIELD
+            Recipe.DESCRIPTION_FIELD, Recipe.RECIPE_YIELD_FIELD
         ]
         non_bootstrap_fields = [Recipe.PICTURE_FIELD]
         help_texts = {
@@ -390,6 +396,7 @@ class RecipeForm(FormMixin, forms.ModelForm):
             Recipe.SERVINGS_FIELD: 'Number of servings',
             Recipe.CATEGORY_FIELD: 'Recipe category',
             Recipe.DESCRIPTION_FIELD: 'Recipe description',
+            Recipe.RECIPE_YIELD_FIELD: 'Recipe yield',
         }
         _error_messages = error_messages(
             model.model_name_caps(),
@@ -398,8 +405,12 @@ class RecipeForm(FormMixin, forms.ModelForm):
         )
         _error_messages.update(error_messages(
             model.model_name_caps(),
-            ErrorMsgs(Recipe.DESCRIPTION_FIELD,
-                      max_length=Recipe.RECIPE_ATTRIB_DESC_MAX_LEN)
+            *[ErrorMsgs(
+                field, max_length=max_len) for field, max_len in [
+                (Recipe.DESCRIPTION_FIELD, Recipe.RECIPE_ATTRIB_DESC_MAX_LEN),
+                (Recipe.RECIPE_YIELD_FIELD,
+                 Recipe.RECIPE_ATTRIB_YIELD_MAX_LEN),
+            ]]
         ))
         _error_messages.update(error_messages(
             model.model_name_caps(),

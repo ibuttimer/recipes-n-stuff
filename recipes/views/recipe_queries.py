@@ -26,8 +26,10 @@ from typing import Any, Type, Optional, Tuple, List, Union
 from zoneinfo import ZoneInfo
 
 from django.db.models import Q, QuerySet, Prefetch, Model
+from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 
+from base.utils import raise_permission_denied
 from checkout.models import Currency
 from order.models import OrderProduct
 from recipes.constants import (
@@ -59,7 +61,10 @@ FIELD_LOOKUPS = {
     KEYWORD_QUERY: f'{Recipe.KEYWORDS_FIELD}__in',
     INGREDIENT_QUERY: f'{Recipe.INGREDIENTS_FIELD}__in',
     CATEGORY_QUERY: f'{Recipe.CATEGORY_FIELD}__{Category.NAME_FIELD}__iexact',
+    # author username contains query param
     AUTHOR_QUERY: f'{Recipe.AUTHOR_FIELD}__{User.USERNAME_FIELD}__icontains',
+    # author username equals query param
+    USER_QUERY: f'{Recipe.AUTHOR_FIELD}__{User.USERNAME_FIELD}',
     # CATEGORY_QUERY: f'{Opinion.CATEGORIES_FIELD}__in',
     # ON_OR_AFTER_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date__gte',
     # ON_OR_BEFORE_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date__lte',
@@ -442,8 +447,8 @@ def get_recipe_instruction(pk: int) -> Tuple[Instruction, dict]:
     return entity, query_param
 
 
-def get_recipe_box_product(pk: int,
-                           get_or_404: bool = True) -> Tuple[OrderProduct, Currency]:
+def get_recipe_box_product(
+        pk: int, get_or_404: bool = True) -> Tuple[OrderProduct, Currency]:
     """
     Get the ingredient box product for a recipe
     :param pk: id of recipe
@@ -489,3 +494,18 @@ def nutritional_info_valid(pk: int) -> bool:
         *Recipe.nutritional_fields()
     )
     return any(fields.first())
+
+
+def own_recipe_check(request: HttpRequest, recipe: Recipe,
+                     raise_ex: bool = True) -> bool:
+    """
+    Check request user is recipe owner
+    :param request: http request
+    :param recipe: recipe
+    :param raise_ex: raise exception if not own; default True
+    """
+    is_own = request.user.id == recipe.author.id
+    if not (is_own or request.user.is_superuser) and raise_ex:
+        raise_permission_denied(request, recipe, plural='s')
+
+    return is_own

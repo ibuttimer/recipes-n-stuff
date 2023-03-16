@@ -256,6 +256,23 @@ authors = {}        # key: username, val: namedtuple Author
 recipes = {}        # key: food.com id, val: id
 instructions = {}   # key: food.com id, val: list of instruction ids
 
+HTML_ASCII_ENTITIES = {
+    "&excl;": "\u0021", "&quot;": "\u0022", "&num;": "\u0023",
+    "&dollar;": "\u0024", "&percnt;": "\u0025", "&amp;": "\u0026",
+    "&apos;": "\u0027", "&lpar;": "\u0028", "&rpar;": "\u0029",
+    "&ast;": "\u002A", "&midast;": "\u002A", "&plus;": "\u002B",
+    "&comma;": "\u002C", "&period;": "\u002E", "&sol;": "\u002F",
+    "&colon;": "\u003A", "&semi;": "\u003B", "&lt;": "\u003C",
+    "&equals;": "\u003D", "&gt;": "\u003E", "&quest;": "\u003F",
+    "&commat;": "\u0040", "&lbrack;": "\u005B", "&lsqb;":  "\u005B",
+    "&bsol;": "\u005C", "&rbrack;": "\u005D", "&rsqb;": "\u005D",
+    "&Hat;": "\u005E", "&lowbar;": "\u005F", "&UnderBar;": "\u005F",
+    "&DiacriticalGrave;": "\u0060", "&grave;": "\u0060", "&lbrace;": "\u007B",
+    "&lcub;": "\u007B", "&VerticalLine;": "\u007C", "&verbar;": "\u007C",
+    "&vert;": "\u007C", "&rbrace;": "\u007D", "&rcub;": "\u007D"
+}
+ENTITY_REGEX = re.compile(r'(&[a-zA-Z]+;)')
+
 
 def load_recipe(args: argparse.Namespace, curs):
     """
@@ -308,6 +325,19 @@ def load_recipe(args: argparse.Namespace, curs):
         f'SELECT id FROM {MEASURE_TABLE} WHERE "{MEASURE_NAME}" = %s',
         ('unit',))
     unit_id = curs.fetchone()[0]
+
+    # TODO replace ascii html entities with ascii code
+    def ingredient_values(
+            ingredient_name: Union[str, StringScalar], row: int) -> tuple:
+        """ Generate ingredient values """
+        def _entity_to_chr(val):
+            return HTML_ASCII_ENTITIES[val] if val in HTML_ASCII_ENTITIES \
+                else val
+
+        return one_val_tuple(
+            re.sub(
+                ENTITY_REGEX, lambda match: _entity_to_chr(match.group(0)),
+                ingredient_name))
 
     table_fields = ', '.join(INGREDIENT_FIELDS)
     process_data(

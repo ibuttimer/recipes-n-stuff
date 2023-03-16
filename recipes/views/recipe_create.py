@@ -42,8 +42,9 @@ from recipes.constants import (
 )
 from recipes.forms import RecipeForm
 from recipes.models import Recipe, Category
+from .dto import RecipeDto
 
-from .utils import recipe_permission_check, parse_duration
+from .utils import recipe_permission_check
 
 TITLE_NEW = 'Create Recipe'
 
@@ -154,7 +155,8 @@ def for_recipe_form_render(
     if context_form:
         # image to display
         initial = context_form.initial.get(RecipeForm.PICTURE_FF, None)
-        initial = initial.url if initial else None
+        initial = None if RecipeDto.has_no_uploaded_picture(initial) \
+            else initial.url
         recipe_url = initial or RECIPE_BLANK_URL
 
         context.update({
@@ -162,7 +164,7 @@ def for_recipe_form_render(
             RECIPE_FORM_RHS_FIELDS_CTX: [
                 RecipeForm.NAME_FF, RecipeForm.PREP_TIME_FF,
                 RecipeForm.COOK_TIME_FF, RecipeForm.SERVINGS_FF,
-                RecipeForm.CATEGORY_FF
+                RecipeForm.CATEGORY_FF, RecipeForm.YIELD_FF
             ],
             RECIPE_URL_CTX: recipe_url,
             # not all image types are supported by Pillow which is used by
@@ -177,3 +179,18 @@ def for_recipe_form_render(
         })
 
     return app_template_path(THIS_APP, "recipe_form.html"), context
+
+
+def handle_image(form: RecipeForm, recipe: Recipe):
+    """
+    Handle image during recipe save
+    :param form: recipe form
+    :param recipe: recipe instance to save
+    """
+    # special handing for image
+    save_data = form.cleaned_data[RecipeForm.PICTURE_FF]
+    if save_data is not None:
+        # if not save_data:   # False for clear
+        #     # user cleared, reset to placeholder
+        #     save_data = User.AVATAR_BLANK
+        setattr(recipe, RecipeForm.PICTURE_FF, save_data)

@@ -42,7 +42,7 @@ from utils import (
     query_search_term, LIST_SUB_HEADING_CTX, ChoiceArg
 )
 from utils.content_list_mixin import SELECTED_SORT_CTX
-from utils.search import SEARCH_QUERY
+from utils.search import SEARCH_QUERY, USER_QUERY
 
 from recipes.constants import (
     THIS_APP, RECIPE_LIST_CTX, AUTHOR_QUERY, KEYWORD_QUERY, TIME_CTX,
@@ -75,11 +75,10 @@ assert REORDER_REQ_QUERY_ARGS == list(
 LIST_QUERY_ARGS = REORDER_QUERY_ARGS.copy()
 LIST_QUERY_ARGS.extend([
     # non-reorder query args
-    QueryOption.of_no_cls_dflt(SEARCH_QUERY),
-    QueryOption.of_no_cls_dflt(KEYWORD_QUERY),
-    QueryOption.of_no_cls_dflt(INGREDIENT_QUERY),
-    QueryOption.of_no_cls_dflt(CATEGORY_QUERY),
-    QueryOption.of_no_cls_dflt(AUTHOR_QUERY),
+    QueryOption.of_no_cls_dflt(query) for query in [
+        SEARCH_QUERY, KEYWORD_QUERY, INGREDIENT_QUERY, CATEGORY_QUERY,
+        AUTHOR_QUERY, USER_QUERY,
+    ]
 ])
 # request arguments for an opinion search request
 SEARCH_QUERY_ARGS = LIST_QUERY_ARGS.copy()

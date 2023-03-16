@@ -25,6 +25,8 @@ from typing import Union, List, Tuple
 
 from django.http import HttpRequest
 
+from timedelta_isoformat import timedelta as timedelta_iso
+
 from recipes.constants import THIS_APP
 from recipes.models import Recipe, Category
 from utils import (
@@ -48,6 +50,19 @@ ALL_DURATION_SYMBOLS = [YEAR, MTH, WK, DAY, HOUR, MIN, SEC]
 DURATION_FORMAT_STR = ' '.join(list(map(
     lambda s: f'#{s}', ALL_DURATION_SYMBOLS
 )))
+
+DAYS_PER_MTH = 31
+DAYS_PER_YEAR = 365
+MTHS_PER_YEAR = 12
+
+ISO_PERIOD = 'P'
+ISO_YEAR = 'Y'
+ISO_MTH = 'M'
+ISO_DAY = 'D'
+ISO_TIME = 'T'
+ISO_HOUR = 'H'
+ISO_MIN = 'M'
+ISO_SEC = 'S'
 
 
 def recipe_permission_check(
@@ -125,10 +140,10 @@ def parse_duration(duration: str) -> Tuple[bool, timedelta]:
                         key = 'weeks'
                     elif symbol == MTH:
                         key = 'days'
-                        factor = 31
+                        factor = DAYS_PER_MTH
                     elif symbol == YEAR:
                         key = 'days'
-                        factor = 365
+                        factor = DAYS_PER_YEAR
                     else:
                         raise ValueError(f'Unknown symbol {symbol}')
 
@@ -151,3 +166,57 @@ def parse_duration(duration: str) -> Tuple[bool, timedelta]:
         delta = timedelta(**decoded) if is_valid else None
 
     return is_valid, delta
+
+
+def encode_timedelta(delta: timedelta) -> str:
+    """
+    Encode a timedelta in input format
+    :param delta: timedelta to encode
+    :return: encoded info
+    """
+    td = timedelta_iso(days=delta.days, seconds=delta.seconds)
+    # ISO_8601 durations: PnYnMnDTnHnMnS
+    duration = td.isoformat()
+
+    def cut(pstr, start, term):
+        end = pstr.index(term) if term in pstr else start
+        return pstr[start:end], end
+
+    def normalise(units, tens, units_per_ten) -> Tuple:
+        if units and int(units) >= units_per_ten:
+            iunits = int(units)
+            itens = int(iunits / units_per_ten)
+            iunits -= (itens * units_per_ten)
+            tens = str(itens + (int(tens) if tens else 0))
+            units = str(iunits) if iunits else ''
+        return units, tens
+
+    # iso T will never be 0 as valid string starts with P
+    tidx = duration.index(ISO_TIME) if ISO_TIME in duration else 0
+    ymd = duration[1:tidx or len(duration)]
+    time = duration[tidx + 1:] if tidx else ''
+    year, mth, day, hour, minute, sec = (0, 0, 0, 0, 0, 0)
+
+    if time:
+        hour, end = cut(time, 0, ISO_HOUR)
+        minute, end = cut(time, end + 1 if hour else end, ISO_MIN)
+        sec, end = cut(time, end + 1 if minute else end, ISO_SEC)
+
+        sec, minute = normalise(sec, minute, 60)
+        minute, hour = normalise(minute, hour, 60)
+
+    if ymd:
+        year, end = cut(ymd, 0, ISO_YEAR)
+        mth, end = cut(ymd, end + 1 if year else end, ISO_MTH)
+        day, end = cut(ymd, end + 1 if mth else end, ISO_DAY)
+
+        hour, day = normalise(hour, day, 24)
+        day, mth = normalise(day, mth, DAYS_PER_MTH)
+        mth, year = normalise(mth, year, MTHS_PER_YEAR)
+
+    return ' '.join([
+        f'{num}{symbol}' for num, symbol in [
+            (year, YEAR), (mth, MTH), (day, DAY),
+            (hour, HOUR), (minute, MIN), (sec, SEC)
+        ] if num
+    ])

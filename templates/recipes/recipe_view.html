@@ -22,18 +22,26 @@
 {% block content %}
 <div class="row mt-2 mb-2">
     <div class="col-12 text-center">
-        <h3>{{ recipe_dto.name | safe }}</h3>
+        <h3 class="d-inline p-2">{{ recipe_dto.name | safe }}</h3>
+        {% if can_update or is_own %}
+            <a class="btn btn-sm btn-outline-primary d-inline p-2" href="{% url 'recipes:recipe_id_update' recipe_dto.id %}?recipe=y"
+               data-bs-toggle="tooltip" data-bs-placement="top"
+               data-bs-title="Edit recipe"
+               id="id__edit-recipe">
+                <i class="fa-solid fa-pen"></i>
+            </a>
+        {% endif %}
     </div>
 </div>
 
 <article id="article-content" class="row d-flex justify-content-center">
-    <div class="row mb-3">
-        <div class="col-sm-6">
+    <div class="row">
+        <div class="col-md-6 col-sm-12">
             <img class="card-img-top" alt="{{ recipe_dto.name }} image" src="{% image_url recipe_dto.main_image %}">
         </div>
-        <div class="col-sm-6">
+        <div class="col-md-6 col-sm-12">
             <div class="row">
-                <div class="col-sm-6 d-flex">
+                <div class="col-lg-6 col-sm-12 d-flex">
                     <p class="align-self-center">
                         Submitted by
                         <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="view {{ recipe_dto.author.username }}'s profile">
@@ -50,7 +58,7 @@
                         {% endif %}
                     </p>
                 </div>
-                <div class="col-sm-3 text-center">
+                <div class="col-lg-3 col-sm-6 text-center">
                     <div class="text-muted small">Recipes</div>
                     <p>
                         <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="See all recipes by {{ recipe_dto.author.username }}">
@@ -58,10 +66,10 @@
                         </span>
                     </p>
                 </div>
-                <div class="col-sm-3 text-center">
+                <div class="col-md-3 col-sm-6 text-center">
                     <div class="text-muted small">Category</div>
                     <p>
-                        <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="view all {{ recipe_dto.category.name }} recipes">
+                        <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="See all {{ recipe_dto.category.name }} recipes">
                             <a class="btn btn-outline-info" href="{% url 'recipes:recipes' %}?category={{ recipe_dto.category.name }}" aria-label="view all {{ recipe_dto.category.name }} recipes">
                                 {{ recipe_dto.category.name }}
                             </a>
@@ -71,28 +79,45 @@
             </div>
             <div class="row">
                 <div class="col-sm-6">
-                    <p>Prep <i class="fa-regular fa-clock"></i> {% human_readable_timedelta recipe_dto.prep_time %}</p>
+                    <p><i class="fa-regular fa-clock"></i> Prep {% human_readable_timedelta recipe_dto.prep_time %}</p>
                 </div>
                 <div class="col-sm-6">
-                    <p>Cook <i class="fa-regular fa-clock"></i> {% human_readable_timedelta recipe_dto.cook_time %}</p>
+                    <p><i class="fa-regular fa-clock"></i> Cook {% human_readable_timedelta recipe_dto.cook_time %}</p>
                 </div>
             </div>
             <div class="row">
                 <div class="col-sm-6">
-                    <p>Ready in <i class="fa-regular fa-clock"></i> {% human_readable_timedelta recipe_dto.total_time %}</p>
+                    <p><i class="fa-regular fa-clock"></i> Ready in {% human_readable_timedelta recipe_dto.total_time %}</p>
                 </div>
+                {% if nutritional_info %}
                 <div class="col-sm-6">
-                    <p><i class="fa-solid fa-people-group"></i> {{ recipe_dto.servings }}</p>
+                    <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#id__nutrition-info-modal">
+                        Nutritional information
+                    </button>
                 </div>
+                {% endif %}
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <i class="fa-solid fa-people-group"></i> {{ recipe_dto.servings }}
+                </div>
+                {% if recipe_dto.recipe_yield %}
+                <div class="col-sm-6">
+                    <i class="fa-solid fa-bowl-food"></i> {{ recipe_dto.recipe_yield }}
+                </div>
+                {% endif %}
             </div>
             {% if can_purchase %}
+            <div class="text-success">
+                <hr class="m-3">
+            </div>
             <div class="row">
-                <div class="col-sm-4">
+                <div class="col-lg-4 col-sm-6">
                     <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="price {{ ccy_symbol }}{{ unit_price }} per person">
                         <p><i class="fa-solid fa-box"></i> {{ ccy_symbol }}{{ unit_price }} pp</p>
                     </span>
                 </div>
-                <div class="col-sm-4">
+                <div class="col-lg-4 col-sm-6">
                     <span class="d-flex flex-row justify-content-center align-items-center">
                         <i class="fa-solid fa-person me-2"></i>
                         <span>
@@ -105,7 +130,7 @@
                         </span>
                     </span>
                 </div>
-                <div class="col-sm-4 text-center">
+                <div class="col-lg-4 col-sm-12 text-center">
                     <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
                         <span id="id__add-boxes-to-basket-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Add to basket">
                             <button type="button" class="btn btn-primary btn-sm btn__text btn__add-boxes-to-basket" data-rns-next="no"
@@ -136,25 +161,19 @@
                 </div>
             </div>
             {% endif %}
-            {% if nutritional_info %}
-            <div class="row">
-                <div class="col-sm-12">
-                    <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#id__nutrition-info-modal">
-                        Nutritional information
-                    </button>
-                </div>
-            </div>
-            {% endif %}
         </div>
     </div>
     <div class="row mb-3">
+        <div class="text-success">
+            <hr class="m-3">
+        </div>
         <div class="col-12">
-            <p>{{ recipe_dto.description }}</p>
+            <p>{{ recipe_dto.description | safe }}</p>
         </div>
     </div>
     <div class="row">
         {% has_permission user 'recipe' 'update' as can_update %}
-        <div class="col-sm-6">
+        <div class="col-md-6 col-sm-12">
             <div class="row">
                 <div class="col-sm-12 mb-3">
                     <h6 class="d-inline p-2">Ingredients</h6>
@@ -174,7 +193,7 @@
                 <div class="col-sm-3"><span>{% if ingredient.quantity %}{{ ingredient.measure}}{% endif %}</span></div>
                 <div class="col-sm-7">
                     <span>
-                    {{ ingredient.ingredient }}
+                    {{ ingredient.ingredient | safe }}
                     {% if not forloop.last %}
                         {% lookup_value recipe_dto.ingredient_alts forloop.counter as is_alt %}
                         {% if is_alt %}
@@ -186,7 +205,7 @@
             </div>
             {% endfor %}
         </div>
-        <div class="col-sm-6">
+        <div class="col-md-6 col-sm-12">
             <div class="row">
                 <div class="col-sm-12 mb-3">
                     <h6 class="d-inline p-2">Instructions</h6>
