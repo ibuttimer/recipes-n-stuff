@@ -102,6 +102,7 @@ def parse_duration(duration: str) -> Tuple[bool, timedelta]:
     decoded = {}
     error = False
     term_set = set()
+    search_str = None    # track remainder after decoding elements
 
     is_valid = isinstance(duration, timedelta)
     if is_valid:
@@ -109,11 +110,10 @@ def parse_duration(duration: str) -> Tuple[bool, timedelta]:
     else:
         match = True
         search_str = duration.strip()
-        start_pos = 0
         while match:
-            match = DURATION_REGEX.search(search_str, pos=start_pos)
+            match = DURATION_REGEX.search(search_str)
             if match:
-                pre_str = search_str[start_pos:match.start(2)]
+                pre_str = search_str[0:match.start(2)]
                 if len(pre_str) > 0:
                     ws_match = re.match(r'\s+', pre_str)
                     if not ws_match or ws_match.end(0) != len(pre_str):
@@ -156,13 +156,18 @@ def parse_duration(duration: str) -> Tuple[bool, timedelta]:
                     value = int(digits) * factor
                     decoded[key] = decoded[key] + value \
                         if key in decoded else value
-                    start_pos = match.end(3)
+
+                    # remove decoded bit from remainder
+                    search_str = search_str[0:match.start(0)] + search_str[match.end(0):]
                 else:
                     # invalid match
                     error = True
                     break
 
-        is_valid = len(decoded) > 0 and not error
+        # valid if decoded something, have no errors and remainder is
+        # whitespace
+        search_str = re.sub(r'\s+', '', search_str)
+        is_valid = len(decoded) > 0 and not error and len(search_str) == 0
         delta = timedelta(**decoded) if is_valid else None
 
     return is_valid, delta

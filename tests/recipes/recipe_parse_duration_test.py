@@ -88,10 +88,15 @@ class TestParseDuration(TestCase):
     def check_symbol_decode_fail(self, num: int, symbol: str):
         def fail_set(n: int, sym: str):
             return [
+                f'abc', f'255', f'***', f' abc ', f' 255 ', f' *** ',
+                f'abc {n}{sym}', f'{n}{sym} abc',
+                f'255 {n}{sym}', f'{n}{sym} 255'
+                f'*** {n}{sym}', f'{n}{sym} ***'
+                f'{n}{sym} {n}{sym}'
                 f'{sym}{n}', f' {sym}{n}', f' {sym}{n} ', f' {sym} {n} ',
                 f'{sym}.0{n}', f' {sym}-{n}', f' {sym}={n} ', f' {sym}=={n} ',
                 f' {sym}:{n} ',
-                f'-{n}{sym}', f'0.{n}{sym}', f'.{n}{sym}', f'{n}/1 {sym}'
+                f'-{n}{sym}', f'0.{n}{sym}', f'.{n}{sym}', f'{n}/1 {sym}',
             ]
 
         str_set = fail_set(num, symbol.lower())         # lowercase
@@ -125,6 +130,7 @@ class TestParseDuration(TestCase):
 
     def test_parse_duration(self):
         """ Test duration parsing """
+        # test combos of 2
         for num in range(0, 2):
             for symbol in ALL_SYMBOLS:
                 self.check_symbol_decode_success(
