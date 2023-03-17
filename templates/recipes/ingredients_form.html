@@ -10,7 +10,7 @@
 
 {% load i18n %}
 {% load static %}
-{% load form_submit_btn_id  a_id  lookup_value  delete_modal_ids %}
+{% load form_submit_btn_id  a_id  lookup_value  delete_modal_ids  form_auto_id %}
 
 {% block head_title %}{{ title }}{% endblock %}
 
@@ -95,18 +95,21 @@
 
                     <fieldset class="row mb-3 text-center">
                         {% for field in new_ingred_form %}
-                            {% if field.name != 'ingredient' %}
+                            {% if field.name != 'ingredient' and field.name != 'ingredient_id' %}
                                 <div class="col-sm-2">
                                     {{ field }}
-                                    <div class="invalid-feedback">
-                                        {% lookup_value new_ingred_form.Meta.error_messages field.name 'combined' as error_message %}
-                                        <p>{{ error_message }}</p>
-                                    </div>
+                                    {% if not field.is_hidden %}
+                                        <div class="invalid-feedback">
+                                            {% lookup_value new_ingred_form.Meta.error_messages field.name 'combined' as error_message %}
+                                            <p>{{ error_message }}</p>
+                                        </div>
+                                    {% endif %}
                                 </div>
                             {% endif %}
                         {% endfor %}
                         <div class="col-sm-3">
                             {{ new_ingred_form.ingredient }}
+                            {{ new_ingred_form.ingredient_id }}
                             <div class="invalid-feedback">
                                 {% lookup_value new_ingred_form.Meta.error_messages entity 'combined' as error_message %}
                                 <p>{{ error_message }}</p>
@@ -136,9 +139,7 @@
         </div>
 
         <datalist id="id__ingredient-datalist">
-            {% for ingredient in ingredient_list %}
-                <option value="{{ ingredient | safe }}">
-            {% endfor %}
+            {% for ingredient in ingredient_list %}<option value="{{ ingredient | safe }}">{% endfor %}
         </datalist>
 
     </article>
@@ -162,6 +163,7 @@
 
         const newIngredientFormSelector = '#id__ingredient-form-new';
         const newIngredientInputSelector = '#id__ingredient-input-new';
+        const newIngredientIdInputSelector = "#{% form_auto_id 'ingredient_id' %}";
         const newIngredientUploadSelector = "#{% form_submit_btn_id 'ingredient-new' %}";
 
         /**
@@ -216,8 +218,9 @@
                 } else {
                     const ingredientName = $(newIngredientInputSelector).val();
                     if (ingredientIdMap.hasOwnProperty(ingredientName)) {
+                        // set hidden ingredient id field to ingredient id
                         const ingredientId = ingredientIdMap[ingredientName];
-                        $(newIngredientInputSelector).val(ingredientId);
+                        $(newIngredientIdInputSelector).val(ingredientId);
                     }
                 }
             });

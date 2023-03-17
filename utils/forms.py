@@ -105,9 +105,9 @@ def error_messages(model: str, *args: ErrorMsgs) -> dict:
             if inc_msg(k, entry, exclude=_NO_VAL_ATTRIBS)
         ])
         if len(terms) > 1:
-            msg = f'{msg}, {",".join(terms[:-1])} and {terms[-1]}'
+            msg = f'{msg}: {",".join(terms[:-1])} and {terms[-1]}'
         elif len(terms) > 0:
-            msg = f'{msg}, {terms[-1]}'
+            msg = f'{msg} {terms[-1]}'
         return f'{msg}.'
 
     messages = {}

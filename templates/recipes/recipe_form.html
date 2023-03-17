@@ -106,9 +106,7 @@
     </row>
 
     <datalist id="id__category-datalist">
-        {% for category in category_list %}
-            <option value="{{ category | safe }}">
-        {% endfor %}
+        {% for category in category_list %}<option value="{{ category | safe }}">{% endfor %}
     </datalist>
 </article>
 

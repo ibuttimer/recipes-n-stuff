@@ -29,6 +29,10 @@
     color: var(--bs-card-color);
 }
 
+.i__recipe-btn-icon {
+    width: 20px;
+}
+
 .img__no-content {
     width: calc(var(--img-no-content-width) / 4);
     height: calc(var(--img-no-content-height) / 4);

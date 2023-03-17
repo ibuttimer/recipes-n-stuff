@@ -38,13 +38,14 @@ from recipes.constants import (
 from recipes.models import (
     Recipe, Ingredient, Instruction, RecipeIngredient, Keyword, Category
 )
+from recipes.views.utils import recipe_permission_check
 from user.models import User
 from utils import (
     SEARCH_QUERY, DATE_QUERIES,
     regex_matchers, regex_date_matchers, QuerySetParams,
     TERM_GROUP, KEY_TERM_GROUP, DATE_QUERY_GROUP, DATE_KEY_TERM_GROUP,
     DATE_QUERY_YR_GROUP, DATE_QUERY_MTH_GROUP,
-    DATE_QUERY_DAY_GROUP, USER_QUERY, get_object_and_related_or_404
+    DATE_QUERY_DAY_GROUP, USER_QUERY, get_object_and_related_or_404, Crud
 )
 from utils.query_params import SearchType, QueryTerm
 from utils.search import MARKER_CHARS
@@ -509,3 +510,23 @@ def own_recipe_check(request: HttpRequest, recipe: Recipe,
         raise_permission_denied(request, recipe, plural='s')
 
     return is_own
+
+
+def chk_permission_get_recipe(
+        request: HttpRequest, pk: int, op: Crud,
+        is_own: bool = True) -> Recipe:
+    """
+    Perform permission checks and get a Recipe
+    :param request: http request
+    :param pk: id of recipe
+    :param op: operation permission to check
+    :param is_own: perform is own check; default True
+    :return: recipe
+    """
+    recipe_permission_check(request, op)
+
+    recipe, _ = get_recipe(pk)
+    if is_own:
+        own_recipe_check(request, recipe)
+
+    return recipe

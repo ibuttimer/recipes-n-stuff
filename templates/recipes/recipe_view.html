@@ -6,7 +6,7 @@
 
 {% load i18n %}
 {% load static %}
-{% load stock_image  human_readable_timedelta  has_permission  lookup_value  image_url %}
+{% load stock_image  human_readable_timedelta  has_permission  lookup_value  image_url  delete_modal_ids %}
 
 {% block head_title %}{{ title }}{% endblock %}
 
@@ -20,394 +20,418 @@
 {% endblock extra_js_head %}
 
 {% block content %}
-<div class="row mt-2 mb-2">
-    <div class="col-12 text-center">
-        <h3 class="d-inline p-2">{{ recipe_dto.name | safe }}</h3>
-        {% if can_update or is_own %}
-            <a class="btn btn-sm btn-outline-primary d-inline p-2" href="{% url 'recipes:recipe_id_update' recipe_dto.id %}?recipe=y"
-               data-bs-toggle="tooltip" data-bs-placement="top"
-               data-bs-title="Edit recipe"
-               id="id__edit-recipe">
-                <i class="fa-solid fa-pen"></i>
-            </a>
-        {% endif %}
-    </div>
-</div>
+{% has_permission user 'recipe' 'delete' as can_delete %}
 
-<article id="article-content" class="row d-flex justify-content-center">
-    <div class="row">
-        <div class="col-md-6 col-sm-12">
-            <img class="card-img-top" alt="{{ recipe_dto.name }} image" src="{% image_url recipe_dto.main_image %}">
-        </div>
-        <div class="col-md-6 col-sm-12">
-            <div class="row">
-                <div class="col-lg-6 col-sm-12 d-flex">
-                    <p class="align-self-center">
-                        Submitted by
-                        <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="view {{ recipe_dto.author.username }}'s profile">
-                            <a class="text-decoration-none" href="{% url 'user:user_id' recipe_dto.author.id %}" aria-label="view {{ recipe_dto.author.username }}'s profile">
-                                <img src="{{ avatar_url }}" alt="user avatar" width="32" height="32" class="rounded-2">&nbsp;{{ recipe_dto.author.username }}
-                            </a>
-                        </span>
-                        {% if food_dot_com and recipe_dto.food_dot_com_url %}
-                        <span class="ms-2" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="View recipe on Food.com">
-                                <a href="{{ recipe_dto.food_dot_com_url }}" aria-label="view recipe on food.com in another tab" target="_blank" rel="noopener">
-                                    <img src="{% static 'img/internet.png' %}" alt="internet icon" width="30" height="30">
-                                </a>
-                            </span>
-                        {% endif %}
-                    </p>
-                </div>
-                <div class="col-lg-3 col-sm-6 text-center">
-                    <div class="text-muted small">Recipes</div>
-                    <p>
-                        <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="See all recipes by {{ recipe_dto.author.username }}">
-                            <a class="btn btn-dark mb-1" href="{% url 'recipes:recipes' %}?author={{ recipe_dto.author.username }}">{{ recipe_count }}</a>
-                        </span>
-                    </p>
-                </div>
-                <div class="col-md-3 col-sm-6 text-center">
-                    <div class="text-muted small">Category</div>
-                    <p>
-                        <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="See all {{ recipe_dto.category.name }} recipes">
-                            <a class="btn btn-outline-info" href="{% url 'recipes:recipes' %}?category={{ recipe_dto.category.name }}" aria-label="view all {{ recipe_dto.category.name }} recipes">
-                                {{ recipe_dto.category.name }}
-                            </a>
-                        </span>
-                    </p>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-6">
-                    <p><i class="fa-regular fa-clock"></i> Prep {% human_readable_timedelta recipe_dto.prep_time %}</p>
-                </div>
-                <div class="col-sm-6">
-                    <p><i class="fa-regular fa-clock"></i> Cook {% human_readable_timedelta recipe_dto.cook_time %}</p>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-6">
-                    <p><i class="fa-regular fa-clock"></i> Ready in {% human_readable_timedelta recipe_dto.total_time %}</p>
-                </div>
-                {% if nutritional_info %}
-                <div class="col-sm-6">
-                    <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#id__nutrition-info-modal">
-                        Nutritional information
-                    </button>
-                </div>
-                {% endif %}
-            </div>
-            <div class="row">
-                <div class="col-sm-6">
-                    <i class="fa-solid fa-people-group"></i> {{ recipe_dto.servings }}
-                </div>
-                {% if recipe_dto.recipe_yield %}
-                <div class="col-sm-6">
-                    <i class="fa-solid fa-bowl-food"></i> {{ recipe_dto.recipe_yield }}
-                </div>
-                {% endif %}
-            </div>
-            {% if can_purchase %}
-            <div class="text-success">
-                <hr class="m-3">
-            </div>
-            <div class="row">
-                <div class="col-lg-4 col-sm-6">
-                    <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="price {{ ccy_symbol }}{{ unit_price }} per person">
-                        <p><i class="fa-solid fa-box"></i> {{ ccy_symbol }}{{ unit_price }} pp</p>
-                    </span>
-                </div>
-                <div class="col-lg-4 col-sm-6">
-                    <span class="d-flex flex-row justify-content-center align-items-center">
-                        <i class="fa-solid fa-person me-2"></i>
-                        <span>
-                            <select id="id__num-boxes-select" class="form-select form-select-sm select__num-boxes" aria-label="number of ingredient boxes">
-                                {% for count in count_options %}
-                                    <option value="{{ count.0 }}" {% if count.0 == selected_count %} selected {% endif %}>{{ count.1 }}</option>
-                                {% endfor %}
-                            </select>
-                            <input type="number" class="form-control form-control-sm" id="id__custom_count" min="1" placeholder="Count" hidden>
-                        </span>
-                    </span>
-                </div>
-                <div class="col-lg-4 col-sm-12 text-center">
-                    <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-                        <span id="id__add-boxes-to-basket-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Add to basket">
-                            <button type="button" class="btn btn-primary btn-sm btn__text btn__add-boxes-to-basket" data-rns-next="no"
-                                    disabled>
-                                <i class="fa-solid fa-cart-plus"></i> <span class="span__boxes-total-price">{# replaced by calculated cost #}</span>
-                            </button>
-                        </span>
+{% with entity='Recipe' %}
+    {% delete_modal_ids entity as ids %}
 
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-primary btn-sm dropdown-toggle btn__add-boxes-to-basket" data-bs-toggle="dropdown"
-                                    aria-expanded="false" disabled>
-                            </button>
-
-                            <ul class="dropdown-menu bg-primary bg-opacity-80">
-                                <li class="text-center">
-                                    <a class="dropdown-item small text-white a__add_to_basket_menu" href="{% url 'home' %}">
-                                        <i class="fa-solid fa-cart-plus"></i>&nbsp;&nbsp;<i class="fa-solid fa-arrow-right"></i>&nbsp;&nbsp;<i class="fa-solid fa-shop"></i>
-                                    </a>
-                                </li>
-                                <li class="text-center">
-                                    <a class="dropdown-item small text-white a__add_to_basket_menu" href="{% url 'checkout:pay' %}">
-                                        <i class="fa-solid fa-cart-plus"></i>&nbsp;&nbsp;<i class="fa-solid fa-arrow-right"></i>&nbsp;&nbsp;<i class="fa-solid fa-cash-register"></i>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="row mt-2 mb-2">
+        <div class="col-12 text-center">
+            <h3 class="d-inline p-2">{{ recipe_dto.name | safe }}</h3>
+            {% if can_update or is_own %}
+                <a class="btn btn-sm btn-outline-primary d-inline p-2" href="{% url 'recipes:recipe_id_update' recipe_dto.id %}?recipe=y"
+                   data-bs-toggle="tooltip" data-bs-placement="top"
+                   data-bs-title="Edit recipe"
+                   id="id__edit-recipe">
+                    <i class="fa-solid fa-pen i__recipe-btn-icon"></i>
+                </a>
+            {% endif %}
+            {% if can_delete or is_own %}
+                <a class="btn btn-sm btn-outline-danger d-inline p-2 m-2 a--{{ ids.entity_conjoin }}-del" href="{% url 'recipes:recipe_id' recipe_dto.id %}"
+                   data-bs-toggle="tooltip" data-bs-placement="top"
+                   data-bs-title="Delete recipe"
+                   id="id__del-recipe">
+                    <i class="fa-solid fa-trash-can i__recipe-btn-icon"></i>
+                </a>
             {% endif %}
         </div>
     </div>
-    <div class="row mb-3">
-        <div class="text-success">
-            <hr class="m-3">
-        </div>
-        <div class="col-12">
-            <p>{{ recipe_dto.description | safe }}</p>
-        </div>
-    </div>
-    <div class="row">
-        {% has_permission user 'recipe' 'update' as can_update %}
-        <div class="col-md-6 col-sm-12">
-            <div class="row">
-                <div class="col-sm-12 mb-3">
-                    <h6 class="d-inline p-2">Ingredients</h6>
-                    {% if can_update or is_own %}
-                        <a class="btn btn-sm btn-outline-primary d-inline p-2" href="{% url 'recipes:recipe_id_update' recipe_dto.id %}?ingredients=y"
-                           data-bs-toggle="tooltip" data-bs-placement="top"
-                           data-bs-title="Edit ingredients"
-                           id="id__edit-recipe-ingredients">
-                            <i class="fa-solid fa-pen"></i>
-                        </a>
+
+    <article id="article-content" class="row d-flex justify-content-center">
+        <div class="row">
+            <div class="col-md-6 col-sm-12">
+                <img class="card-img-top" alt="{{ recipe_dto.name }} image" src="{% image_url recipe_dto.main_image %}">
+            </div>
+            <div class="col-md-6 col-sm-12">
+                <div class="row">
+                    <div class="col-lg-6 col-sm-12 d-flex">
+                        <p class="align-self-center">
+                            Submitted by
+                            <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="view {{ recipe_dto.author.username }}'s profile">
+                                <a class="text-decoration-none" href="{% url 'user:user_id' recipe_dto.author.id %}" aria-label="view {{ recipe_dto.author.username }}'s profile">
+                                    <img src="{{ avatar_url }}" alt="user avatar" width="32" height="32" class="rounded-2">&nbsp;{{ recipe_dto.author.username }}
+                                </a>
+                            </span>
+                            {% if food_dot_com and recipe_dto.food_dot_com_url %}
+                            <span class="ms-2" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="View recipe on Food.com">
+                                    <a href="{{ recipe_dto.food_dot_com_url }}" aria-label="view recipe on food.com in another tab" target="_blank" rel="noopener">
+                                        <img src="{% static 'img/internet.png' %}" alt="internet icon" width="30" height="30">
+                                    </a>
+                                </span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-lg-3 col-sm-6 text-center">
+                        <div class="text-muted small">Recipes</div>
+                        <p>
+                            <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="See all recipes by {{ recipe_dto.author.username }}">
+                                <a class="btn btn-dark mb-1" href="{% url 'recipes:recipes' %}?author={{ recipe_dto.author.username }}">{{ recipe_count }}</a>
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-md-3 col-sm-6 text-center">
+                        <div class="text-muted small">Category</div>
+                        <p>
+                            <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="See all {{ recipe_dto.category.name }} recipes">
+                                <a class="btn btn-outline-info" href="{% url 'recipes:recipes' %}?category={{ recipe_dto.category.name }}" aria-label="view all {{ recipe_dto.category.name }} recipes">
+                                    {{ recipe_dto.category.name }}
+                                </a>
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <p><i class="fa-regular fa-clock"></i> Prep {% human_readable_timedelta recipe_dto.prep_time %}</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <p><i class="fa-regular fa-clock"></i> Cook {% human_readable_timedelta recipe_dto.cook_time %}</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <p><i class="fa-regular fa-clock"></i> Ready in {% human_readable_timedelta recipe_dto.total_time %}</p>
+                    </div>
+                    {% if nutritional_info %}
+                    <div class="col-sm-6">
+                        <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#id__nutrition-info-modal">
+                            Nutritional information
+                        </button>
+                    </div>
                     {% endif %}
                 </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <i class="fa-solid fa-people-group"></i> {{ recipe_dto.servings }}
+                    </div>
+                    {% if recipe_dto.recipe_yield %}
+                    <div class="col-sm-6">
+                        <i class="fa-solid fa-bowl-food"></i> {{ recipe_dto.recipe_yield }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% if can_purchase %}
+                <div class="text-success">
+                    <hr class="m-3">
+                </div>
+                <div class="row">
+                    <div class="col-lg-4 col-sm-6">
+                        <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="price {{ ccy_symbol }}{{ unit_price }} per person">
+                            <p><i class="fa-solid fa-box"></i> {{ ccy_symbol }}{{ unit_price }} pp</p>
+                        </span>
+                    </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <span class="d-flex flex-row justify-content-center align-items-center">
+                            <i class="fa-solid fa-person me-2"></i>
+                            <span>
+                                <select id="id__num-boxes-select" class="form-select form-select-sm select__num-boxes" aria-label="number of ingredient boxes">
+                                    {% for count in count_options %}
+                                        <option value="{{ count.0 }}" {% if count.0 == selected_count %} selected {% endif %}>{{ count.1 }}</option>
+                                    {% endfor %}
+                                </select>
+                                <input type="number" class="form-control form-control-sm" id="id__custom_count" min="1" placeholder="Count" hidden>
+                            </span>
+                        </span>
+                    </div>
+                    <div class="col-lg-4 col-sm-12 text-center">
+                        <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+                            <span id="id__add-boxes-to-basket-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Add to basket">
+                                <button type="button" class="btn btn-primary btn-sm btn__text btn__add-boxes-to-basket" data-rns-next="no"
+                                        disabled>
+                                    <i class="fa-solid fa-cart-plus"></i> <span class="span__boxes-total-price">{# replaced by calculated cost #}</span>
+                                </button>
+                            </span>
+
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-primary btn-sm dropdown-toggle btn__add-boxes-to-basket" data-bs-toggle="dropdown"
+                                        aria-expanded="false" disabled>
+                                </button>
+
+                                <ul class="dropdown-menu bg-primary bg-opacity-80">
+                                    <li class="text-center">
+                                        <a class="dropdown-item small text-white a__add_to_basket_menu" href="{% url 'home' %}">
+                                            <i class="fa-solid fa-cart-plus"></i>&nbsp;&nbsp;<i class="fa-solid fa-arrow-right"></i>&nbsp;&nbsp;<i class="fa-solid fa-shop"></i>
+                                        </a>
+                                    </li>
+                                    <li class="text-center">
+                                        <a class="dropdown-item small text-white a__add_to_basket_menu" href="{% url 'checkout:pay' %}">
+                                            <i class="fa-solid fa-cart-plus"></i>&nbsp;&nbsp;<i class="fa-solid fa-arrow-right"></i>&nbsp;&nbsp;<i class="fa-solid fa-cash-register"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
-            {% for ingredient in recipe_dto.ingredients %}
-            <div class="row">
-                <div class="col-sm-2 text-center"><span>{{ ingredient.quantity }}</span></div>
-                <div class="col-sm-3"><span>{% if ingredient.quantity %}{{ ingredient.measure}}{% endif %}</span></div>
-                <div class="col-sm-7">
-                    <span>
-                    {{ ingredient.ingredient | safe }}
-                    {% if not forloop.last %}
-                        {% lookup_value recipe_dto.ingredient_alts forloop.counter as is_alt %}
-                        {% if is_alt %}
-                            <em><strong>, or</strong></em>
+        </div>
+        <div class="row mb-3">
+            <div class="text-success">
+                <hr class="m-3">
+            </div>
+            <div class="col-12">
+                <p>{{ recipe_dto.description | safe }}</p>
+            </div>
+        </div>
+        <div class="row">
+            {% has_permission user 'recipe' 'update' as can_update %}
+            <div class="col-md-6 col-sm-12">
+                <div class="row">
+                    <div class="col-sm-12 mb-3">
+                        <h6 class="d-inline p-2">Ingredients</h6>
+                        {% if can_update or is_own %}
+                            <a class="btn btn-sm btn-outline-primary d-inline p-2" href="{% url 'recipes:recipe_id_update' recipe_dto.id %}?ingredients=y"
+                               data-bs-toggle="tooltip" data-bs-placement="top"
+                               data-bs-title="Edit ingredients"
+                               id="id__edit-recipe-ingredients">
+                                <i class="fa-solid fa-pen i__recipe-btn-icon"></i>
+                            </a>
                         {% endif %}
-                    {% endif %}
-                    </span>
+                    </div>
                 </div>
-            </div>
-            {% endfor %}
-        </div>
-        <div class="col-md-6 col-sm-12">
-            <div class="row">
-                <div class="col-sm-12 mb-3">
-                    <h6 class="d-inline p-2">Instructions</h6>
-                    {% if can_update or is_own %}
-                    <a class="btn btn-sm btn-outline-primary d-inline p-2" href="{% url 'recipes:recipe_id_update' recipe_dto.id %}?instructions=y"
-                       data-bs-toggle="tooltip" data-bs-placement="top"
-                       data-bs-title="Edit instructions"
-                       id="id__edit-recipe-instructions">
-                        <i class="fa-solid fa-pen"></i>
-                    </a>
-                    {% endif %}
-                </div>
-            </div>
-            {% for instruction in recipe_dto.instructions %}
-            <div class="row">
-                {% lookup_value recipe_dto.instruction_alts forloop.counter0 as is_alt %}
-                <div class="col-sm-1">
-                    {% if not is_alt %}
-                        <span>{{ instruction.index }}.</span>
-                    {% endif %}
-                </div>
-                <div class="col-sm-11">
-                    <span>
-                        {{ instruction.text }}
+                {% for ingredient in recipe_dto.ingredients %}
+                <div class="row">
+                    <div class="col-sm-2 text-center"><span>{{ ingredient.quantity }}</span></div>
+                    <div class="col-sm-3"><span>{% if ingredient.quantity %}{{ ingredient.measure}}{% endif %}</span></div>
+                    <div class="col-sm-7">
+                        <span>
+                        {{ ingredient.ingredient | safe }}
                         {% if not forloop.last %}
-                            {% lookup_value recipe_dto.instruction_alts forloop.counter as is_alt %}
+                            {% lookup_value recipe_dto.ingredient_alts forloop.counter as is_alt %}
                             {% if is_alt %}
                                 <em><strong>, or</strong></em>
                             {% endif %}
                         {% endif %}
-                    </span>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <div id="id__nutrition-info-modal" class="modal fade" tabindex="-1" aria-labelledby="id__nutrition-info-modal-label" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="id__nutrition-info-modal-label">Nutritional information<strong><sup>**</sup></strong></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="id__nutrition-info-modal-body">
-                    <p><strong>Servings per recipe</strong>: {{ recipe_dto.servings }}</p>
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th scope="col"><strong>Amt. per serving</strong></th>
-                                <th scope="col"><strong>% Daily Value<sup>*</sup></strong></th>
-                            </tr>
-                        </thead>
-                        <tbody class="table-group-divider">
-                            {% for nutri in recipe_dto.nutrition_list %}
-                            <tr>
-                                <td>{{ nutri.0 | safe }}</td>
-                                <td>{{ nutri.1 | safe }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                <div class="row>">
-                    <div class="col-10 offset-1">
-                        <p><small>
-                            <strong><sup>*</sup></strong> The % Daily Value (DV) tells you how much a nutrient in a serving of food contributes to a daily diet.
-                            {{ recipe_dto.daily_values.calories }} calories a day is used for general nutrition advice.
-                        </small></p>
-                        <p><small><strong><sup>**</sup></strong> All data is indicative only, and should not be considered factual.</small></p>
+                        </span>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button id="id__nutrition-info-modal-ok-btn" class="btn btn-outline-primary btn__text" type="button" data-bs-dismiss="modal">
-                        {% trans "OK" %}
-                    </button>
+                {% endfor %}
+            </div>
+            <div class="col-md-6 col-sm-12">
+                <div class="row">
+                    <div class="col-sm-12 mb-3">
+                        <h6 class="d-inline p-2">Instructions</h6>
+                        {% if can_update or is_own %}
+                        <a class="btn btn-sm btn-outline-primary d-inline p-2" href="{% url 'recipes:recipe_id_update' recipe_dto.id %}?instructions=y"
+                           data-bs-toggle="tooltip" data-bs-placement="top"
+                           data-bs-title="Edit instructions"
+                           id="id__edit-recipe-instructions">
+                            <i class="fa-solid fa-pen i__recipe-btn-icon"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% for instruction in recipe_dto.instructions %}
+                <div class="row">
+                    {% lookup_value recipe_dto.instruction_alts forloop.counter0 as is_alt %}
+                    <div class="col-sm-1">
+                        {% if not is_alt %}
+                            <span>{{ instruction.index }}.</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-sm-11">
+                        <span>
+                            {{ instruction.text }}
+                            {% if not forloop.last %}
+                                {% lookup_value recipe_dto.instruction_alts forloop.counter as is_alt %}
+                                {% if is_alt %}
+                                    <em><strong>, or</strong></em>
+                                {% endif %}
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div id="id__nutrition-info-modal" class="modal fade" tabindex="-1" aria-labelledby="id__nutrition-info-modal-label" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="id__nutrition-info-modal-label">Nutritional information<strong><sup>**</sup></strong></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="id__nutrition-info-modal-body">
+                        <p><strong>Servings per recipe</strong>: {{ recipe_dto.servings }}</p>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th scope="col"><strong>Amt. per serving</strong></th>
+                                    <th scope="col"><strong>% Daily Value<sup>*</sup></strong></th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-group-divider">
+                                {% for nutri in recipe_dto.nutrition_list %}
+                                <tr>
+                                    <td>{{ nutri.0 | safe }}</td>
+                                    <td>{{ nutri.1 | safe }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row>">
+                        <div class="col-10 offset-1">
+                            <p><small>
+                                <strong><sup>*</sup></strong> The % Daily Value (DV) tells you how much a nutrient in a serving of food contributes to a daily diet.
+                                {{ recipe_dto.daily_values.calories }} calories a day is used for general nutrition advice.
+                            </small></p>
+                            <p><small><strong><sup>**</sup></strong> All data is indicative only, and should not be considered factual.</small></p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="id__nutrition-info-modal-ok-btn" class="btn btn-outline-primary btn__text" type="button" data-bs-dismiss="modal">
+                            {% trans "OK" %}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</article>
 
-<script>
-    const ccySymbol = "{{ ccy_symbol }}";
-    const unitPrice = parseFloat("{{ unit_price }}");
-    const customCount = parseInt("{{ custom_count }}");
-    const NUM_BOXES_SELECTOR = "#id__num-boxes-select";
-    const CUSTOM_BOXES_SELECTOR = "#id__custom_count";
-    const ADD_TO_BASKET_SELECTOR = ".btn__add-boxes-to-basket";
-    const ADD_TO_BASKET_NEXT_SELECTOR = ".a__add_to_basket_menu";
-    const ADD_TO_BASKET_TOOLTIP_SELECTOR = "#id__add-boxes-to-basket-tooltip";
-    const TOTAL_PRICE_SELECTOR = "span[class*='span__boxes-total-price']";
-    const BUY_BOX_URL = "{% url 'recipes:recipe_id_buy_box' recipe_dto.id %}";
+        {% if can_delete or is_own %}
+            {# entity delete modal template expects: 'entity' as entity name #}
+            {#                                       'refresh_url' as url to goto after deletion complete #}
+            {% include "base/snippet/entity_delete_modal.html" %}
+        {% endif %}
+    </article>
 
-    let boxesTotal = 0;     // number of boxes to add to basket
+    {% if can_delete or is_own %}
+        <script type='text/javascript' src="{% static 'js/delete_modal.js' %}"></script>
+    {% endif %}
 
-    /**
-     * Get the total text for the specified number of boxes
-     * @param numBoxes - number of boxes
-     * @returns {string} display text
-     */
-    function calcTotal(numBoxes) {
-        let totalText;
-        if (numBoxes > 0) {
-            boxesTotal = numBoxes;
-            totalText = `${ccySymbol}${(boxesTotal * unitPrice).toFixed(2)}`;
-        } else {
-            boxesTotal = 0;
-            totalText = '';
-        }
-        return totalText;
-    }
+    <script>
+        const ccySymbol = "{{ ccy_symbol }}";
+        const unitPrice = parseFloat("{{ unit_price }}");
+        const customCount = parseInt("{{ custom_count }}");
+        const NUM_BOXES_SELECTOR = "#id__num-boxes-select";
+        const CUSTOM_BOXES_SELECTOR = "#id__custom_count";
+        const ADD_TO_BASKET_SELECTOR = ".btn__add-boxes-to-basket";
+        const ADD_TO_BASKET_NEXT_SELECTOR = ".a__add_to_basket_menu";
+        const ADD_TO_BASKET_TOOLTIP_SELECTOR = "#id__add-boxes-to-basket-tooltip";
+        const TOTAL_PRICE_SELECTOR = "span[class*='span__boxes-total-price']";
+        const BUY_BOX_URL = "{% url 'recipes:recipe_id_buy_box' recipe_dto.id %}";
 
-    /**
-     * Set the control states for the specified number of boxes
-     * @param numBoxes - number of boxes
-     */
-    function setControls(numBoxes) {
-        let totalText = '';
-        let costTooltip = '';
-        let totalTooltip = `Add to basket`;
-        if (numBoxes > 0) {
-            totalText = calcTotal(numBoxes);
+        let boxesTotal = 0;     // number of boxes to add to basket
 
-            $(ADD_TO_BASKET_SELECTOR).removeAttr('disabled');
-            costTooltip = `, cost ${totalText}`;
-        } else {
-            $(ADD_TO_BASKET_SELECTOR).attr('disabled', 'disabled');
-        }
-
-        $(TOTAL_PRICE_SELECTOR).text(totalText);
-
-        totalTooltip = `${totalTooltip}${costTooltip}`;
-        $(ADD_TO_BASKET_TOOLTIP_SELECTOR).attr('data-bs-title', totalTooltip);
-        enableTooltips(ADD_TO_BASKET_TOOLTIP_SELECTOR);
-    }
-
-    function addToBasket(event) {
-        const isDropdown = event.currentTarget.classList.contains('dropdown-toggle');
-
-        if (boxesTotal > 0 && !isDropdown) {
-
-            let next = '';
-            if (event.currentTarget.attributes.hasOwnProperty('href')) {
-                // 'a' tags in submenu for redirects
-                next = `&next=${event.currentTarget.getAttribute('href')}`;
+        /**
+         * Get the total text for the specified number of boxes
+         * @param numBoxes - number of boxes
+         * @returns {string} display text
+         */
+        function calcTotal(numBoxes) {
+            let totalText;
+            if (numBoxes > 0) {
+                boxesTotal = numBoxes;
+                totalText = `${ccySymbol}${(boxesTotal * unitPrice).toFixed(2)}`;
+            } else {
+                boxesTotal = 0;
+                totalText = '';
             }
-            // else basic add to basket button
+            return totalText;
+        }
 
-            fetch(`${BUY_BOX_URL}?quantity=${boxesTotal}${next}`, {
-                method: 'patch',
-                headers: csrfHeader()
-            })
-            .then((response) => response.json())
-            .then((data) => {
-                redirectRewriteInfoResponseHandler(data);
+        /**
+         * Set the control states for the specified number of boxes
+         * @param numBoxes - number of boxes
+         */
+        function setControls(numBoxes) {
+            let totalText = '';
+            let costTooltip = '';
+            let totalTooltip = `Add to basket`;
+            if (numBoxes > 0) {
+                totalText = calcTotal(numBoxes);
 
-                // enableTooltips(NAVBAR_BASKET_TOOLTIP_SELECTOR);
-                //
-                // showInfoToast('Added to basket.')
-            })
-            .catch((error) => {
-                showErrorToast(error);
+                $(ADD_TO_BASKET_SELECTOR).removeAttr('disabled');
+                costTooltip = `, cost ${totalText}`;
+            } else {
+                $(ADD_TO_BASKET_SELECTOR).attr('disabled', 'disabled');
+            }
+
+            $(TOTAL_PRICE_SELECTOR).text(totalText);
+
+            totalTooltip = `${totalTooltip}${costTooltip}`;
+            $(ADD_TO_BASKET_TOOLTIP_SELECTOR).attr('data-bs-title', totalTooltip);
+            enableTooltips(ADD_TO_BASKET_TOOLTIP_SELECTOR);
+        }
+
+        function addToBasket(event) {
+            const isDropdown = event.currentTarget.classList.contains('dropdown-toggle');
+
+            if (boxesTotal > 0 && !isDropdown) {
+
+                let next = '';
+                if (event.currentTarget.attributes.hasOwnProperty('href')) {
+                    // 'a' tags in submenu for redirects
+                    next = `&next=${event.currentTarget.getAttribute('href')}`;
+                }
+                // else basic add to basket button
+
+                fetch(`${BUY_BOX_URL}?quantity=${boxesTotal}${next}`, {
+                    method: 'patch',
+                    headers: csrfHeader()
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                    redirectRewriteInfoResponseHandler(data);
+
+                    // enableTooltips(NAVBAR_BASKET_TOOLTIP_SELECTOR);
+                    //
+                    // showInfoToast('Added to basket.')
+                })
+                .catch((error) => {
+                    showErrorToast(error);
+                });
+
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }
+
+        $(document).ready(function () {
+
+            // setup number of boxes change handler
+            $(NUM_BOXES_SELECTOR).on('change', function (event) {
+                const numBoxes = parseInt(event.currentTarget.value);
+
+                if (numBoxes >= 0 && numBoxes < customCount) {
+                    $(CUSTOM_BOXES_SELECTOR).attr('hidden', 'hidden');
+                } else if (numBoxes === customCount) {
+                    $(CUSTOM_BOXES_SELECTOR).removeAttr('hidden');
+                    $(CUSTOM_BOXES_SELECTOR).val('');
+                }
+                setControls(numBoxes < customCount ? numBoxes : 0);
             });
 
-            event.preventDefault();
-            event.stopPropagation();
-        }
-    }
+            // setup custom number of boxes change handler
+            $(CUSTOM_BOXES_SELECTOR).on('change', function (event) {
+                let numBoxes = parseInt(event.currentTarget.value);
 
-    $(document).ready(function () {
+                if (numBoxes < 0) {
+                    $(CUSTOM_BOXES_SELECTOR).val('0');
+                    numBoxes = 0;
+                }
+                setControls(numBoxes);
+            });
 
-        // setup number of boxes change handler
-        $(NUM_BOXES_SELECTOR).on('change', function (event) {
-            const numBoxes = parseInt(event.currentTarget.value);
-
-            if (numBoxes >= 0 && numBoxes < customCount) {
-                $(CUSTOM_BOXES_SELECTOR).attr('hidden', 'hidden');
-            } else if (numBoxes === customCount) {
-                $(CUSTOM_BOXES_SELECTOR).removeAttr('hidden');
-                $(CUSTOM_BOXES_SELECTOR).val('');
+            // setup add to basket handler
+            for (const selector of [ADD_TO_BASKET_SELECTOR, ADD_TO_BASKET_NEXT_SELECTOR]) {
+                $(selector).on('click', addToBasket);
             }
-            setControls(numBoxes < customCount ? numBoxes : 0);
         });
 
-        // setup custom number of boxes change handler
-        $(CUSTOM_BOXES_SELECTOR).on('change', function (event) {
-            let numBoxes = parseInt(event.currentTarget.value);
-
-            if (numBoxes < 0) {
-                $(CUSTOM_BOXES_SELECTOR).val('0');
-                numBoxes = 0;
-            }
-            setControls(numBoxes);
-        });
-
-        // setup add to basket handler
-        for (const selector of [ADD_TO_BASKET_SELECTOR, ADD_TO_BASKET_NEXT_SELECTOR]) {
-            $(selector).on('click', addToBasket);
-        }
-    });
-
-</script>
+    </script>
+{% endwith %}
 {% endblock content %}
 <!-- recipe_view.html end -->

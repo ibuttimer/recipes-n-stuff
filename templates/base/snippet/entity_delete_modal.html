@@ -1,12 +1,6 @@
 <!-- entity_delete_modal.html start -->
 {# --- entity_delete_modal.html template variable defines for includes --- #}
-{# entity delete modal template expects: 'confirm_id' as id of the delete confirmation modal #}
-{#                                       'deleted_id' as id of the deleted modal #}
-{#                                       'delete_btn_id' as id of delete button of the delete confirmation modal #}
-{#                                       'cancel_btn_id' as id of cancel button of the delete confirmation modal #}
-{#                                       'close_btn_id' as id of close button of the delete confirmation modal #}
-{#                                       'url_var_id' as id of var to hold the entity delete url #}
-{#                                       'entity' as entity name #}
+{# entity delete modal template expects: 'entity' as entity name #}
 {#                                       'refresh_url' as url to goto after deletion complete #}
 
 {% load i18n  delete_modal_ids %}
@@ -39,7 +33,7 @@
     </div>
 </div>
 
-<!-- Ingredient deleted modal -->
+<!-- entity deleted modal -->
 <div id="{{ids.deleted_id}}" class="modal fade" tabindex="-1" aria-labelledby="{{ids.deleted_id_label}}" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">

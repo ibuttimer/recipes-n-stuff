@@ -33,7 +33,6 @@ from .ingredient_by import check_ingredient_ordering
 from .utils import recipe_permission_check
 from ..constants import INGREDIENTS_QUERY
 from ..forms import RecipeIngredientNewForm
-from ..models import Ingredient, RecipeIngredient
 
 
 @login_required
@@ -50,6 +49,12 @@ def create_recipe_ingredient(request: HttpRequest, pk: int) -> HttpResponse:
     recipe, _ = get_recipe(pk)
 
     form = RecipeIngredientNewForm(data=request.POST)
+    # copy ingredient id from hidden field to ingredient field
+    data = form.data.copy()
+    data[RecipeIngredientNewForm.INGREDIENT_FF] = \
+        data[RecipeIngredientNewForm.INGREDIENT_ID_FF]
+    form.data = data
+    form.full_clean()
 
     if form.is_valid():
         # Due to mixed html entity encoding on ingredient names from the
@@ -57,21 +62,11 @@ def create_recipe_ingredient(request: HttpRequest, pk: int) -> HttpResponse:
         # validation on the client ensures the entered value is one of the
         # entries in the datalist, and form submit handler converts the
         # entered name to the corresponding ingredient id
-        ingredient_name = form.cleaned_data[RecipeIngredient.INGREDIENT_FIELD]
-        if ingredient_name.isnumeric():
-            ingredient = Ingredient.get_by_id_field(int(ingredient_name))
-        else:
-            raise ValueError
 
         # save object
         # django autocommits changes
         # https://docs.djangoproject.com/en/4.1/topics/db/transactions/#autocommit
         form.instance.recipe = recipe
-        form.instance.ingredient = ingredient
-        form.instance.measure = \
-            form.cleaned_data[RecipeIngredient.MEASURE_FIELD]
-        form.instance.quantity = \
-            form.cleaned_data[RecipeIngredient.QUANTITY_FIELD]
         form.save()
 
         check_ingredient_ordering(recipe)

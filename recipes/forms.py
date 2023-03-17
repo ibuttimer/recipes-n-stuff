@@ -26,7 +26,7 @@ from typing import Tuple, List
 from cloudinary.forms import CloudinaryFileField
 from django import forms
 from django.core.exceptions import ValidationError
-from django.forms import CharField
+from django.forms import CharField, HiddenInput
 from django.utils.translation import gettext_lazy as _
 
 from recipesnstuff import DEV_IMAGE_FILE_TYPES, DEVELOPMENT, IMAGE_FILE_TYPES
@@ -36,7 +36,9 @@ from utils import error_messages, ErrorMsgs, update_field_widgets, FormMixin
 from .constants import (
     INGREDIENT_FIELD, QUANTITY_FIELD, INDEX_FIELD, TEXT_FIELD, MEASURE_FIELD
 )
-from .models import RecipeIngredient, Instruction, Measure, Recipe, Category
+from .models import (
+    RecipeIngredient, Instruction, Measure, Recipe, Category, Ingredient
+)
 from .views.utils import parse_duration, DURATION_FORMAT_STR
 
 
@@ -130,20 +132,35 @@ class RecipeIngredientForm(forms.ModelForm):
             {'class': 'form-select'})
 
 
+class IngredientCharField(CharField):
+    """ Custom CharField to return Ingredient from name entered """
+    def to_python(self, value):
+        """Return an ingredient."""
+        entity = super().to_python(value)
+        if entity:
+            entity = Ingredient.get_by_id_field(int(entity), get_or_404=False)
+            if not entity:
+                raise ValidationError(_('Not a valid ingredient'))
+        return entity
+
+
 class RecipeIngredientNewForm(forms.ModelForm):
     """
     Form to create a RecipeIngredient.
     """
 
     INGREDIENT_FF = INGREDIENT_FIELD
+    INGREDIENT_ID_FF = 'ingredient_id'
 
-    ingredient = forms.CharField(
+    ingredient = IngredientCharField(
         required=True, widget=forms.TextInput(attrs={
             'list': 'id__ingredient-datalist',
             'placeholder': 'Type to search...',
             'id': 'id__ingredient-input-new'
         })
     )
+    # hidden field into which the ingredient id is saved
+    ingredient_id = forms.IntegerField(required=True, widget=HiddenInput())
 
     @dataclass
     class Meta(RecipeIngredientForm.Meta):
