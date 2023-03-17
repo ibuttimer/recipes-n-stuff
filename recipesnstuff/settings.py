@@ -507,3 +507,4 @@ DEFAULT_RATES_REQUEST_INTERVAL = timedelta(days=1)
 
 # Miscellaneous settings
 FOOD_DOT_COM = env('FOOD_DOT_COM', default=False)
+FACEBOOK_PAGE = env('FACEBOOK_PAGE', default="https://facebook.com")
