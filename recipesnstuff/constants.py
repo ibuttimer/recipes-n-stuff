@@ -47,7 +47,6 @@ SITEMAP_URL = "sitemap.xml"
 HOME_ROUTE_NAME = "home"
 HELP_ROUTE_NAME = "help"
 ABOUT_ROUTE_NAME = "about"
-LANDING_ROUTE_NAME = "landing"
 PRIVACY_ROUTE_NAME = "privacy"
 ROBOTS_ROUTE_NAME = "robots.txt"
 

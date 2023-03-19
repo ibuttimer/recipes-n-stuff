@@ -58,14 +58,14 @@
                         {% include 'checkout/snippet/basket.html' %}
                     </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-3 mt-2 offset-md-2">
+                    <div class="row mb-3 text-center">
+                        <div class="col-lg-3 offset-lg-2 mt-2">
                             <button id="id__cancel-checkout" class="btn btn-secondary btn__dbl-text" type="button">{% trans 'Clear basket' %}</button>
                         </div>
-                        <div class="col-md-3 mt-2">
+                        <div class="col-lg-3 mt-2">
                             <a class="btn btn-primary btn__dbl-text" href="{% url 'home' %}">{% trans "Continue shopping" %}</a>
                         </div>
-                        <div class="col-md-3 mt-2">
+                        <div class="col-lg-3 mt-2">
                             <button id="{{ next_btn_id }}basket" class="btn btn-secondary btn__text" type="button">{% trans 'Next' %}</button>
                         </div>
                     </div>
@@ -181,7 +181,7 @@
         const UPDATE_BASKET_URL = '{% url "checkout:update_basket" %}';
         const CLEAR_BASKET_URL = '{% url "checkout:clear_basket" %}';
 
-        const paymentCurrencySelectSelector = "#id__pay-ccy-select";
+        const paymentCurrencySelectSelector = "select[id^='id__pay-ccy-']";
         // Basket item units input are named 'id__units-item-....'
         const basketItemUnitsSelector = "input[id^='id__units-item-']";
 

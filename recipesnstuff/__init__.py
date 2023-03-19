@@ -26,9 +26,10 @@ from .constants import (
     ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL, USERS_URL,
     IMAGE_FILE_TYPES, DEV_IMAGE_FILE_TYPES, MIN_PASSWORD_LEN,
     AVATAR_FOLDER, IMAGES_FOLDER,
-    HOME_ROUTE_NAME
+    HOME_ROUTE_NAME, VAL_TEST_PATH_PREFIX
 )
 from .settings import DEVELOPMENT, TEST
+from .utils import val_test_route_name, val_test_url
 
 __all__ = [
     'BASE_APP_NAME',
@@ -47,7 +48,11 @@ __all__ = [
     'AVATAR_FOLDER',
     'IMAGES_FOLDER',
     'HOME_ROUTE_NAME',
+    'VAL_TEST_PATH_PREFIX',
 
     'DEVELOPMENT',
     'TEST',
+
+    'val_test_route_name',
+    'val_test_url',
 ]
