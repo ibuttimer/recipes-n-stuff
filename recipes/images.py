@@ -33,7 +33,7 @@
 #
 from typing import List
 
-from base.dto import ImagePool
+from base.dto import ImagePool, ImagePoolUrl
 from recipes.templatetags.stock_image import stock_image
 
 
@@ -42,6 +42,22 @@ def recipe_main_image(images: List) -> ImagePool:
     The url for the main image
     :return: url str or None
     """
+    # first image in list and a backup stock image
+    online_img = len(images) > 0
     return ImagePool(
-        images[0].url if len(images) > 0 else None, False
-    ).add_backup(stock_image(), True)
+        url=images[0].url if online_img else None, is_static=not online_img
+    ).add_image(url=stock_image(), is_static=True)
+
+
+def recipe_image_pool(images: List) -> List[ImagePool]:
+    """
+    The recipe image pool list
+    :return: list of images or None
+    """
+    if len(images) == 0:
+        pool = ImagePool.of_static(stock_image())
+    else:
+        pool = ImagePool.of_url(images[0].url)
+        for idx in range(1, len(images)):
+            pool.add_image(images[idx].url, is_static=False)
+    return pool

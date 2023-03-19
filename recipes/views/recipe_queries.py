@@ -66,12 +66,6 @@ FIELD_LOOKUPS = {
     AUTHOR_QUERY: f'{Recipe.AUTHOR_FIELD}__{User.USERNAME_FIELD}__icontains',
     # author username equals query param
     USER_QUERY: f'{Recipe.AUTHOR_FIELD}__{User.USERNAME_FIELD}',
-    # CATEGORY_QUERY: f'{Opinion.CATEGORIES_FIELD}__in',
-    # ON_OR_AFTER_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date__gte',
-    # ON_OR_BEFORE_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date__lte',
-    # AFTER_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date__gt',
-    # BEFORE_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date__lt',
-    # EQUAL_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date',
 }
 # priority order list of query terms
 FILTERS_ORDER = [
@@ -390,6 +384,29 @@ def get_recipe(
     entity = get_object_and_related_or_404(
         Recipe, **query_param, related=related)
     return entity, query_param
+
+
+def get_recipe_by_category_keyword(
+        category_name: str = None, keyword_name: List[str] = None) -> QuerySet:
+    """
+    Get recipe by specified `category` and/or `keyword`
+    :param category_name: name of category; default None
+    :param keyword_name: id of keyword; default None
+    :return: tuple of object and query param
+    """
+    query_param = {}
+    if category_name is not None:
+        query_param[
+            f'{Recipe.CATEGORY_FIELD}__{Category.NAME_FIELD}__icontains'
+        ] = category_name
+    if keyword_name is not None:
+        keyword_ids = Keyword.objects.filter(**{
+            f'{Keyword.NAME_FIELD}__icontains': keyword_name
+        }).values_list(Keyword.id_field())
+        query_param[f'{Recipe.KEYWORDS_FIELD}__in'] = [
+            kid[0] for kid in keyword_ids]
+
+    return Recipe.objects.filter(**query_param)
 
 
 def get_recipe_ingredients_list(

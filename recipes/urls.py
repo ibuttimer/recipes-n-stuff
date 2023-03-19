@@ -23,8 +23,10 @@
 
 from django.urls import path
 
+from recipesnstuff import val_test_url, val_test_route_name
 from .constants import (
     THIS_APP, RECIPES_URL, RECIPES_ROUTE_NAME,
+    RECIPE_HOME_URL, RECIPE_HOME_ROUTE_NAME,
     RECIPE_SEARCH_URL, RECIPE_SEARCH_ROUTE_NAME,
     RECIPE_NEW_URL, RECIPE_NEW_ROUTE_NAME,
     RECIPE_ID_URL, RECIPE_ID_ROUTE_NAME,
@@ -37,8 +39,7 @@ from .constants import (
     RECIPE_CATEGORIES_URL, CATEGORIES_ROUTE_NAME,
 )
 from .views import (
-    RecipeCreate,
-    RecipeList, SearchRecipeList,
+    RecipeCreate, recipe_home, RecipeList, SearchRecipeList,
     RecipeDetail, RecipeDetailUpdate, add_recipe_to_basket,
     RecipeIngredientDetail, create_recipe_ingredient,
     InstructionDetail, create_recipe_instruction,
@@ -48,27 +49,37 @@ from .views import (
 # https://docs.djangoproject.com/en/4.1/topics/http/urls/#url-namespaces-and-included-urlconfs
 app_name = THIS_APP
 
-urlpatterns = [
-    path(RECIPES_URL, RecipeList.as_view(), name=RECIPES_ROUTE_NAME),
-    path(RECIPE_SEARCH_URL, SearchRecipeList.as_view(),
-         name=RECIPE_SEARCH_ROUTE_NAME),
-    path(RECIPE_NEW_URL, RecipeCreate.as_view(), name=RECIPE_NEW_ROUTE_NAME),
-    path(RECIPE_ID_URL, RecipeDetail.as_view(), name=RECIPE_ID_ROUTE_NAME),
-    path(RECIPE_ID_UPDATE_URL, RecipeDetailUpdate.as_view(),
-         name=RECIPE_ID_UPDATE_ROUTE_NAME),
-    path(RECIPE_ID_BUY_BOX_URL, add_recipe_to_basket,
-         name=RECIPE_ID_BUY_BOX_ROUTE_NAME),
+_url_info = [
+    # url, endpoint, route name
+    (RECIPES_URL, RecipeList.as_view(), RECIPES_ROUTE_NAME),
+    (RECIPE_HOME_URL, recipe_home, RECIPE_HOME_ROUTE_NAME),
+    (RECIPE_SEARCH_URL, SearchRecipeList.as_view(), RECIPE_SEARCH_ROUTE_NAME),
+    (RECIPE_NEW_URL, RecipeCreate.as_view(), RECIPE_NEW_ROUTE_NAME),
+    (RECIPE_ID_URL, RecipeDetail.as_view(), RECIPE_ID_ROUTE_NAME),
+    (RECIPE_ID_UPDATE_URL, RecipeDetailUpdate.as_view(),
+     RECIPE_ID_UPDATE_ROUTE_NAME),
+    (RECIPE_ID_BUY_BOX_URL, add_recipe_to_basket,
+     RECIPE_ID_BUY_BOX_ROUTE_NAME),
 
-    path(RECIPE_INGREDIENT_ID_URL, RecipeIngredientDetail.as_view(),
-         name=RECIPE_INGREDIENT_ID_ROUTE_NAME),
-    path(RECIPE_ID_INGREDIENT_NEW_URL, create_recipe_ingredient,
-         name=RECIPE_ID_INGREDIENT_NEW_ROUTE_NAME),
+    (RECIPE_INGREDIENT_ID_URL, RecipeIngredientDetail.as_view(),
+     RECIPE_INGREDIENT_ID_ROUTE_NAME),
+    (RECIPE_ID_INGREDIENT_NEW_URL, create_recipe_ingredient,
+     RECIPE_ID_INGREDIENT_NEW_ROUTE_NAME),
 
-    path(RECIPE_INSTRUCTION_ID_URL, InstructionDetail.as_view(),
-         name=RECIPE_INSTRUCTION_ID_ROUTE_NAME),
-    path(RECIPE_ID_INSTRUCTION_NEW_URL, create_recipe_instruction,
-         name=RECIPE_ID_INSTRUCTION_NEW_ROUTE_NAME),
+    (RECIPE_INSTRUCTION_ID_URL, InstructionDetail.as_view(),
+     RECIPE_INSTRUCTION_ID_ROUTE_NAME),
+    (RECIPE_ID_INSTRUCTION_NEW_URL, create_recipe_instruction,
+     RECIPE_ID_INSTRUCTION_NEW_ROUTE_NAME),
 
-    path(RECIPE_CATEGORIES_URL, CategoryList.as_view(),
-         name=CATEGORIES_ROUTE_NAME),
+    (RECIPE_CATEGORIES_URL, CategoryList.as_view(), CATEGORIES_ROUTE_NAME),
 ]
+
+urlpatterns = [
+    # val-test urls
+    path(val_test_url(url), endpoint, name=val_test_route_name(route))
+    for url, endpoint, route in _url_info
+]
+urlpatterns.extend([
+    # standard urls
+    path(url, endpoint, name=route) for url, endpoint, route in _url_info
+])

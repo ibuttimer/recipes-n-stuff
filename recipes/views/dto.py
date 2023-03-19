@@ -35,7 +35,7 @@ from recipes.views.recipe_queries import (
 from recipes.models import (
     Recipe, RecipeIngredient, Instruction
 )
-from recipes.images import recipe_main_image
+from recipes.images import recipe_main_image, recipe_image_pool
 from recipesnstuff import DEVELOPMENT
 from utils import html_tag
 
@@ -261,10 +261,18 @@ class RecipeDto(BaseDto):
     @property
     def main_image(self) -> ImagePool:
         """
-        The main image pool
+        An image pool with just the main image
         :return: ImagePool
         """
         return recipe_main_image(self.images)
+
+    @property
+    def carousel(self) -> ImagePool:
+        """
+        An image pool with all images
+        :return: ImagePool
+        """
+        return recipe_image_pool(self.images)
 
     @property
     def food_dot_com_url(self) -> str:

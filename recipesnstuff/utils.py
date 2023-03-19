@@ -1,6 +1,6 @@
 #  MIT License
 #
-#  Copyright (c) 2023 Ian Buttimer
+#  Copyright (c) 2022 Ian Buttimer
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to
@@ -19,39 +19,24 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from .recipe_create import RecipeCreate
-from .recipe_home import recipe_home
-from .recipe_list import RecipeList, SearchRecipeList
-from .recipe_by import RecipeDetail, RecipeDetailUpdate, add_recipe_to_basket
-from .ingredient_by import RecipeIngredientDetail
-from .ingredient_create import create_recipe_ingredient
-from .instruction_by import InstructionDetail
-from .instruction_create import create_recipe_instruction
-from .category_list import CategoryList
-from .dto import RecipeDto
+#
+from utils import url_path
+from . import VAL_TEST_PATH_PREFIX
 
 
-__all__ = [
-    'RecipeCreate',
+def val_test_route_name(route: str):
+    """
+    Generate a css test route name
+    :param route:
+    :return:
+    """
+    return f'{route}_{VAL_TEST_PATH_PREFIX}'
 
-    'recipe_home',
 
-    'RecipeList',
-    'SearchRecipeList',
-
-    'RecipeDetail',
-    'RecipeDetailUpdate',
-    'add_recipe_to_basket',
-
-    'RecipeIngredientDetail',
-
-    'create_recipe_ingredient',
-
-    'InstructionDetail',
-
-    'create_recipe_instruction',
-
-    'RecipeDto',
-
-    'CategoryList',
-]
+def val_test_url(url: str):
+    """
+    Generate a css test url
+    :param url:
+    :return:
+    """
+    return url_path(VAL_TEST_PATH_PREFIX, url)

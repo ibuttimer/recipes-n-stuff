@@ -38,6 +38,10 @@
     height: calc(var(--img-no-content-height) / 4);
 }
 
+.img__home-recipe-card {
+    border-radius: 0.5rem   /* to match the rounded-3 on the card */
+}
+
 
 /* tiny screens, 315px wide or less */
 @media screen and (max-width: 315px) {

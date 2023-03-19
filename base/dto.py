@@ -19,6 +19,7 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from collections import namedtuple
 from copy import deepcopy
 from dataclasses import dataclass
 from typing import Callable, Union, TypeVar, List, Tuple, Optional
@@ -31,6 +32,9 @@ from django.db.models import Model
 from utils import ensure_list
 
 TypeImagePool = TypeVar("TypeImagePool", bound="ImagePool")
+
+
+ImagePoolUrl = namedtuple('ImagePoolUrl', ['url', 'static'])
 
 
 @dataclass
@@ -131,10 +135,10 @@ class BaseDto:
 
 class ImagePool:
     """ Class representing an image """
-    urls: List[Tuple[Union[str, Callable], bool]]
+    urls: List[ImagePoolUrl[Union[str, Callable], bool]]
 
     def __init__(self, url: Union[str, Callable], is_static: bool):
-        self.urls = [(url, is_static)]
+        self.urls = [ImagePoolUrl(url=url, static=is_static)]
 
     @staticmethod
     def of_static(url: Union[str, Callable]) -> TypeImagePool:
@@ -154,17 +158,17 @@ class ImagePool:
         """
         return ImagePool(url=url, is_static=False)
 
-    def add_backup(self, url: Union[str, Callable], is_static: bool):
+    def add_image(self, url: Union[str, Callable], is_static: bool):
         """
-        Add a backup image
+        Add an image
         :param url: image url or callable returning image url
         :param is_static: is static flag
         :return: this object
         """
-        self.urls.append((url, is_static))
+        self.urls.append(ImagePoolUrl(url, is_static))
         return self
 
-    def get_image(self) -> Optional[Tuple[str, bool]]:
+    def get_image(self) -> Optional[ImagePoolUrl]:
         """
         Get the image
         :return: tuple of url and is static flag or None if no image found
@@ -174,7 +178,7 @@ class ImagePool:
             if isinstance(url, Callable):
                 url = url()
             if url is not None:
-                image_tuple = (url, is_static)
+                image_tuple = ImagePoolUrl(url, is_static)
                 break
         return image_tuple
 
@@ -185,7 +189,7 @@ class ImagePool:
         :return: True if image to display is a static image
         """
         image_tuple = self.get_image()
-        return image_tuple[1] if image_tuple else False
+        return image_tuple.static if image_tuple else False
 
     def __json__(self):
         """ Return a built-in object that is naturally jsonable """

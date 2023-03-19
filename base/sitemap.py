@@ -25,7 +25,7 @@ from django.db.models import QuerySet
 
 from recipesnstuff.constants import (
     ABOUT_ROUTE_NAME, LAST_PUBLISH_DATE, HELP_ROUTE_NAME, PRIVACY_ROUTE_NAME,
-    LANDING_ROUTE_NAME
+    HOME_ROUTE_NAME
 )
 from utils import (
     reverse_q, SitemapMixin, SitemapEntry
@@ -45,7 +45,7 @@ class BaseSitemap(SitemapMixin):
         """
         return [
             SitemapEntry(
-                location=reverse_q(LANDING_ROUTE_NAME),
+                location=reverse_q(HOME_ROUTE_NAME),
                 lastmod=LAST_PUBLISH_DATE, changefreq='yearly', priority=1.0),
             SitemapEntry(
                 location=reverse_q(ABOUT_ROUTE_NAME),

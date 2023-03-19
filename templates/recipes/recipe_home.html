@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+<!-- recipe_home.html start -->
+{# --- recipe_home.html template variable defines for includes --- #}
+{# recipe list template expects: 'snippets' as list of extra html code blocks to include #}
+{#                             : 'recipe_list' as a list of RecipeDto #}
+{#                             : 'carousel_list' as a list of CarouselItem #}
+
+{% load i18n %}
+{% load static %}
+{% load humanize %}
+{% load tz %}
+{% load form_field  dict_value  lookup_value %}
+
+{% block extra_js_head %}
+    {{ block.super }}
+{% endblock extra_js_head %}
+
+{% block head_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <link href="{% static 'css/styles-recipes.css' %}" rel="stylesheet" type="text/css">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="row mt-2">
+{% if page_heading %}
+    <div class="col-12 text-center">
+        <h3>{{ page_heading | safe }}</h3>
+    </div>
+{% endif %}
+</div>
+
+<div class="row flex-grow-1 overflow-auto d-flex justify-content-center">
+    <article id="article-content" class="row d-flex justify-content-center">
+        <div class="row row-cols-1mb-3">
+            {% for recipe_dto in recipe_list %}
+                {# --- recipe_home_dto.html template variable defines for includes --- #}
+                {# recipe home dto template expects: 'recipe_dto' as RecipeDto #}
+                {#                                   'carousel' as CarouselItem #}
+                {#                                   'identifier' as individual identifier #}
+                {#                                   'recipe_idx' as index in recipe list #}
+                {% lookup_value carousel_list forloop.counter0 as carousel %}
+                {% with identifier=recipe_dto.id  recipe_idx=forloop.counter0 %}
+                    {% include "recipes/recipe_home_dto.html" %}
+                {% endwith %}
+            {% endfor %}
+        </div>
+    </article>
+</div>
+
+{% for snippet in snippets %}
+    {{ snippet | safe }}
+{% endfor %}
+
+{% endblock content %}
+
+{% block extra_js_body %}
+    {{ block.super }}
+{% endblock extra_js_body %}
+<!-- recipe_home.html end -->
