@@ -22,6 +22,7 @@
 from datetime import datetime
 
 from utils import append_slash, url_path
+from .utils import val_test_route_name
 
 APP_NAME = "Recipes 'N' Stuff"
 COPYRIGHT_YEAR = 2023
@@ -110,7 +111,9 @@ AVATAR_URL_CTX = "avatar_url"
 NO_ROBOTS_CTX = "no_robots"
 
 # CSS/HTML validator test related
-VAL_TEST_PATH_PREFIX = 'val-test'
+VAL_TEST_REGISTER_ROUTE_NAME = val_test_route_name(REGISTER_ROUTE_NAME)
+VAL_TEST_LOGIN_ROUTE_NAME = val_test_route_name(LOGIN_ROUTE_NAME)
+VAL_TEST_LOGOUT_ROUTE_NAME = val_test_route_name(LOGOUT_ROUTE_NAME)
 
 # cloudinary related
 AVATAR_FOLDER = "rns_avatars"

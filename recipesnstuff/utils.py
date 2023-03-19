@@ -21,7 +21,9 @@
 #  DEALINGS IN THE SOFTWARE.
 #
 from utils import url_path
-from . import VAL_TEST_PATH_PREFIX
+
+
+VAL_TEST_PATH_PREFIX = 'val-test'
 
 
 def val_test_route_name(route: str):

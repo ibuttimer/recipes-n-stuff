@@ -25,9 +25,9 @@ from django.http import HttpRequest
 
 from recipesnstuff.constants import (
     HOME_MENU_CTX, HELP_MENU_CTX, HELP_ROUTE_NAME, HOME_ROUTE_NAME,
-    APP_NAME, ABOUT_MENU_CTX, ABOUT_ROUTE_NAME, VAL_TEST_PATH_PREFIX,
-    NO_ROBOTS_CTX
+    APP_NAME, ABOUT_MENU_CTX, ABOUT_ROUTE_NAME, NO_ROBOTS_CTX
 )
+from recipesnstuff import VAL_TEST_PATH_PREFIX
 from utils import resolve_req, add_navbar_attr
 
 from .constants import APP_NAME_CTX, VAL_TEST_CTX, TOAST_POSITION_CTX

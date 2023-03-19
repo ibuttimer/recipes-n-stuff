@@ -33,7 +33,9 @@ from checkout.constants import (
     CHECKOUT_CREATE_PAYMENT_ROUTE_NAME, CHECKOUT_PAY_ROUTE_NAME,
     CHECKOUT_UPDATE_BASKET_ROUTE_NAME, CHECKOUT_PAID_ROUTE_NAME
 )
-from recipesnstuff.constants import LOGOUT_ROUTE_NAME, CHECKOUT_APP_NAME
+from recipesnstuff.constants import (
+    LOGOUT_ROUTE_NAME, CHECKOUT_APP_NAME, VAL_TEST_LOGOUT_ROUTE_NAME
+)
 from recipesnstuff.settings import STATIC_URL
 from subscription.subscription_queries import user_has_subscription
 from utils import namespaced_url, resolve_req
@@ -86,7 +88,7 @@ PROCESS_NORMALLY = [
 SUB_CHOICE_ROUTE = namespaced_url(THIS_APP, SUBSCRIPTION_CHOICE_ROUTE_NAME)
 NO_SUB_SANDBOX = [
     # no subscription restricted to choose subscription, payment or logout
-    SUB_CHOICE_ROUTE, LOGOUT_ROUTE_NAME,
+    SUB_CHOICE_ROUTE, LOGOUT_ROUTE_NAME, VAL_TEST_LOGOUT_ROUTE_NAME,
     namespaced_url(THIS_APP, SUBSCRIPTION_PICK_ROUTE_NAME),
     namespaced_url(CHECKOUT_APP_NAME, CHECKOUT_CREATE_PAYMENT_ROUTE_NAME),
     namespaced_url(CHECKOUT_APP_NAME, CHECKOUT_UPDATE_BASKET_ROUTE_NAME),

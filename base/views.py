@@ -31,10 +31,9 @@ from django.templatetags.static import static
 from django.views.decorators.http import require_GET
 
 from recipes.constants import RECIPE_HOME_ROUTE_NAME
-from recipesnstuff import ADMIN_URL, ACCOUNTS_URL
+from recipesnstuff import ADMIN_URL, ACCOUNTS_URL, VAL_TEST_PATH_PREFIX
 from recipesnstuff.constants import (
-    CHECKOUT_URL, ROBOTS_URL, USERS_URL, VAL_TEST_PATH_PREFIX,
-    RECIPES_APP_NAME
+    CHECKOUT_URL, ROBOTS_URL, USERS_URL, RECIPES_APP_NAME
 )
 from utils import app_template_path, namespaced_url
 from utils.views import REDIRECT_CTX
