@@ -17,4 +17,4 @@ stripe==5.2.0
 jsonpickle~=3.0.1
 human-friendly_pedantic-timedelta~=2.0.11
 more-itertools~=9.1.0
-timedelta-isoformat==0.6.2.4
+timedelta-isoformat==0.6.2.10
