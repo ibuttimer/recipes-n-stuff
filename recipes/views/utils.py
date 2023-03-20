@@ -158,7 +158,8 @@ def parse_duration(duration: str) -> Tuple[bool, timedelta]:
                         if key in decoded else value
 
                     # remove decoded bit from remainder
-                    search_str = search_str[0:match.start(0)] + search_str[match.end(0):]
+                    search_str = search_str[0:match.start(0)] + \
+                        search_str[match.end(0):]
                 else:
                     # invalid match
                     error = True

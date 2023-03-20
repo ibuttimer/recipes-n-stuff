@@ -63,6 +63,7 @@ TypeToastTemplate = \
 CAROUSEL_CTX = 'carousel'
 CAROUSEL_LIST_CTX = 'carousel_list'
 
+
 @dataclass
 class CarouselItem:
     """ Class representing a carousel item """
@@ -70,6 +71,7 @@ class CarouselItem:
     alt: str
     lead: str
     active: bool
+
 
 CAROUSEL = [(
     'img/chef-4807317_1920.jpg', 'Oriental chef image',

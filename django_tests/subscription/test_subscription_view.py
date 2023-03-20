@@ -26,9 +26,10 @@ from typing import Union, List
 from bs4 import BeautifulSoup, Tag
 from django.http import HttpResponse
 
-from profiles.constants import ADDRESSES_ROUTE_NAME
-from recipesnstuff import SUBSCRIPTION_APP_NAME, PROFILES_APP_NAME, \
-    USER_APP_NAME
+from recipes.constants import RECIPES_ROUTE_NAME
+from recipesnstuff import (
+    SUBSCRIPTION_APP_NAME, USER_APP_NAME, RECIPES_APP_NAME
+)
 from subscription.constants import SUBSCRIPTION_CHOICE_ROUTE_NAME
 from subscription.views.dto import SubscriptionDto
 from subscription.models import Subscription
@@ -123,7 +124,7 @@ class TestSubscriptionView(SoupMixin, BaseProfilesTest):
 
         for route in [
             reverse_q(
-                namespaced_url(PROFILES_APP_NAME, ADDRESSES_ROUTE_NAME),
+                namespaced_url(RECIPES_APP_NAME, RECIPES_ROUTE_NAME),
                 query_kwargs={
                     USER_QUERY: user.username
                 }
