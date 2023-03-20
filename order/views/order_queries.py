@@ -211,25 +211,3 @@ def get_order(
     entity = get_object_and_related_or_404(
         Order, **query_param, related=related)
     return entity, query_param
-
-
-# def get_order_products_list(
-#         order: Union[int, Order],
-#         order_by: str = OrderProduct.TYPE_FIELD,
-#         prefetch_related: bool = True
-#         ) -> List[OrderProduct]:
-#     """
-#     Get order products for the specified `order`
-#     :param order: order object or its id
-#     :param order_by: order by; default index field
-#     :param prefetch_related: prefetch related flag, default True
-#     :return: tuple of object and query param
-#     """
-#     query_param = {
-#         f'{Order.ITEMS_FIELD}__{OrderProduct.ORD}':
-#             get_order(order) if isinstance(order, int) else order
-#     }
-#
-#     return list(
-#         OrderProduct.objects.filter(**query_param).order_by(order_by).all()
-#     )

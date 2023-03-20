@@ -24,6 +24,7 @@ from collections import namedtuple
 from http import HTTPStatus
 
 import stripe
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -33,11 +34,12 @@ from more_itertools import one
 
 from base.views import info_toast_payload, ToastTemplate
 from order.misc import decode_sku
-from order.models import ProductType, OrderStatus, Order
+from order.models import ProductType, OrderStatus
 from order.persist import save_order
 from order.queries import get_delivery_product
 from order.views.dto import OrderIdsBundle
 from order.views.utils import order_permission_check
+from profiles.constants import ADDRESSES_ROUTE_NAME
 from profiles.dto import AddressDto
 from profiles.templatetags.address_element_id import address_element_id
 from profiles.views.address_by import get_address
@@ -56,8 +58,10 @@ from utils import (
     rewrite_payload, entity_delete_result_payload, reverse_q,
     redirect_payload, replace_html_payload, Crud
 )
-from .basket import Basket, navbar_basket_html, get_session_basket, \
+from .basket import (
+    Basket, navbar_basket_html, get_session_basket,
     add_ingredient_box_to_basket
+)
 
 from .constants import (
     THIS_APP, STRIPE_PUBLISHABLE_KEY_CTX, STRIPE_RETURN_URL_CTX,
@@ -97,22 +101,29 @@ def checkout(request: HttpRequest) -> HttpResponse:
         AddressDto.from_model(address, is_selected=address == basket.address)
         for address in addresses_query(user=request.user)
     ]
+    if len(addresses) == 0:
+        messages.add_message(
+            request, messages.INFO, 'Please add an address before checkout.')
+        response = redirect(
+            namespaced_url(PROFILES_APP_NAME, ADDRESSES_ROUTE_NAME))
+    else:
+        context = {
+            TITLE_CTX: title,
+            PAGE_HEADING_CTX: title,
+            STRIPE_PUBLISHABLE_KEY_CTX: STRIPE_PUBLISHABLE_KEY,
+            STRIPE_RETURN_URL_CTX: namespaced_url(
+                THIS_APP, CHECKOUT_PAID_ROUTE_NAME
+            ),
+            ADDRESS_LIST_CTX: addresses
+        }
+        basket_context(basket, context=context)
+        delivery_context(basket, context=context)
 
-    context = {
-        TITLE_CTX: title,
-        PAGE_HEADING_CTX: title,
-        STRIPE_PUBLISHABLE_KEY_CTX: STRIPE_PUBLISHABLE_KEY,
-        STRIPE_RETURN_URL_CTX: namespaced_url(
-            THIS_APP, CHECKOUT_PAID_ROUTE_NAME
-        ),
-        ADDRESS_LIST_CTX: addresses
-    }
-    basket_context(basket, context=context)
-    delivery_context(basket, context=context)
+        response = render(request, app_template_path(
+            THIS_APP, 'checkout.html'
+        ), context=context)
 
-    return render(request, app_template_path(
-        THIS_APP, 'checkout.html'
-    ), context=context)
+    return response
 
 
 def basket_context(basket: Basket, context: dict = None) -> dict:
