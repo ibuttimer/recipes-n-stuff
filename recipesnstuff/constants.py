@@ -101,6 +101,7 @@ REGISTER_MENU_CTX = "register_menu"
 HELP_MENU_CTX = "help_menu"
 ABOUT_MENU_CTX = "about_menu"
 SUBSCRIPTION_MENU_CTX = "subscription_menu"
+MAINTENANCE_MENU_CTX = "maintenance_menu"
 RECIPES_MENU_CTX = "recipes_menu"
 CATEGORIES_MENU_CTX = "categories_menu"
 

@@ -23,13 +23,15 @@
 
 from django.urls import path
 
+from recipesnstuff import DEVELOPMENT
 from .constants import (
     THIS_APP, ORDERS_URL, ORDERS_ROUTE_NAME,
     ORDER_SEARCH_URL, ORDER_SEARCH_ROUTE_NAME,
     ORDER_ID_URL, ORDER_ID_ROUTE_NAME,
+    GENERATE_ORDER_PROD_URL, GENERATE_ORDER_PROD_ROUTE_NAME,
 )
 from .views import (
-    OrderList, SearchOrderList, OrderDetail,
+    OrderList, SearchOrderList, OrderDetail, generate_order_product,
 )
 
 # https://docs.djangoproject.com/en/4.1/topics/http/urls/#url-namespaces-and-included-urlconfs
@@ -41,3 +43,10 @@ urlpatterns = [
          name=ORDER_SEARCH_ROUTE_NAME),
     path(ORDER_ID_URL, OrderDetail.as_view(), name=ORDER_ID_ROUTE_NAME),
 ]
+
+if DEVELOPMENT:
+    # add generate order product endpoint
+    urlpatterns.extend([
+        path(GENERATE_ORDER_PROD_URL, generate_order_product,
+             name=GENERATE_ORDER_PROD_ROUTE_NAME),
+    ])

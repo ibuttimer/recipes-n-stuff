@@ -174,5 +174,9 @@ def add_new_subscription_product(subscription: Subscription):
         f'{OrderProduct.TYPE_FIELD}': prod_type.choice,
         f'{OrderProduct.SKU_FIELD}':
             generate_sku(prod_type, subscription=subscription),
-        f'{OrderProduct.SUBSCRIPTION_FIELD}': subscription
+        f'{OrderProduct.SUBSCRIPTION_FIELD}': subscription,
+        f'{OrderProduct.UNIT_PRICE_FIELD}': subscription.amount,
+        f'{OrderProduct.BASE_CURRENCY_FIELD}': subscription.base_currency,
+        f'{OrderProduct.DESCRIPTION_FIELD}':
+            f'{subscription.name} subscription'
     })

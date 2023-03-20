@@ -19,19 +19,33 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from .order_list import OrderList, SearchOrderList
-from .order_by import OrderDetail
-from .dto import OrderDto
-from .maintenance import generate_order_product
+#
+from django.http import HttpRequest
+
+from recipesnstuff.constants import MAINTENANCE_MENU_CTX
+from utils import resolve_req, add_navbar_attr, Crud
+from .constants import GENERATE_ORDER_PROD_ROUTE_NAME
+from .views.utils import orderprod_permission_check
 
 
-__all__ = [
-    'OrderList',
-    'SearchOrderList',
-
-    'OrderDetail',
-
-    'OrderDto',
-
-    'generate_order_product',
-]
+def orderprod_context(request: HttpRequest) -> dict:
+    """
+    Add user-specific context entries
+    :param request: http request
+    :return: dictionary to add to template context
+    """
+    context = {}
+    called_by = resolve_req(request)
+    if called_by:
+        for ctx, check_func, is_dropdown_toggle in [
+            (MAINTENANCE_MENU_CTX, lambda name: name in [
+                GENERATE_ORDER_PROD_ROUTE_NAME
+            ], True),
+        ]:
+            add_navbar_attr(
+                context, ctx, is_active=check_func(called_by.url_name),
+                has_permission=orderprod_permission_check(
+                    request, Crud.READ, raise_ex=False),
+                is_dropdown_toggle=is_dropdown_toggle
+            )
+    return context

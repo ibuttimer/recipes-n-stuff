@@ -23,6 +23,7 @@
 
 from django.http import HttpRequest
 
+from recipes.constants import RECIPE_HOME_ROUTE_NAME
 from recipesnstuff.constants import (
     HOME_MENU_CTX, HELP_MENU_CTX, HELP_ROUTE_NAME, HOME_ROUTE_NAME,
     APP_NAME, ABOUT_MENU_CTX, ABOUT_ROUTE_NAME, NO_ROBOTS_CTX
@@ -49,7 +50,7 @@ def base_context(request: HttpRequest) -> dict:
     if called_by:
         for ctx, routes in [
             (HOME_MENU_CTX, [
-                HOME_ROUTE_NAME
+                HOME_ROUTE_NAME, RECIPE_HOME_ROUTE_NAME
             ]),
             (HELP_MENU_CTX, [HELP_ROUTE_NAME]),
             (ABOUT_MENU_CTX, [ABOUT_ROUTE_NAME]),

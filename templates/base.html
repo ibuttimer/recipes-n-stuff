@@ -98,7 +98,19 @@
                                         <li><a class="dropdown-item" href="{% url 'subscription:subscription_new' %}">New</a></li>
                                     </ul>
                                 </li>
-                                {% endif %}
+                                <li class="nav-item dropdown">
+                                    <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                       {% with has_permission=maintenance_menu.has_permission active=maintenance_menu.active disabled=maintenance_menu.disabled %}{% include "snippet/menu_dropdown_class.html" %}{% endwith %}>
+                                        Maintenance
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{% url 'order:gen-order-pnum' %}?ingredient=y">Generate Ingredient Box Products</a></li>
+                                        <li><a class="dropdown-item" href="{% url 'order:gen-order-pnum' %}?subscription=y">Generate Subscription Products</a></li>
+                                        <li><a class="dropdown-item" href="{% url 'order:gen-order-pnum' %}?delivery=y">Generate Delivery Products</a></li>
+                                        <li><a class="dropdown-item" href="{% url 'order:gen-order-pnum' %}?ingredient=y&subscription=y&delivery=y">Generate All Products</a></li>
+                                    </ul>
+                                </li>
+                            {% endif %}
                             {% endif %}
                             <li class="nav-item">
                                 <a {{ about_menu.a_attr | safe }} href="{% url 'about' %}">

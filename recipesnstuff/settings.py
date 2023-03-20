@@ -232,6 +232,7 @@ TEMPLATES = [
                 f'{SUBSCRIPTION_APP_NAME}.context_processors'
                 f'.subscription_context',
                 f'{RECIPES_APP_NAME}.context_processors.recipe_context',
+                f'{ORDER_APP_NAME}.context_processors.orderprod_context',
             ],
         },
     },
