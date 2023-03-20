@@ -41,6 +41,7 @@ from order.views.dto import OrderIdsBundle
 from order.views.utils import order_permission_check
 from profiles.constants import ADDRESSES_ROUTE_NAME
 from profiles.dto import AddressDto
+from profiles.enums import AddressType
 from profiles.templatetags.address_element_id import address_element_id
 from profiles.views.address_by import get_address
 from profiles.views.address_queries import addresses_query
@@ -56,7 +57,7 @@ from utils import (
     GET, POST, PATCH, namespaced_url, app_template_path,
     replace_inner_html_payload, TITLE_CTX, PAGE_HEADING_CTX, DELETE,
     rewrite_payload, entity_delete_result_payload, reverse_q,
-    redirect_payload, replace_html_payload, Crud
+    redirect_payload, replace_html_payload, Crud, USER_QUERY
 )
 from .basket import (
     Basket, navbar_basket_html, get_session_basket,
@@ -105,7 +106,13 @@ def checkout(request: HttpRequest) -> HttpResponse:
         messages.add_message(
             request, messages.INFO, 'Please add an address before checkout.')
         response = redirect(
-            namespaced_url(PROFILES_APP_NAME, ADDRESSES_ROUTE_NAME))
+            reverse_q(
+                namespaced_url(PROFILES_APP_NAME, ADDRESSES_ROUTE_NAME),
+                query_kwargs={
+                    USER_QUERY: request.user.username
+                }
+            )
+        )
     else:
         context = {
             TITLE_CTX: title,
@@ -261,6 +268,9 @@ def create_payment_intent(request: HttpRequest) -> HttpResponse:
     order_permission_check(request, Crud.CREATE)
 
     basket, _ = get_session_basket(request)
+    if basket.address is None:
+        basket.address = addresses_query(
+            user=request.user, address_type=AddressType.DEFAULT).first()
 
     save_order(basket, status=OrderStatus.PENDING_PAYMENT)
 

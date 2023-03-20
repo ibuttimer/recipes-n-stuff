@@ -33,12 +33,15 @@ from checkout.constants import (
     CHECKOUT_CREATE_PAYMENT_ROUTE_NAME, CHECKOUT_PAY_ROUTE_NAME,
     CHECKOUT_UPDATE_BASKET_ROUTE_NAME, CHECKOUT_PAID_ROUTE_NAME
 )
+from profiles.constants import ADDRESSES_ROUTE_NAME, ADDRESS_NEW_ROUTE_NAME, \
+    ADDRESS_ID_ROUTE_NAME, ADDRESSES_ID_DEFAULT_ROUTE_NAME
 from recipesnstuff.constants import (
-    LOGOUT_ROUTE_NAME, CHECKOUT_APP_NAME, VAL_TEST_LOGOUT_ROUTE_NAME
+    LOGOUT_ROUTE_NAME, CHECKOUT_APP_NAME, VAL_TEST_LOGOUT_ROUTE_NAME,
+    PROFILES_APP_NAME
 )
 from recipesnstuff.settings import STATIC_URL
 from subscription.subscription_queries import user_has_subscription
-from utils import namespaced_url, resolve_req
+from utils import namespaced_url, resolve_req, reverse_q
 
 from .constants import (
     THIS_APP, SUBSCRIPTION_CHOICE_ROUTE_NAME, SUBSCRIPTION_PICK_ROUTE_NAME,
@@ -90,11 +93,23 @@ NO_SUB_SANDBOX = [
     # no subscription restricted to choose subscription, payment or logout
     SUB_CHOICE_ROUTE, LOGOUT_ROUTE_NAME, VAL_TEST_LOGOUT_ROUTE_NAME,
     namespaced_url(THIS_APP, SUBSCRIPTION_PICK_ROUTE_NAME),
-    namespaced_url(CHECKOUT_APP_NAME, CHECKOUT_CREATE_PAYMENT_ROUTE_NAME),
-    namespaced_url(CHECKOUT_APP_NAME, CHECKOUT_UPDATE_BASKET_ROUTE_NAME),
-    namespaced_url(CHECKOUT_APP_NAME, CHECKOUT_PAY_ROUTE_NAME),
-    namespaced_url(CHECKOUT_APP_NAME, CHECKOUT_PAID_ROUTE_NAME)
 ]
+NO_SUB_SANDBOX.extend([
+    # no subscription also restricted to managing addresses
+    namespaced_url(PROFILES_APP_NAME, route)
+    for route in [
+        ADDRESSES_ROUTE_NAME, ADDRESS_NEW_ROUTE_NAME,
+        ADDRESS_ID_ROUTE_NAME, ADDRESSES_ID_DEFAULT_ROUTE_NAME
+    ]
+])
+NO_SUB_SANDBOX.extend([
+    # no subscription also restricted to checkout
+    namespaced_url(CHECKOUT_APP_NAME, route)
+    for route in [
+        CHECKOUT_CREATE_PAYMENT_ROUTE_NAME, CHECKOUT_UPDATE_BASKET_ROUTE_NAME,
+        CHECKOUT_PAY_ROUTE_NAME, CHECKOUT_PAID_ROUTE_NAME
+    ]
+])
 
 
 class SubscriptionMiddleware:
