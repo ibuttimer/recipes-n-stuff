@@ -80,22 +80,24 @@ The site is aimed at users seeking a platform seeking a source of inspirational 
 Users may register for an account or alternatively use OAuth to sign in via their Google or Twitter accounts.
 
 ###### Fig 3: User registration and authentication
-|               User registration                |             User authentication              |
-|:----------------------------------------------:|:--------------------------------------------:|
-| ![User register/login](doc/media/register.png) | ![User register/login](doc/media/signin.png) | 
+|                   User registration                   |                User authentication                 |
+|:-----------------------------------------------------:|:--------------------------------------------------:|
+|    ![User register/login](doc/media/register.png)     |    ![User register/login](doc/media/signin.png)    | 
+|                  **Chane password**                   |             **Manage email addresses**             | 
+| ![User register/login](doc/media/change-password.png) | ![User register/login](doc/media/manage-email.png) | 
 
 ### User roles
 There are X user roles:
-- ?
-  
-  ?
+- Registered user
+
+  Registered users may add/edit/delete their own recipes. All registered users may view any recipe on the site, and purchase ingredient boxes for any recipe on the site. 
 
 - Site administrator
 
   The site administrator may perform all functions on the site.
 
 ### User notifications
-Users receive notifications following sign in. These include a new user notification
+Users receive notifications following sign in. These include a new user notification:
 
 ###### Fig 4: User notifications
 |                       New user notification                       |                   Login notification                    |
@@ -106,47 +108,41 @@ Users receive notifications following sign in. These include a new user notifica
 
 ### Content CRUD
 #### Content creation
-Users may create comments on recipes.
+Users may create recipes and addresses.
+Site administrators may in addition, create subscription plans.  
 #### Content view
-All users may view recipe comments.
+All users may view all recipes. Individual users may view their addresses.
 #### Content edit
-Users may edit their comments.
+Users may edit their recipes. Individual users may edit their addresses.
 #### Content delete
-Users may delete their comments.
+Users may delete their recipes. Individual users may edit their addresses.
 
 ###### Fig 5: Content CRUD
+|                      Create address                       |                                                                       Create recipe                                                                        |
+|:---------------------------------------------------------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------:|
+|      ![Create address](doc/media/create-address.png)      |                                                       ![Create recipe](doc/media/create-recipe.png)                                                        | 
+|                     **List address**                      |                                                                      **List recipes**                                                                      |
+|        ![Address list](doc/media/address-list.png)        |                                                         ![Recipe list](doc/media/recipe-list.png)                                                          | 
+|                     **Edit address**                      |                                                                      **Edit recipe**                                                                       |
+|        ![Edit address](doc/media/edit-address.png)        | ![Edit address](doc/media/edit-recipe.png)<br>![Edit ingredients](doc/media/edit-ingredients.png)<br>![Edit instructions](doc/media/edit-instructions.png) | 
+|                    **Delete address**                     |                                                                     **Delete recipe**                                                                      |
+|      ![Delete address](doc/media/delete-address.png)      |                                                       ![Delete address](doc/media/delete-recipe.png)                                                       | 
+|           **Administrator-only functionality**            |                                                                                                                                                            |
+|                  **Create subscription**                  |                                                                   **Edit subscription**                                                                    |
+| ![Create subscription](doc/media/create-subscription.png) |                                                   ![Edit subscription](doc/media/edit-subscription.png)                                                    | 
+|                   **List subscription**                   |                                                                  **Delete subscription**                                                                   |
+|   ![Subscription list](doc/media/subscription-list.png)   |                                                 ![Delete subscription](doc/media/delete-subscription.png)                                                  | 
 
-### Content interaction
-Users may interact with content via the reactions bar, allowing them to:
-- mark recipes as favourites
-- mark comments as agree/disagree
-- follow recipe authors to receive notifications of new recipes they create
-- share content via short urls
-- report content to be reviewed by a moderator
-- edit their own comments
-
-###### Fig 6: Content interaction
+> **Note:** Subscription creation is incomplete as it is necessary to create and assign subscription features in the Administration page. [User Story: Subscription features](https://github.com/ibuttimer/recipes-n-stuff/issues/63). 
 
 ### Content search
 Users may search for recipes via search box in the navbar at the top of the screen.
+The search box allows user's to either perform a free word search or select from a predetermined keyword list.
 
 ###### Fig 6: Content search
-
-### Recipe feeds
-There are two recipe feeds available to the user on the home page:
-- Following
-
-  A feed of recipes from authors which the user is following.
-
-- Category
-
-  A feed of recipes from cooking categories which the user has selected to follow in their profile.
-
-
-###### Fig 7: Recipe feeds
-|                 Following feed                  |                 Category feed                 |              All feed               |
-|:-----------------------------------------------:|:---------------------------------------------:|:-----------------------------------:|
-| ![Following feed](doc/media/following-feed.png) | ![Category feed](doc/media/category-feed.png) | ![All feed](doc/media/all-feed.png) | 
+|             Search box              |                 Search result                 |
+|:-----------------------------------:|:---------------------------------------------:|
+| ![Search box](doc/media/search.png) | ![Search result](doc/media/search-result.png) | 
 
 
 ### Search Engine Optimisation
@@ -164,7 +160,7 @@ The marketing features include:
 ### Future enhancements
 Future enhancements are logged in [GitHub Issues](https://github.com/ibuttimer/recipes-n-stuff/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement).
 
-
+Future features are logged in [GitHub Issues](https://github.com/ibuttimer/recipes-n-stuff/issues?q=is%3Aissue+is%3Aopen+label%3Afeature)
 
 ## Design
 The design specification is available in [design.md](doc/design/design.md).
@@ -680,6 +676,7 @@ The following resources were used to build the website.
 - [Empty serving dish icon](static/img/serving-dish.png) created by [Freepik - Flaticon](https://www.flaticon.com/free-icons/empty)
 - Privacy policy courtesy of [Privacy Policy Generator](https://www.privacypolicygenerator.info/). [Privacy Policy Generator hosted](https://www.privacypolicygenerator.info/live.php?token=xSZn3GRjS2md31oUpTTjIsOCGo8rY8K9) version.
 - [HTML entity data](base/entities.json) courtesy of [HTML Living Standard - Named character references](https://html.spec.whatwg.org/multipage/named-characters.html)
+- The [Responsive Mockup](#fig-1-responsive-mockup) image was generated courtesy of [Website Mockup Generator](https://websitemockupgenerator.com/)
 
 ### Code
 
