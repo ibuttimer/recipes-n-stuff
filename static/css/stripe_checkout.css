@@ -81,6 +81,11 @@
     cursor: default;
 }
 
+/* images */
+.img__checkout_product {
+    width: 50px;
+}
+
 /* spinner/processing state, errors */
 .spinner,
 .spinner:before,

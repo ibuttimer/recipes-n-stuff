@@ -151,7 +151,8 @@ class OrderProductDto(BaseDto):
         dto.url = reverse_q(
             namespaced_url(RECIPES_APP_NAME, RECIPE_ID_ROUTE_NAME),
             args=[order_prod.recipe.id]
-        )
+        ) if ProductType.from_choice(order_prod.type).is_recipe_option \
+            else None
 
         return dto
 
