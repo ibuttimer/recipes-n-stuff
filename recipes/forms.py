@@ -54,7 +54,7 @@ class RecipeIngredientForm(forms.ModelForm):
     quantity = forms.CharField(
         label=_("Quantity"),
         max_length=RecipeIngredient.RECIPE_INGREDIENT_ATTRIB_QUANTITY_MAX_LEN,
-        required=True)
+        required=False)
 
     index = forms.IntegerField(
         label=_("Index"),
@@ -88,7 +88,7 @@ class RecipeIngredientForm(forms.ModelForm):
         def generate_error_messages():
             _msgs = [
                 ErrorMsgs(
-                    field, required=True,
+                    field,
                     max_length=RecipeIngredient.
                     RECIPE_INGREDIENT_ATTRIB_QUANTITY_MAX_LEN
                 ) for field in (

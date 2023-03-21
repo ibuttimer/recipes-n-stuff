@@ -480,7 +480,7 @@ class RecipeIngredient(ModelMixin, models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     quantity = models.CharField(
-        max_length=RECIPE_INGREDIENT_ATTRIB_QUANTITY_MAX_LEN)
+        blank=True, max_length=RECIPE_INGREDIENT_ATTRIB_QUANTITY_MAX_LEN)
     index = models.PositiveSmallIntegerField(
         _('index in ingredient list'),
         default=RECIPE_INGREDIENT_ATTRIB_INDEX_MIN,
