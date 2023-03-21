@@ -19,8 +19,13 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
+from pathlib import Path
 
 from utils import append_slash
+
+
+# name of this app
+THIS_APP = Path(__file__).resolve().parent.name
 
 # common field names
 FIRST_NAME = "first_name"
@@ -45,3 +50,6 @@ USER_USERNAME_URL = append_slash("<str:name>")
 
 USER_ID_ROUTE_NAME = "user_id"
 USER_USERNAME_ROUTE_NAME = "user_username"
+
+# context related
+USER_CTX = 'user'
