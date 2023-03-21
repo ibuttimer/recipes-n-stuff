@@ -34,8 +34,9 @@
 
             console.log(url);
 
+            /* 'patch' needs to be uppercase; https://fetch.spec.whatwg.org/#methods */
             fetch(url, {
-                method: 'patch',
+                method: 'PATCH',
                 headers: csrfHeader()
             })
                 .then((response) => response.json())

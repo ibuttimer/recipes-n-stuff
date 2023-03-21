@@ -378,17 +378,14 @@
                 }
                 // else basic add to basket button
 
+                /* 'patch' needs to be uppercase; https://fetch.spec.whatwg.org/#methods */
                 fetch(`${BUY_BOX_URL}?quantity=${boxesTotal}${next}`, {
-                    method: 'patch',
+                    method: 'PATCH',
                     headers: csrfHeader()
                 })
                 .then((response) => response.json())
                 .then((data) => {
                     redirectRewriteInfoResponseHandler(data);
-
-                    // enableTooltips(NAVBAR_BASKET_TOOLTIP_SELECTOR);
-                    //
-                    // showInfoToast('Added to basket.')
                 })
                 .catch((error) => {
                     showErrorToast(error);

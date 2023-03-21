@@ -247,8 +247,9 @@
             // templates/profiles/address_select_item.html
             $('.a__addr-set').on('click', function (event) {
                 const url = event.currentTarget.attributes['href'].textContent;
+                /* 'patch' needs to be uppercase; https://fetch.spec.whatwg.org/#methods */
                 fetch(url, {
-                    method: 'patch',
+                    method: 'PATCH',
                     headers: csrfHeader()
                 })
                 .then((response) => response.json())
