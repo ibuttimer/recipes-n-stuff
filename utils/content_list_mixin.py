@@ -457,8 +457,9 @@ class ContentListMixin(generic.ListView):
         :param query_params: query params
         :return: True is current user is author in query
         """
+        # query params are not case-sensitive
         return self.query_value_was_set_as_value(
-            query_params, USER_QUERY, self.user.username)
+            query_params, USER_QUERY, self.user.username.lower())
 
     @staticmethod
     def query_param_was_set(query_params: dict[str, QueryArg]) -> bool:

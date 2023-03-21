@@ -149,6 +149,7 @@ SELECTED_COUNT_CTX = 'selected_count'
 CUSTOM_COUNT_CTX = 'custom_count'
 CCY_SYMBOL_CTX = 'ccy_symbol'
 UNIT_PRICE_CTX = 'unit_price'
+CALL_TO_BUY_CTX = 'call_to_buy'
 SKU_CTX = 'sku'
 
 TAGLINE_CTX = 'tagline'

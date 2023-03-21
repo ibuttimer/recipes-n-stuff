@@ -125,6 +125,12 @@
                     <hr class="m-3">
                 </div>
                 <div class="row">
+                    <div class="col-12">
+                            <p class="text-danger">{{ call_to_buy | safe}}</p>
+                        </span>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-lg-4 col-sm-6">
                         <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="price {{ ccy_symbol }}{{ unit_price }} per person">
                             <p><i class="fa-solid fa-box"></i> {{ ccy_symbol }}{{ unit_price }} pp</p>

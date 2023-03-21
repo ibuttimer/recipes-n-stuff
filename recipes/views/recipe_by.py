@@ -21,6 +21,7 @@
 #  DEALINGS IN THE SOFTWARE.
 from dataclasses import dataclass
 from http import HTTPStatus
+from random import choice
 from typing import Union, Tuple, TypeVar
 
 from django.contrib.auth.decorators import login_required
@@ -51,7 +52,7 @@ from ..constants import (
     SELECTED_COUNT_CTX, CUSTOM_COUNT_CTX, CCY_SYMBOL_CTX, UNIT_PRICE_CTX,
     QUANTITY_FIELD, NEXT_QUERY, INGREDIENT_LIST_CTX, RECIPE_COUNT_CTX,
     CAN_PURCHASE_CTX, IS_OWN_CTX, NUTRITIONAL_INFO_CTX, RECIPE_QUERY,
-    RECIPE_FORM_CTX, INGREDIENT_ID_MAP_CTX, RECIPES_ROUTE_NAME
+    RECIPE_FORM_CTX, INGREDIENT_ID_MAP_CTX, RECIPES_ROUTE_NAME, CALL_TO_BUY_CTX
 )
 from utils import (
     Crud, app_template_path, reverse_q,
@@ -85,6 +86,14 @@ BOX_COUNT_OPTIONS = [
 
 TypeRedirectNext = TypeVar("TypeRedirectNext", bound="RedirectNext")
 
+CALL_TO_BUY = [
+    'Like the look of this? Save yourself a trip to the shops and purchase '
+    'ingredient boxes here!',
+    'Take the hassle out of catering a party, ingredient boxes delivered to '
+    'your door.',
+    "Feeding 1 or 50? We've got you covered. Just a few clicks and your "
+    "ingredient boxes are on the way.",
+]
 
 class RecipeDetail(LoginRequiredMixin, View):
     """
@@ -127,6 +136,7 @@ class RecipeDetail(LoginRequiredMixin, View):
                 CUSTOM_COUNT_CTX: CUSTOM_BOX_COUNT,
                 CCY_SYMBOL_CTX: currency.symbol,
                 UNIT_PRICE_CTX: box_product.unit_price,
+                CALL_TO_BUY_CTX: choice(CALL_TO_BUY)
             })
         if can_delete:
             context.update({
