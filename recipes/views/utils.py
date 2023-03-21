@@ -20,6 +20,7 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 import re
+from collections import namedtuple
 from datetime import timedelta
 from typing import Union, List, Tuple
 
@@ -27,7 +28,7 @@ from django.http import HttpRequest
 
 from timedelta_isoformat import timedelta as timedelta_iso
 
-from recipes.constants import THIS_APP
+from recipes.constants import THIS_APP, DURATION_HELP_CTX
 from recipes.models import Recipe, Category
 from utils import (
     Crud, permission_check
@@ -50,6 +51,20 @@ ALL_DURATION_SYMBOLS = [YEAR, MTH, WK, DAY, HOUR, MIN, SEC]
 DURATION_FORMAT_STR = ' '.join(list(map(
     lambda s: f'#{s}', ALL_DURATION_SYMBOLS
 )))
+
+DURATION_HELP = [
+    (YEAR, "year"),
+    (MTH, "month"),
+    (WK, "week"),
+    (DAY, "day"),
+    (HOUR, "hour"),
+    (MIN, "minute"),
+    (SEC, "second"),
+]
+
+DurationHelpItem = namedtuple(
+    'DurationHelpItem', ['symbol', 'period', 'enter_as'])
+
 
 DAYS_PER_MTH = 31
 DAYS_PER_YEAR = 365
@@ -226,3 +241,19 @@ def encode_timedelta(delta: timedelta) -> str:
             (hour, HOUR), (minute, MIN), (sec, SEC)
         ] if num
     ])
+
+
+def duration_help_context():
+    """
+    Get duration entry help items
+    :return:
+    """
+    return {
+        DURATION_HELP_CTX: [
+            DurationHelpItem(
+                symbol=f"<b>{symbol}</b>", period=period,
+                enter_as=f"'<b># {symbol}</b>', e.g. "
+                         f"2 {symbol} to enter 2 {period}s")
+            for symbol, period in DURATION_HELP
+        ]
+    }

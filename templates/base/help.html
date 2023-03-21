@@ -2,7 +2,7 @@
 
 {% load i18n %}
 
-{% block head_title %}SoapBox - Help{% endblock %}
+{% block head_title %}{{ app_name }} Help{% endblock %}
 
 {% block content %}
 <article id="help-content">
@@ -13,7 +13,7 @@
         </div>
     </div>
 
-    {% include "opinions/help/search.html" %}
+    {% include "recipes/help/recipe.html" %}
 
 </article>
 {% endblock %}

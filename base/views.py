@@ -114,6 +114,20 @@ def get_home(request: HttpRequest) -> HttpResponse:
         redirect(namespaced_url(RECIPES_APP_NAME, RECIPE_HOME_ROUTE_NAME))
 
 
+@require_GET
+def get_help(request: HttpRequest) -> HttpResponse:
+    """
+    Render help page
+    :param request: request
+    :return: response
+    """
+    from recipes.views.utils import duration_help_context
+
+    context = duration_help_context()
+    return render(request, app_template_path(THIS_APP, 'help.html'),
+                  context=context)
+
+
 @dataclass(kw_only=True)
 class InfoModalTemplate:
     """ Info modal template data """

@@ -115,6 +115,11 @@
                             {% endif %}
                             {% endif %}
                             <li class="nav-item">
+                                <a {{ help_menu.a_attr | safe }} href="{% url 'help' %}">
+                                    <span {{ help_menu.span_attr | safe }}>Help</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a {{ about_menu.a_attr | safe }} href="{% url 'about' %}">
                                     <span {{ about_menu.span_attr | safe }}>About</span>
                                 </a>

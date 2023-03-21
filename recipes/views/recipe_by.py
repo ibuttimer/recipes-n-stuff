@@ -95,6 +95,7 @@ CALL_TO_BUY = [
     "ingredient boxes are on the way.",
 ]
 
+
 class RecipeDetail(LoginRequiredMixin, View):
     """
     Class-based view for recipe get/update/delete

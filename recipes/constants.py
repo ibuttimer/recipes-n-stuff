@@ -151,6 +151,7 @@ CCY_SYMBOL_CTX = 'ccy_symbol'
 UNIT_PRICE_CTX = 'unit_price'
 CALL_TO_BUY_CTX = 'call_to_buy'
 SKU_CTX = 'sku'
+DURATION_HELP_CTX = 'duration_help'
 
 TAGLINE_CTX = 'tagline'
 

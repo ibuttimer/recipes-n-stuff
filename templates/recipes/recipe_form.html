@@ -61,6 +61,11 @@
                             <div class="row mb-3">
                                 <div class="col-sm-4 text-start">
                                     <label for="{% form_auto_id field.name %}" class="col-form-label">{{ field.label }}</label>
+                                    {% if field.name == 'prep_time' or field.name == 'cook_time' %}
+                                    <span>
+                                        <a class="link-primary" href="{% url 'help' %}#recipe-time-help" aria-label="open duration entry help in another tab" target="_blank"><i class="fa-regular fa-circle-info"></i></a>
+                                    </span>
+                                    {% endif %}
                                 </div>
                                 <div class="col-sm-8">
                                     {{ field }}

@@ -43,12 +43,12 @@ from recipesnstuff.constants import (
     ABOUT_URL, ABOUT_ROUTE_NAME, PRIVACY_URL, PRIVACY_ROUTE_NAME, ROBOTS_URL,
     ROBOTS_ROUTE_NAME
 )
-from .views import get_landing, get_about, get_privacy, robots_txt, get_home
+from .views import get_about, get_privacy, robots_txt, get_home, get_help
 
 _url_info = [
     # url, endpoint, route name
     (ABOUT_URL, get_about, ABOUT_ROUTE_NAME),
-    (HELP_URL, get_landing, HELP_ROUTE_NAME),
+    (HELP_URL, get_help, HELP_ROUTE_NAME),
     (PRIVACY_URL, get_privacy, PRIVACY_ROUTE_NAME),
     ('', get_home, HOME_ROUTE_NAME),
 ]
