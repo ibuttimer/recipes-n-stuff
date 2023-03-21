@@ -13,7 +13,7 @@
     <a href="{% url 'recipes:recipe_id' recipe_dto.id %}" class="a__recipe-card" aria-label="view recipe">
         <div class="card rounded-3">
             <div class="row">
-                <div class="col-lg-8 text-center">
+                <div class="col-lg-6 text-center">
                     <div id="id--landing-carousel-actions-{{ identifier }}" class="carousel slide">
                         {% if carousel|length > 1 %}
                             <div class="carousel-indicators">
@@ -27,9 +27,11 @@
                             {% for item in carousel %}
                                 {% attr_append 'class="carousel-item py-2 px-2"' 'active' item.active as item_class %}
                                 <div {{ item_class | safe }}>
-                                    <img src="{{ item.url }}" class="d-block w-100 img__home-recipe-card" alt="{{ item.alt }}">
+                                    <div class="d-flex justify-content-center">
+                                    <img src="{{ item.url }}" class="d-block img__home-recipe-card " alt="{{ item.alt }}">
+                                    </div>
                                     <div class="carousel-caption d-none d-md-block">
-                                        <div class="col-lg-6 mx-auto">
+                                        <div class="col-md-6 mx-auto">
                                             <p class="lead mb-4 bg-dark bg-gradient rounded">{{ item.lead }}</p>
                                         </div>
                                     </div>
@@ -48,7 +50,7 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="col-lg-4 pt-2 my-2 px-2 text-center">
+                <div class="col-lg-6 pt-2 my-2 px-2 text-center">
                     <p class="display-6 fw-bold px-2 my-auto mx-auto">{{ recipe_dto.name | safe }}</p>
                 </div>
             </div>
