@@ -101,9 +101,16 @@ def recipe_home(request: HttpRequest) -> HttpResponse:
             category_name=search_term, keyword_name=search_term)
         count = recipes.count()
 
-    indices = [idx for idx in range(count)] if count <= RECIPES_PER_PAGE else [
-        randint(0, count - 1) for _ in range(RECIPES_PER_PAGE)
-    ]
+    added_indices = set()
+    def pick_index():
+        while len(added_indices) < RECIPES_PER_PAGE:
+            index = randint(0, count - 1)
+            if index not in added_indices:
+                added_indices.add(index)
+        return list(added_indices)
+
+    indices = [idx for idx in range(count)] \
+        if count <= RECIPES_PER_PAGE else pick_index()
     recipe_list = [
         RecipeDto.from_model(recipes[idx]) for idx in indices
     ]
