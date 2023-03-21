@@ -70,3 +70,4 @@ DELIVERY_QUERY = 'delivery'
 # context related
 ORDER_LIST_CTX = 'order_list'
 ORDER_DTO_CTX = 'order_dto'
+ORDER_REORDER_CTX = 'order_reorder'

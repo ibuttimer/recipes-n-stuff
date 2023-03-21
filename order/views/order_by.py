@@ -19,28 +19,21 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-from dataclasses import dataclass
-from http import HTTPStatus
-from typing import Union, Tuple, TypeVar
 
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import BadRequest
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.views import View
 
-from .dto import OrderDto, OrderProductDto
+from .dto import OrderDto
+from .order_queries import order_contains_subscription
 from ..constants import (
-    THIS_APP, ORDER_ID_ROUTE_NAME, ORDER_DTO_CTX
+    THIS_APP, ORDER_ID_ROUTE_NAME, ORDER_DTO_CTX, ORDER_REORDER_CTX
 )
 from utils import (
-    Crud, app_template_path, reverse_q,
-    namespaced_url, PAGE_HEADING_CTX, TITLE_CTX, QueryOption, PATCH,
-    redirect_payload
+    Crud, app_template_path, reverse_q, namespaced_url
 )
 from .utils import order_permission_check
-from ..models import Order, OrderProduct
 
 
 class OrderDetail(LoginRequiredMixin, View):
@@ -66,6 +59,7 @@ class OrderDetail(LoginRequiredMixin, View):
             request, app_template_path(THIS_APP, 'order_view.html'),
             context={
                 ORDER_DTO_CTX: order_dto,
+                ORDER_REORDER_CTX: not order_contains_subscription(pk)
             }
         )
 

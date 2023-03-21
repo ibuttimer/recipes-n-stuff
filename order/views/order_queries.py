@@ -20,15 +20,12 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 #
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Type, Optional, Tuple, List, Union
+from typing import Any, Optional, Tuple, List, Union
 from zoneinfo import ZoneInfo
 
-from django.db.models import Q, QuerySet, Prefetch, Model
-
-from checkout.models import Currency
-from order.models import Order, OrderProduct
+from order.models import Order, ProductType
 from user.models import User
 from utils import (
     SEARCH_QUERY, DATE_QUERIES,
@@ -37,7 +34,7 @@ from utils import (
     DATE_QUERY_YR_GROUP, DATE_QUERY_MTH_GROUP,
     DATE_QUERY_DAY_GROUP, USER_QUERY, get_object_and_related_or_404
 )
-from utils.query_params import SearchType, QueryTerm
+from utils.query_params import SearchType
 from utils.search import (
     MARKER_CHARS, ON_OR_AFTER_QUERY, ON_OR_BEFORE_QUERY, AFTER_QUERY,
     BEFORE_QUERY, EQUAL_QUERY
@@ -211,3 +208,19 @@ def get_order(
     entity = get_object_and_related_or_404(
         Order, **query_param, related=related)
     return entity, query_param
+
+
+def order_contains_subscription(order: Union[int, Order]):
+    """
+    Check if the specified order contains a subscription product
+    :param order: order
+    :return: True if contains subscription
+    """
+    if isinstance(order, int):
+        order, _ = get_order(order)
+
+    return any(
+        map(lambda item:
+            ProductType.from_choice(item.type).is_subscription_option,
+            order.items.all())
+    )
