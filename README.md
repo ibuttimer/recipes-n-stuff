@@ -16,12 +16,18 @@
       - [Content edit](#content-edit)
       - [Content delete](#content-delete)
           - [Fig 5: Content CRUD](#fig-5-content-crud)
-    - [Content interaction](#content-interaction)
-          - [Fig 6: Content interaction](#fig-6-content-interaction)
     - [Content search](#content-search)
           - [Fig 6: Content search](#fig-6-content-search)
-    - [Recipe feeds](#recipe-feeds)
-          - [Fig 7: Recipe feeds](#fig-7-recipe-feeds)
+    - [E-commerce features](#e-commerce-features)
+      - [Subscriptions](#subscriptions)
+          - [Fig 7: Subscriptions](#fig-7-subscriptions)
+      - [Order products](#order-products)
+      - [Basket](#basket)
+          - [Fig 8: Basket](#fig-8-basket)
+      - [Previous orders](#previous-orders)
+          - [Fig 9: Previous orders](#fig-9-previous-orders)
+    - [Search Engine Optimisation](#search-engine-optimisation)
+    - [Marketing](#marketing)
     - [Future enhancements](#future-enhancements)
   - [Design](#design)
   - [Development and Local Deployment](#development-and-local-deployment)
@@ -33,14 +39,24 @@
       - [Python Setup](#python-setup)
         - [Production versus Development Setup](#production-versus-development-setup)
           - [Table 1: Configuration settings](#table-1-configuration-settings)
+      - [Boolean environment variables](#boolean-environment-variables)
       - [Environment variables](#environment-variables)
         - [Secret Key Generation](#secret-key-generation)
       - [Social Account Login](#social-account-login)
         - [Google](#google)
         - [Twitter](#twitter)
+      - [Stripe](#stripe)
+        - [App setup](#app-setup)
+        - [Webhook setup](#webhook-setup)
+      - [Exchange Rates](#exchange-rates)
+      - [Email](#email)
     - [Before first run](#before-first-run)
       - [Initialise the database](#initialise-the-database)
       - [Populate the database](#populate-the-database)
+        - [Measures table](#measures-table)
+        - [Currencies table](#currencies-table)
+        - [Countryinfo table](#countryinfo-table)
+        - [Recipe tables](#recipe-tables)
       - [Create a superuser](#create-a-superuser)
       - [Build Bootstrap](#build-bootstrap)
       - [Configure authentication](#configure-authentication)
@@ -53,6 +69,7 @@
   - [Credits](#credits)
     - [Content](#content)
     - [Code](#code)
+
 
 
 # Recipes 'N' Stuff
@@ -79,15 +96,16 @@ The site is aimed at users seeking a platform seeking a source of inspirational 
 ### User registration and authentication
 Users may register for an account or alternatively use OAuth to sign in via their Google or Twitter accounts.
 
+
 ###### Fig 3: User registration and authentication
-|                   User registration                   |                User authentication                 |
-|:-----------------------------------------------------:|:--------------------------------------------------:|
-|    ![User register/login](doc/media/register.png)     |    ![User register/login](doc/media/signin.png)    | 
-|                  **Chane password**                   |             **Manage email addresses**             | 
-| ![User register/login](doc/media/change-password.png) | ![User register/login](doc/media/manage-email.png) | 
+|                 User registration                 |                  User authentication                  |
+|:-------------------------------------------------:|:-----------------------------------------------------:|
+|     ![User register](doc/media/register.png)      |          ![User login](doc/media/signin.png)          | 
+|                **Change password**                |              **Manage email addresses**               | 
+| ![Change password](doc/media/change-password.png) | ![Manage email addresses](doc/media/manage-email.png) | 
 
 ### User roles
-There are X user roles:
+There are two user roles:
 - Registered user
 
   Registered users may add/edit/delete their own recipes. All registered users may view any recipe on the site, and purchase ingredient boxes for any recipe on the site. 
@@ -97,14 +115,86 @@ There are X user roles:
   The site administrator may perform all functions on the site.
 
 ### User notifications
-Users receive notifications following sign in. These include a new user notification:
+Users receive notifications following sign in and other events:
+
+- [Recipes 'N' Stuff](#recipes-n-stuff)
+          - [Fig 1: Responsive Mockup](#fig-1-responsive-mockup)
+  - [Features](#features)
+    - [Existing Features](#existing-features)
+      - [Common Features](#common-features)
+        - [Navigation Bar](#navigation-bar)
+          - [Fig 2: Navigation Bar](#fig-2-navigation-bar)
+    - [User registration and authentication](#user-registration-and-authentication)
+          - [Fig 3: User registration and authentication](#fig-3-user-registration-and-authentication)
+    - [User roles](#user-roles)
+    - [User notifications](#user-notifications)
+          - [Fig 4: User notifications](#fig-4-user-notifications)
+    - [Content CRUD](#content-crud)
+      - [Content creation](#content-creation)
+      - [Content view](#content-view)
+      - [Content edit](#content-edit)
+      - [Content delete](#content-delete)
+          - [Fig 5: Content CRUD](#fig-5-content-crud)
+    - [Content search](#content-search)
+          - [Fig 6: Content search](#fig-6-content-search)
+    - [E-commerce features](#e-commerce-features)
+      - [Subscriptions](#subscriptions)
+          - [Fig 7: Subscriptions](#fig-7-subscriptions)
+      - [Order products](#order-products)
+      - [Basket](#basket)
+          - [Fig 8: Basket](#fig-8-basket)
+      - [Previous orders](#previous-orders)
+          - [Fig 9: Previous orders](#fig-9-previous-orders)
+    - [Search Engine Optimisation](#search-engine-optimisation)
+    - [Marketing](#marketing)
+    - [Future enhancements](#future-enhancements)
+  - [Design](#design)
+  - [Development and Local Deployment](#development-and-local-deployment)
+    - [Environment](#environment)
+    - [Setup](#setup)
+      - [Clone Repository](#clone-repository)
+      - [Virtual Environment](#virtual-environment)
+      - [Environment Setup](#environment-setup)
+      - [Python Setup](#python-setup)
+        - [Production versus Development Setup](#production-versus-development-setup)
+          - [Table 1: Configuration settings](#table-1-configuration-settings)
+      - [Boolean environment variables](#boolean-environment-variables)
+      - [Environment variables](#environment-variables)
+        - [Secret Key Generation](#secret-key-generation)
+      - [Social Account Login](#social-account-login)
+        - [Google](#google)
+        - [Twitter](#twitter)
+      - [Stripe](#stripe)
+        - [App setup](#app-setup)
+        - [Webhook setup](#webhook-setup)
+      - [Exchange Rates](#exchange-rates)
+      - [Email](#email)
+    - [Before first run](#before-first-run)
+      - [Initialise the database](#initialise-the-database)
+      - [Populate the database](#populate-the-database)
+        - [Measures table](#measures-table)
+        - [Currencies table](#currencies-table)
+        - [Countryinfo table](#countryinfo-table)
+        - [Recipe tables](#recipe-tables)
+      - [Create a superuser](#create-a-superuser)
+      - [Build Bootstrap](#build-bootstrap)
+      - [Configure authentication](#configure-authentication)
+    - [Run server](#run-server)
+    - [Application structure](#application-structure)
+  - [Cloud-based Deployment](#cloud-based-deployment)
+    - [Heroku CLI](#heroku-cli)
+    - [Deployment](#deployment)
+  - [Test](#test)
+  - [Credits](#credits)
+    - [Content](#content)
+    - [Code](#code)
 
 ###### Fig 4: User notifications
-|                       New user notification                       |                   Login notification                    |
-|:-----------------------------------------------------------------:|:-------------------------------------------------------:|
-|   ![New user notification](doc/media/notification-new-user.png)   | ![Login notification](doc/media/notification-login.png) | 
-|                          **New content**                          |                                                         |
-| ![New user notification](doc/media/notification-new-content.png)  |                                                         | 
+|                            New user notification                            |                   Login notification                    |
+|:---------------------------------------------------------------------------:|:-------------------------------------------------------:|
+|        ![New user notification](doc/media/notification-new-user.png)        | ![Login notification](doc/media/notification-login.png) | 
+|                             **Added to basket**                             |                                                         |
+| ![Added to basket notification](doc/media/notification-added-to-basket.png) |                                                         | 
 
 ### Content CRUD
 #### Content creation
@@ -137,12 +227,62 @@ Users may delete their recipes. Individual users may edit their addresses.
 
 ### Content search
 Users may search for recipes via search box in the navbar at the top of the screen.
-The search box allows user's to either perform a free word search or select from a predetermined keyword list.
+The search box allows user's to either perform a free word search or select from a predetermined keyword list, or they may search via category name.
+
+> **Note:** There is currently a limited number of recipes available,so many categories return no results.
 
 ###### Fig 6: Content search
-|             Search box              |                 Search result                 |
-|:-----------------------------------:|:---------------------------------------------:|
-| ![Search box](doc/media/search.png) | ![Search result](doc/media/search-result.png) | 
+|                    Search box                     |                 Search result                 |
+|:-------------------------------------------------:|:---------------------------------------------:|
+|        ![Search box](doc/media/search.png)        | ![Search result](doc/media/search-result.png) | 
+|                  Category search                  |                                               |
+| ![Category search](doc/media/category-search.png) |                                               | 
+
+
+### E-commerce features
+#### Subscriptions
+A user (except administrator) require a valid subscription to access the site content. Without a valid subscription they are restricted to:
+- choosing a subscription
+- managing their addresses (as an address is required to complete a purchase)
+- checking out
+- logging out
+
+###### Fig 7: Subscriptions
+|                    Choose subscription                    |                      Subscription add address                       |
+|:---------------------------------------------------------:|:-------------------------------------------------------------------:|
+| ![Choose subscription](doc/media/subscription-choice.png) | ![Subscription add address](doc/media/subscription-add-address.png) | 
+
+#### Order products
+The current list of possible order products is:  
+- Recipe ingredient boxes
+- Subscriptions
+Order products may be configured in the system in the administrator's currency of choice.
+
+#### Basket
+- Basket total may be calculated in the user's currency of choice.
+- User can choose delivery address from those saved in their profile.
+- User can choose delivery method.
+- User can pay via Stripe.
+- User receives a order confirmation email.
+
+###### Fig 8: Basket
+|                   Choose currency                    |                 Choose address                  |
+|:----------------------------------------------------:|:-----------------------------------------------:|
+|  ![Choose currency](doc/media/basket-currency.png)   | ![Choose address](doc/media/basket-address.png) | 
+|                 **Choose delivery**                  |                     **Pay**                     | 
+|  ![Choose delivery](doc/media/basket-delivery.png)   |   ![Choose address](doc/media/basket-pay.png)   | 
+|                **Confirmation email**                |                                                 | 
+| ![Choose delivery](doc/media/confirmation-email.png) |                                                 | 
+
+#### Previous orders
+- Users may view previous orders
+- Users may view details of previous orders
+- Users may reorder items from previous orders
+
+###### Fig 9: Previous orders
+|                    View previous orders                    |                     View previous order detail                     |
+|:----------------------------------------------------------:|:------------------------------------------------------------------:|
+| ![View previous orders](doc/media/previous-order-list.png) | ![View previous order detail](doc/media/previous-order-detail.png) | 
 
 
 ### Search Engine Optimisation
