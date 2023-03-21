@@ -193,8 +193,7 @@ class Basket:
                 self._initialise(self.currency)
                 self.order_num = generate_order_num(request)
                 self.user = request.user
-                self.address = addresses_query(
-                    user=self.user, address_type=AddressType.DEFAULT).first()
+                self.set_address_as_default(force=True)
                 self._delivery = get_delivery_product(
                     self.address.country,
                     del_type=ProductType.STANDARD_DELIVERY
@@ -320,6 +319,16 @@ class Basket:
         """
         if request:
             request.session[BASKET_SES] = self
+
+    def set_address_as_default(self, force: bool = False):
+        """
+        Set the basket address to the user's default address,
+        if address not set
+        :param force: force set: default False
+        """
+        if self.address is None or force:
+            self.address = addresses_query(
+                user=self.user, address_type=AddressType.DEFAULT).first()
 
     def calc_delivery(self, delivery_opt: OrderProduct) -> Decimal:
         """
