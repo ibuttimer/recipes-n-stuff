@@ -22,7 +22,7 @@
 from collections import namedtuple
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Callable, Union, TypeVar, List, Tuple, Optional
+from typing import Callable, Union, TypeVar, List, Optional
 
 import json_fix
 import jsonpickle

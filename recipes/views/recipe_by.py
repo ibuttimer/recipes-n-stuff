@@ -85,8 +85,6 @@ BOX_COUNT_OPTIONS = [
 
 TypeRedirectNext = TypeVar("TypeRedirectNext", bound="RedirectNext")
 
-TITLE_UPDATE = 'Update Recipe'
-
 
 class RecipeDetail(LoginRequiredMixin, View):
     """

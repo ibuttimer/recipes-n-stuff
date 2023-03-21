@@ -190,7 +190,4 @@ def handle_image(form: RecipeForm, recipe: Recipe):
     # special handing for image
     save_data = form.cleaned_data[RecipeForm.PICTURE_FF]
     if save_data is not None:
-        # if not save_data:   # False for clear
-        #     # user cleared, reset to placeholder
-        #     save_data = User.AVATAR_BLANK
         setattr(recipe, RecipeForm.PICTURE_FF, save_data)

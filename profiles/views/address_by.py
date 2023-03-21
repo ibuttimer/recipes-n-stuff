@@ -24,10 +24,8 @@ from typing import Tuple
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404
-from django.template.loader import render_to_string
 from django.views import View
 from django.views.decorators.http import require_http_methods
 
@@ -42,9 +40,7 @@ from profiles.models import Address
 from utils import (
     Crud, SUBMIT_URL_CTX, app_template_path, reverse_q,
     namespaced_url, redirect_on_success_or_render,
-    replace_inner_html_payload, redirect_payload,
-    GET, PATCH, POST, DELETE, STATUS_CTX, USER_QUERY,
-    entity_delete_result_payload
+    redirect_payload, PATCH, entity_delete_result_payload
 )
 from .address_create import (
     for_address_form_render, manage_default, get_user_addresses_url

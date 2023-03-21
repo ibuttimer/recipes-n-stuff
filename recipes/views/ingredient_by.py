@@ -85,20 +85,6 @@ class RecipeIngredientDetail(LoginRequiredMixin, View):
             request, redirect_to is not None, redirect_to=redirect_to,
             template_path=template_path, context=context)
 
-    # def render_info(self, form: IngredientForm) -> tuple[
-    #         str, dict[str, Ingredient | list[str] | IngredientForm | bool]
-    # ]:
-    #     """
-    #     Get info to render a subscription entry
-    #     :param form: form to use
-    #     :return: tuple of template path and context
-    #     """
-    #     return for_subscription_form_render(
-    #         TITLE_UPDATE, Crud.UPDATE, **{
-    #             SUBMIT_URL_CTX: self.url(form.instance.pk),
-    #             SUBSCRIPTION_FORM_CTX: IngredientCreate.init_form(form)
-    #         })
-
     def delete(self, request: HttpRequest, pk: int,
                *args, **kwargs) -> HttpResponse:
         """

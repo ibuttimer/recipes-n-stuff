@@ -22,7 +22,6 @@
 from typing import Union, Tuple
 
 from django.db.models import QuerySet
-from django.shortcuts import get_object_or_404
 
 from order.models import OrderProduct, ProductType, Order, OrderStatus
 from recipes.models import Recipe

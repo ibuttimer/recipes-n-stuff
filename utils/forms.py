@@ -31,7 +31,6 @@ from django.core.validators import (
     MaxLengthValidator
 )
 from django.forms import BaseForm
-from django.utils.translation import gettext_lazy as _
 
 
 ALL_FIELDS = "__all__"

@@ -117,78 +117,6 @@ There are two user roles:
 ### User notifications
 Users receive notifications following sign in and other events:
 
-- [Recipes 'N' Stuff](#recipes-n-stuff)
-          - [Fig 1: Responsive Mockup](#fig-1-responsive-mockup)
-  - [Features](#features)
-    - [Existing Features](#existing-features)
-      - [Common Features](#common-features)
-        - [Navigation Bar](#navigation-bar)
-          - [Fig 2: Navigation Bar](#fig-2-navigation-bar)
-    - [User registration and authentication](#user-registration-and-authentication)
-          - [Fig 3: User registration and authentication](#fig-3-user-registration-and-authentication)
-    - [User roles](#user-roles)
-    - [User notifications](#user-notifications)
-          - [Fig 4: User notifications](#fig-4-user-notifications)
-    - [Content CRUD](#content-crud)
-      - [Content creation](#content-creation)
-      - [Content view](#content-view)
-      - [Content edit](#content-edit)
-      - [Content delete](#content-delete)
-          - [Fig 5: Content CRUD](#fig-5-content-crud)
-    - [Content search](#content-search)
-          - [Fig 6: Content search](#fig-6-content-search)
-    - [E-commerce features](#e-commerce-features)
-      - [Subscriptions](#subscriptions)
-          - [Fig 7: Subscriptions](#fig-7-subscriptions)
-      - [Order products](#order-products)
-      - [Basket](#basket)
-          - [Fig 8: Basket](#fig-8-basket)
-      - [Previous orders](#previous-orders)
-          - [Fig 9: Previous orders](#fig-9-previous-orders)
-    - [Search Engine Optimisation](#search-engine-optimisation)
-    - [Marketing](#marketing)
-    - [Future enhancements](#future-enhancements)
-  - [Design](#design)
-  - [Development and Local Deployment](#development-and-local-deployment)
-    - [Environment](#environment)
-    - [Setup](#setup)
-      - [Clone Repository](#clone-repository)
-      - [Virtual Environment](#virtual-environment)
-      - [Environment Setup](#environment-setup)
-      - [Python Setup](#python-setup)
-        - [Production versus Development Setup](#production-versus-development-setup)
-          - [Table 1: Configuration settings](#table-1-configuration-settings)
-      - [Boolean environment variables](#boolean-environment-variables)
-      - [Environment variables](#environment-variables)
-        - [Secret Key Generation](#secret-key-generation)
-      - [Social Account Login](#social-account-login)
-        - [Google](#google)
-        - [Twitter](#twitter)
-      - [Stripe](#stripe)
-        - [App setup](#app-setup)
-        - [Webhook setup](#webhook-setup)
-      - [Exchange Rates](#exchange-rates)
-      - [Email](#email)
-    - [Before first run](#before-first-run)
-      - [Initialise the database](#initialise-the-database)
-      - [Populate the database](#populate-the-database)
-        - [Measures table](#measures-table)
-        - [Currencies table](#currencies-table)
-        - [Countryinfo table](#countryinfo-table)
-        - [Recipe tables](#recipe-tables)
-      - [Create a superuser](#create-a-superuser)
-      - [Build Bootstrap](#build-bootstrap)
-      - [Configure authentication](#configure-authentication)
-    - [Run server](#run-server)
-    - [Application structure](#application-structure)
-  - [Cloud-based Deployment](#cloud-based-deployment)
-    - [Heroku CLI](#heroku-cli)
-    - [Deployment](#deployment)
-  - [Test](#test)
-  - [Credits](#credits)
-    - [Content](#content)
-    - [Code](#code)
-
 ###### Fig 4: User notifications
 |                            New user notification                            |                   Login notification                    |
 |:---------------------------------------------------------------------------:|:-------------------------------------------------------:|
@@ -259,7 +187,7 @@ The current list of possible order products is:
 Order products may be configured in the system in the administrator's currency of choice.
 
 #### Basket
-- Basket total may be calculated in the user's currency of choice.
+- Basket total may be calculated in the user's currency of choice, using exchange rates from [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api).
 - User can choose delivery address from those saved in their profile.
 - User can choose delivery method.
 - User can pay via Stripe.

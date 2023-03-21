@@ -86,7 +86,6 @@ SEARCH_QUERY_ARGS.extend([
     QueryOption.of_no_cls_dflt(query) for query in [
     ]
 ])
-# LIST_QUERY_ARGS.extend(OPINION_APPLIED_DEFAULTS_QUERY_ARGS)
 
 
 class ListTemplate(Enum):
@@ -350,11 +349,6 @@ class SearchOrderList(OrderList):
         """
         # select sort order options to display
         excludes = []
-        # if query_params[AUTHOR_QUERY].was_set_to(self.user.username):
-        #     # no need for sort by author if only one author
-        #     excludes.extend([
-        #         OrderSortOrder.AUTHOR_AZ, OrderSortOrder.AUTHOR_ZA
-        #     ])
         self.sort_order = [
             so for so in OrderSortOrder if so not in excludes
         ]

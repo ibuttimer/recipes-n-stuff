@@ -20,7 +20,6 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 from dataclasses import dataclass
-from typing import List, Union, Tuple, Optional
 
 from allauth.account import app_settings
 from cloudinary.forms import CloudinaryFileField
