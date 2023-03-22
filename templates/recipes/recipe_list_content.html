@@ -6,15 +6,6 @@
 {% load i18n %}
 {% load static %}
 
-{% block extra_css %}
-    {% for recipe_dto in recipe_list %}
-    <style>
-        .div__recipe-{{recipe_dto.id}} {
-        }
-    </style>
-    {% endfor %}
-{% endblock extra_css %}
-
 
 {% block recipe_list_content %}
     <var id="var--repeat-search-term" hidden>{{ repeat_search_term }}</var>

@@ -20,95 +20,98 @@
 {% endblock extra_js_head %}
 
 {% block content %}
-<div class="row mt-2 mb-2">
-    <div class="col-12 text-center">
-        <h3>{{ page_heading }}</h3>
-    </div>
-</div>
-
 <article id="article-content" class="row d-flex justify-content-center">
-    <row class="col-lg-10 col-md-11 col-sm-12">
-        <form {% if not read_only %} method="post" class="needs-validation" novalidate action="{{ submit_url }}" enctype="multipart/form-data" {% endif %}
-              id="id__recipe-form-new">
-            {% if not read_only %}
-                {% csrf_token %}
-            {% endif %}
+    <div class="row mt-2 mb-2">
+        <div class="col-12 text-center">
+            <h3>{{ page_heading }}</h3>
+        </div>
+    </div>
 
-            <div id="id--recipe-form-errors-container">
-                {% with form=recipe_form %}
-                    {% include "snippet/form_errors.html" %}
-                {% endwith %}
-            </div>
+    <div class="row mt-2 mb-2 justify-content-center">
+        <div class="col-lg-10 col-md-11 col-sm-12">
+            <form {% if not read_only %} method="post" class="needs-validation" novalidate action="{{ submit_url }}" enctype="multipart/form-data" {% endif %}
+                  id="id__recipe-form-new">
+                {% if not read_only %}
+                    {% csrf_token %}
+                {% endif %}
 
-            <fieldset {% if read_only %} disabled {% endif %}>
-                <div class="row mb-3">
-                    <div class="col-md-6 mb-3 text-center">
-                        {# picture field #}
-                        <div class="preview">
-                            <img src="{{ recipe_url }}" width="100" height="100" alt="Recipe picture">
+                <div id="id--recipe-form-errors-container">
+                    {% with form=recipe_form %}
+                        {% include "snippet/form_errors.html" %}
+                    {% endwith %}
+                </div>
+
+                <fieldset {% if read_only %} disabled {% endif %}>
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3 text-center">
+                            {# picture field #}
+                            <div class="preview">
+                                <img src="{{ recipe_url }}" width="100" height="100" alt="Recipe picture">
+                            </div>
+                            {% if not read_only %}
+                                {% form_field recipe_form 'picture' as picture_field %}
+                                {{ picture_field }}
+                            {% endif %}
                         </div>
-                        {% if not read_only %}
-                            {% form_field recipe_form 'picture' as picture_field %}
-                            {{ picture_field }}
-                        {% endif %}
-                    </div>
 
-                    <div class="col-md-6">
-                        {# basic user form fields #}
+                        <div class="col-md-6">
+                            {# basic user form fields #}
 
-                        {% for field in recipe_form %}
-                            {% if field.name in rhs_fields %}
-                            <div class="row mb-3">
-                                <div class="col-sm-4 text-start">
-                                    <label for="{% form_auto_id field.name %}" class="col-form-label">{{ field.label }}</label>
-                                    {% if field.name == 'prep_time' or field.name == 'cook_time' %}
-                                    <span>
-                                        <a class="link-primary" href="{% url 'help' %}#recipe-time-help" aria-label="open duration entry help in another tab" target="_blank"><i class="fa-regular fa-circle-info"></i></a>
-                                    </span>
-                                    {% endif %}
-                                </div>
-                                <div class="col-sm-8">
-                                    {{ field }}
-                                    <div class="invalid-feedback">
-                                        {% lookup_value recipe_form.Meta.error_messages field.name 'combined' as error_message %}
-                                        <p>{{ error_message }}</p>
+                            {% for field in recipe_form %}
+                                {% if field.name in rhs_fields %}
+                                <div class="row mb-3">
+                                    <div class="col-sm-4 text-start">
+                                        <label {% if field.name == 'category' %} for="id__recipe-category-input-new" {% else %} for="{% form_auto_id field.name %}" {% endif %}
+                                            class="col-form-label">{{ field.label }}</label>
+                                        {% if field.name == 'prep_time' or field.name == 'cook_time' %}
+                                        <span>
+                                            <a class="link-primary" href="{% url 'help' %}#recipe-time-help" aria-label="open duration entry help in another tab" target="_blank"><i class="fa-regular fa-circle-info"></i></a>
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-sm-8">
+                                        {{ field }}
+                                        <div class="invalid-feedback">
+                                            {% lookup_value recipe_form.Meta.error_messages field.name 'combined' as error_message %}
+                                            <p>{{ error_message }}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-12">
-                        {% form_field recipe_form 'description' as field %}
-                        <div class="col-sm-2 text-start">
-                            <label for="{% form_auto_id field.name %}" class="col-form-label">{{ field.label }}</label>
-                        </div>
-                        <div class="col-sm-10">
-                            {{ field }}
-                            <div class="invalid-feedback">
-                                {% lookup_value recipe_form.Meta.error_messages field.name 'combined' as error_message %}
-                                <p>{{ error_message }}</p>
-                            </div>
+                                {% endif %}
+                            {% endfor %}
                         </div>
                     </div>
-                </div>
-            </fieldset>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            {% form_field recipe_form 'description' as field %}
+                            <div class="col-sm-2 text-start">
+                                <label for="{% form_auto_id field.name %}" class="col-form-label">{{ field.label }}</label>
+                            </div>
+                            <div class="col-sm-10">
+                                {{ field }}
+                                <div class="invalid-feedback">
+                                    {% lookup_value recipe_form.Meta.error_messages field.name 'combined' as error_message %}
+                                    <p>{{ error_message }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
 
-            {# --- form_ok_cancel.html template variable defines for includes --- #}
-            {# form ok cancel template expects: 'cancel_url' as url for cancel action #}
-            {#                                  'cancel_text' as text for cancel button #}
-            {#                                  'submit_text' as text for submit button #}
-            {#                                  'identifier' as form identifier #}
-            {#                                  'index' as form index #}
-            {#                                  'large' as large button flag #}
-            {% url 'recipes:recipes' as cancel_url %}
-            {% with identifier='recipe' submit_text=submit_btn_text index=0 %}
-                {% include 'snippet/form_ok_cancel.html' %}
-            {% endwith %}
-        </form>
-    </row>
+                {# --- form_ok_cancel.html template variable defines for includes --- #}
+                {# form ok cancel template expects: 'cancel_url' as url for cancel action #}
+                {#                                  'cancel_text' as text for cancel button #}
+                {#                                  'submit_text' as text for submit button #}
+                {#                                  'identifier' as form identifier #}
+                {#                                  'index' as form index #}
+                {#                                  'large' as large button flag #}
+                {% url 'recipes:recipes' as cancel_url %}
+                {% with identifier='recipe' submit_text=submit_btn_text index=0 %}
+                    {% include 'snippet/form_ok_cancel.html' %}
+                {% endwith %}
+            </form>
+        </div>
+    </div>
 
     <datalist id="id__category-datalist">
         {% for category in category_list %}<option value="{{ category | safe }}">{% endfor %}
@@ -119,9 +122,9 @@
 
 {% block extra_js_body %}
     {{ block.super }}
-    <script type='text/javascript' src="{% static 'js/form_validator.js' %}"></script>
+    <script src="{% static 'js/form_validator.js' %}"></script>
     {{ category_list|json_script:"id__category-list" }}
-    <script type='text/javascript' src="{% static 'js/image_previewer.js' %}"></script>
+    <script src="{% static 'js/image_previewer.js' %}"></script>
     {# https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types #}
     {{ image_file_types|json_script:"id__file-types" }}
     <script>

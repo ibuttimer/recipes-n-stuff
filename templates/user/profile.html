@@ -4,7 +4,7 @@
 {% load static %}
 {% load form_field %}
 
-{% block head_title %}SoapBox - Profile{% endblock %}
+{% block head_title %}{{ app_name }} - Profile{% endblock %}
 
 {% block extra_css %}
     {{ block.super }}
@@ -19,7 +19,7 @@
 {% block content %}
 <article class="row">
     <div class="col-12 mt-2 text-center">
-        <h1>{% trans "Profile" %} <em>{{ user_profile.username }}</em></h1>
+        <h2>{% trans "Profile" %} <em>{{ user_profile.username }}</em></h2>
 
         <form {% if not read_only %} method="post" action="{% url 'user:user_id' user_profile.id %}" enctype="multipart/form-data" {% endif %}>
             {% if not read_only %}
@@ -142,7 +142,7 @@
             });
         </script>
     {% endif %}
-    <script type='text/javascript' src="{% static 'js/image_previewer.js' %}"></script>
+    <script src="{% static 'js/image_previewer.js' %}"></script>
     {# https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types #}
     {{ image_file_types|json_script:"id__file-types" }}
     <script>
