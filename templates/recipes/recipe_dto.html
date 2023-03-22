@@ -26,10 +26,10 @@
                             <div class="col-sm-6">
                                 <span data-bs-toggle="tooltip" data-bs-placement="top"
                                       {% if time == 'prep' %}data-bs-title="Prep time"{% elif time == 'cook' %}data-bs-title="Cook time"{% else %}data-bs-title="Ready in time"{% endif %}>
-                                    <div class="card-text">
+                                    <span class="card-text">
                                         {% if time == 'prep' %}<i class="fa-solid fa-mortar-pestle"></i>{% elif time == 'cook' %}<i class="fa-solid fa-kitchen-set"></i>{% else %}<i class="fa-solid fa-calculator"></i>{% endif %}
                                         {% if time == 'prep' %}{% human_readable_timedelta recipe_dto.prep_time %}{% elif time == 'cook' %}{% human_readable_timedelta recipe_dto.cook_time %}{% else %}{% human_readable_timedelta recipe_dto.total_time %}{% endif %}
-                                    </div>
+                                    </span>
                                 </span>
                             </div>
                         </div>
