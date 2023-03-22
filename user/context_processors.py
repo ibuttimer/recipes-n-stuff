@@ -82,13 +82,11 @@ def user_context(request: HttpRequest) -> dict:
                 is_dropdown_toggle=is_dropdown_toggle
             )
 
-    avatar_url = request.user.avatar.url if request.user.is_authenticated \
-        else AVATAR_BLANK_URL
+    avatar_url = AVATAR_BLANK_URL
     if request.user.is_authenticated:
-        if isinstance(request.user.avatar, str):
-            avatar_url = AVATAR_BLANK_URL
-        elif User.AVATAR_BLANK in request.user.avatar.url:
-            avatar_url = AVATAR_BLANK_URL
+        if not isinstance(request.user.avatar, str):
+            if User.AVATAR_BLANK not in request.user.avatar.url:
+                avatar_url = request.user.avatar.url
 
     context.update({
         IS_SUPER_CTX: request.user.is_superuser,
