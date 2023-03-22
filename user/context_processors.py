@@ -82,12 +82,17 @@ def user_context(request: HttpRequest) -> dict:
                 is_dropdown_toggle=is_dropdown_toggle
             )
 
+    avatar_url = request.user.avatar.url if request.user.is_authenticated \
+        else AVATAR_BLANK_URL
+    if request.user.is_authenticated:
+        if isinstance(request.user.avatar, str):
+            avatar_url = AVATAR_BLANK_URL
+        elif User.AVATAR_BLANK in request.user.avatar.url:
+            avatar_url = AVATAR_BLANK_URL
+
     context.update({
         IS_SUPER_CTX: request.user.is_superuser,
-        AVATAR_URL_CTX:
-            request.user.avatar.url if request.user.is_authenticated and
-            User.AVATAR_BLANK not in request.user.avatar.url else
-            AVATAR_BLANK_URL
+        AVATAR_URL_CTX: avatar_url
     })
     if no_robots:
         # no robots in user menu items
