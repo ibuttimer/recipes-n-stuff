@@ -83,7 +83,7 @@
                         <div class="text-muted small">Category</div>
                         <p>
                             <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="See all {{ recipe_dto.category.name }} recipes">
-                                <a class="btn btn-outline-info" href="{% url 'recipes:recipes' %}?category={{ recipe_dto.category.name }}" aria-label="view all {{ recipe_dto.category.name }} recipes">
+                                <a class="btn btn-outline-info" href="{% url 'recipes:recipes' %}?category={{ recipe_dto.category.name | urlencode }}" aria-label="view all {{ recipe_dto.category.name }} recipes">
                                     {{ recipe_dto.category.name }}
                                 </a>
                             </span>
@@ -314,7 +314,7 @@
     </article>
 
     {% if can_delete or is_own %}
-        <script type='text/javascript' src="{% static 'js/delete_modal.js' %}"></script>
+        <script src="{% static 'js/delete_modal.js' %}"></script>
     {% endif %}
 
     <script>
