@@ -22,6 +22,13 @@
 {% block extra_css %}
     {{ block.super }}
     <link href="{% static 'css/styles-recipes.css' %}" rel="stylesheet" type="text/css">
+    <style>
+    {% for recipe_dto in recipe_list %}
+        .div__recipe-{{recipe_dto.id}} {
+        }
+    {% endfor %}
+    </style>
+
 {% endblock extra_css %}
 
 {% block content %}

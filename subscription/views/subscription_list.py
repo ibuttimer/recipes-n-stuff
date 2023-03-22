@@ -30,16 +30,6 @@ from django.http import HttpRequest
 from django.contrib import messages
 
 from base.utils import raise_permission_denied
-# from opinions.constants import (
-#     STATUS_QUERY, AUTHOR_QUERY, SEARCH_QUERY, PINNED_QUERY,
-#     TEMPLATE_OPINION_REACTIONS, TEMPLATE_REACTION_CTRLS, CONTENT_STATUS_CTX,
-#     REPEAT_SEARCH_TERM_CTX, LIST_HEADING_CTX, PAGE_HEADING_CTX, TITLE_CTX,
-#     POPULARITY_CTX, OPINION_LIST_CTX, STATUS_BG_CTX, FILTER_QUERY,
-#     REVIEW_QUERY, IS_REVIEW_CTX, IS_FOLLOWING_FEED_CTX, IS_CATEGORY_FEED_CTX,
-#     FOLLOWED_CATEGORIES_CTX, CATEGORY_QUERY, ALL_CATEGORIES,
-#     NO_CONTENT_HELP_CTX, NO_CONTENT_MSG_CTX, USER_CTX, CATEGORY_CTX,
-#     LIST_SUB_HEADING_CTX, MESSAGE_CTX, IS_ALL_FEED_CTX
-# )
 from utils import (
     QueryArg, SortOrder, QuerySetParams, QueryOption, ContentListMixin,
     TITLE_CTX, LIST_HEADING_CTX, PAGE_HEADING_CTX, NO_CONTENT_MSG_CTX,
@@ -48,16 +38,6 @@ from utils import (
     READ_ONLY_CTX, AMOUNT_QUERY_ARGS, REPEAT_SEARCH_TERM_CTX, query_search_term
 )
 from utils.search import AMT_GT_QUERY, SEARCH_QUERY
-# from opinions.views.opinion_queries import (
-#     FILTERS_ORDER, ALWAYS_FILTERS, get_lookup
-# )
-# from opinions.views.utils import (
-#      REORDER_REQ_QUERY_ARGS,
-#     query_search_term, OPINION_LIST_QUERY_ARGS,
-#     OPTION_SEARCH_QUERY_ARGS, STATUS_BADGES, add_content_no_show_markers,
-#     FOLLOWED_OPINION_LIST_QUERY_ARGS, QueryOption,
-#     REVIEW_OPINION_LIST_QUERY_ARGS, CATEGORY_FEED_QUERY_ARGS
-# )
 
 from .utils import (
     subscription_permission_check
@@ -94,8 +74,6 @@ LIST_QUERY_ARGS.extend([
     QueryOption(IS_ACTIVE_QUERY, YesNo, YesNo.DEFAULT)
 ])
 LIST_QUERY_ARGS.extend(AMOUNT_QUERY_ARGS)
-
-# LIST_QUERY_ARGS.extend(OPINION_APPLIED_DEFAULTS_QUERY_ARGS)
 
 
 ADD_NEW = 'add_new'
@@ -272,16 +250,6 @@ class SubscriptionList(LoginRequiredMixin, ContentListMixin):
         """
         # select sort order options to display
         excludes = []
-        # if query_params[AUTHOR_QUERY].was_set_to(self.user.username):
-        #     # no need for sort by author if only one author
-        #     excludes.extend([
-        #         OpinionSortOrder.AUTHOR_AZ, OpinionSortOrder.AUTHOR_ZA
-        #     ])
-        # if not query_params[STATUS_QUERY].value == QueryStatus.ALL:
-        #     # no need for sort by status if only one status
-        #     excludes.extend([
-        #         OpinionSortOrder.STATUS_AZ, OpinionSortOrder.STATUS_ZA
-        #     ])
         self.sort_order = [
             so for so in SubscriptionSortOrder if so not in excludes
         ]
@@ -316,9 +284,6 @@ class SubscriptionList(LoginRequiredMixin, ContentListMixin):
         """
         context = super().get_context_data(object_list=object_list, **kwargs)
 
-        # self.context_std_elements(
-        #     add_content_no_show_markers(context=context)
-        # )
         self.context_std_elements(context=context)
 
         if len(context[SUBSCRIPTION_LIST_CTX]) == 0:
@@ -344,27 +309,6 @@ class SubscriptionList(LoginRequiredMixin, ContentListMixin):
         """
         if len(context[SUBSCRIPTION_LIST_CTX]) == 0:
             context[NO_CONTENT_MSG_CTX] = 'No subscriptions found.'
-
-            # template = None
-            # template_ctx = None
-            # if self.query_type == QueryType.ALL_OPINIONS:
-            #     template = "all_opinions_no_content_msg.html"
-            # elif self.query_type == QueryType.ALL_USERS_OPINIONS:
-            #     template = "my_opinions_no_content_msg.html"
-            # elif self.query_type == QueryType.DRAFT_OPINIONS:
-            #     template = "draft_opinions_no_content_msg.html"
-            # elif self.query_type == QueryType.PREVIEW_OPINIONS:
-            #     template = "preview_opinions_no_content_msg.html"
-            #     template_ctx = {
-            #         USER_CTX: self.user
-            #     }
-            # elif self.query_type == QueryType.PINNED_OPINIONS:
-            #     template = "pinned_no_content.html"
-            #
-            # self.render_no_content_help(
-            #     context, app_template_path(
-            #       THIS_APP, "messages", template),
-            #       template_ctx=template_ctx)
 
         return context
 

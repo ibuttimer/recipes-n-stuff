@@ -22,7 +22,7 @@
 import time
 from collections import namedtuple
 from enum import IntEnum, auto
-from typing import Any
+from typing import Any, Union
 
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
@@ -65,8 +65,8 @@ SKU_CCY_DIGITS = 3
 
 
 def generate_sku(
-        prod_type: ProductType, subscription: Subscription = None,
-        recipe: Recipe = None, country: dict = None) -> str:
+        prod_type: ProductType, subscription: Union[Subscription, int] = None,
+        recipe: Union[Recipe, int] = None, country: dict = None) -> str:
     """
     Generate an order product sku.
     ** Note: sku should be app-wide unique **
@@ -77,10 +77,11 @@ def generate_sku(
     :return: sku
     """
     if prod_type in ProductType.subscription_options():
-        identifier = subscription.id
+        identifier = subscription if isinstance(subscription, int) else \
+            subscription.id
         code = subscription.base_currency
     elif prod_type in ProductType.recipe_options():
-        identifier = recipe.id
+        identifier = recipe if isinstance(recipe, int) else recipe.id
         code = DEFAULT_CURRENCY
     elif prod_type in ProductType.delivery_options():
         identifier = countries.alt_codes[country.code][1]
@@ -173,5 +174,9 @@ def add_new_subscription_product(subscription: Subscription):
         f'{OrderProduct.TYPE_FIELD}': prod_type.choice,
         f'{OrderProduct.SKU_FIELD}':
             generate_sku(prod_type, subscription=subscription),
-        f'{OrderProduct.SUBSCRIPTION_FIELD}': subscription
+        f'{OrderProduct.SUBSCRIPTION_FIELD}': subscription,
+        f'{OrderProduct.UNIT_PRICE_FIELD}': subscription.amount,
+        f'{OrderProduct.BASE_CURRENCY_FIELD}': subscription.base_currency,
+        f'{OrderProduct.DESCRIPTION_FIELD}':
+            f'{subscription.name} subscription'
     })

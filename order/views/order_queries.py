@@ -20,15 +20,12 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 #
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Type, Optional, Tuple, List, Union
+from typing import Any, Optional, Tuple, List, Union
 from zoneinfo import ZoneInfo
 
-from django.db.models import Q, QuerySet, Prefetch, Model
-
-from checkout.models import Currency
-from order.models import Order, OrderProduct
+from order.models import Order, ProductType
 from user.models import User
 from utils import (
     SEARCH_QUERY, DATE_QUERIES,
@@ -37,7 +34,7 @@ from utils import (
     DATE_QUERY_YR_GROUP, DATE_QUERY_MTH_GROUP,
     DATE_QUERY_DAY_GROUP, USER_QUERY, get_object_and_related_or_404
 )
-from utils.query_params import SearchType, QueryTerm
+from utils.query_params import SearchType
 from utils.search import (
     MARKER_CHARS, ON_OR_AFTER_QUERY, ON_OR_BEFORE_QUERY, AFTER_QUERY,
     BEFORE_QUERY, EQUAL_QUERY
@@ -67,14 +64,12 @@ FILTERS_ORDER = [
 ]
 ALWAYS_FILTERS = [
     # always applied items
-    # option.query for option in OPINION_APPLIED_DEFAULTS_QUERY_ARGS
 ]
 FILTERS_ORDER.extend(
     [q for q in FIELD_LOOKUPS if q not in FILTERS_ORDER]
 )
 # complex queries which require more than a simple lookup or context-related
 NON_LOOKUP_ARGS = [
-    # FILTER_QUERY, REVIEW_QUERY
 ]
 
 SEARCH_REGEX = [
@@ -213,23 +208,17 @@ def get_order(
     return entity, query_param
 
 
-# def get_order_products_list(
-#         order: Union[int, Order],
-#         order_by: str = OrderProduct.TYPE_FIELD,
-#         prefetch_related: bool = True
-#         ) -> List[OrderProduct]:
-#     """
-#     Get order products for the specified `order`
-#     :param order: order object or its id
-#     :param order_by: order by; default index field
-#     :param prefetch_related: prefetch related flag, default True
-#     :return: tuple of object and query param
-#     """
-#     query_param = {
-#         f'{Order.ITEMS_FIELD}__{OrderProduct.ORD}':
-#             get_order(order) if isinstance(order, int) else order
-#     }
-#
-#     return list(
-#         OrderProduct.objects.filter(**query_param).order_by(order_by).all()
-#     )
+def order_contains_subscription(order: Union[int, Order]):
+    """
+    Check if the specified order contains a subscription product
+    :param order: order
+    :return: True if contains subscription
+    """
+    if isinstance(order, int):
+        order, _ = get_order(order)
+
+    return any(
+        map(lambda item:
+            ProductType.from_choice(item.type).is_subscription_option,
+            order.items.all())
+    )

@@ -22,6 +22,7 @@
 from datetime import datetime
 
 from utils import append_slash, url_path
+from .utils import val_test_route_name
 
 APP_NAME = "Recipes 'N' Stuff"
 COPYRIGHT_YEAR = 2023
@@ -47,7 +48,6 @@ SITEMAP_URL = "sitemap.xml"
 HOME_ROUTE_NAME = "home"
 HELP_ROUTE_NAME = "help"
 ABOUT_ROUTE_NAME = "about"
-LANDING_ROUTE_NAME = "landing"
 PRIVACY_ROUTE_NAME = "privacy"
 ROBOTS_ROUTE_NAME = "robots.txt"
 
@@ -101,6 +101,7 @@ REGISTER_MENU_CTX = "register_menu"
 HELP_MENU_CTX = "help_menu"
 ABOUT_MENU_CTX = "about_menu"
 SUBSCRIPTION_MENU_CTX = "subscription_menu"
+MAINTENANCE_MENU_CTX = "maintenance_menu"
 RECIPES_MENU_CTX = "recipes_menu"
 CATEGORIES_MENU_CTX = "categories_menu"
 
@@ -108,12 +109,16 @@ IS_SUPER_CTX = "is_super"
 IS_DEVELOPMENT_CTX = "is_development"
 IS_TEST_CTX = "is_test"
 AVATAR_URL_CTX = "avatar_url"
+NO_ROBOTS_CTX = "no_robots"
 
 # CSS/HTML validator test related
-VAL_TEST_PATH_PREFIX = 'val-test'
+VAL_TEST_REGISTER_ROUTE_NAME = val_test_route_name(REGISTER_ROUTE_NAME)
+VAL_TEST_LOGIN_ROUTE_NAME = val_test_route_name(LOGIN_ROUTE_NAME)
+VAL_TEST_LOGOUT_ROUTE_NAME = val_test_route_name(LOGOUT_ROUTE_NAME)
 
 # cloudinary related
 AVATAR_FOLDER = "rns_avatars"
+IMAGES_FOLDER = "rns_images"
 
 # https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types#common_image_file_types
 # Pillow which is used by ImageField in dev mode doesn't support avif or svg

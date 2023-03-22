@@ -28,7 +28,7 @@
         {# below sm: 1 per row  sm: 2 per row  md: 3 per row  lg: 4 per row  xl: 5 per row  xxl+: 6 per row #}
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 row-cols-xxl-6 mb-3">
             {% for category_dto in category_list %}
-                <a href="{% url 'recipes:recipes' %}?category={{ category_dto.name }}" aria-label="list {{ category_dto.name }} recipes">
+                <a href="{% url 'recipes:recipes' %}?category={{ category_dto.name | urlencode }}" aria-label="list {{ category_dto.name }} recipes">
                     {{ category_dto.name }}
                 </a>
             {% endfor %}

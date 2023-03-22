@@ -21,6 +21,7 @@
 #  DEALINGS IN THE SOFTWARE.
 #
 from allauth.socialaccount.models import SocialLogin
+from django.contrib import messages
 from django.dispatch import receiver
 from allauth.account.signals import (
     user_logged_in, user_logged_out, user_signed_up
@@ -29,12 +30,17 @@ from allauth.socialaccount.signals import (
     pre_social_login, social_account_added, social_account_updated,
     social_account_removed
 )
+from django.http import HttpRequest
+from django.template.loader import render_to_string
 
-# from opinions.notifications import (
-#     process_login_opinions, process_register_new_user
-# )
+from utils import app_template_path
+from .constants import USER_CTX, THIS_APP
 from .models import User
 from .permissions import add_to_registered
+
+
+NEW_USER_TEMPLATE = app_template_path(
+    THIS_APP, "snippet", "new_user_notification.html")
 
 
 # Logging in with Google means logged in straight away as allauth can get
@@ -54,7 +60,6 @@ def user_logged_in_callback(sender, **kwargs):
         # have to do add to group here as can't do socials in
         # pre_social_login_callback
         add_to_registered(user)
-        # process_login_opinions(kwargs.get('request', None), user)
 
 
 @receiver(user_logged_out)
@@ -73,7 +78,7 @@ def user_signed_up_callback(sender, **kwargs):
     user: User = kwargs.get('user', None)
     if user:
         add_to_registered(user)
-        # process_register_new_user(kwargs.get('request', None), user)
+        process_register_new_user(kwargs.get('request', None), user)
 
 
 @receiver(pre_social_login)
@@ -99,3 +104,17 @@ def social_account_updated_callback(sender, **kwargs):
 @receiver(social_account_removed)
 def social_account_removed_callback(sender, **kwargs):
     """ Process signal sent when a user begins a social account is removed """
+
+
+def process_register_new_user(request: HttpRequest, user: User):
+    """
+    Process registration of a new user
+    :param user: user which logged in
+    :param request: http request
+    """
+    if user:
+        messages.info(
+            request, render_to_string(NEW_USER_TEMPLATE, context={
+                USER_CTX: user,
+            })
+        )

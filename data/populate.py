@@ -40,7 +40,7 @@ import pyarrow.parquet as pq
 import pyarrow.compute as pc
 
 from recipesnstuff import settings as app_settings
-from data.recipes import load_recipe
+from data.recipes import load_recipe, DEFAULT_LOAD_COUNT
 from data.data_utils import insert_content, get_content_id, Progress
 
 # project folder
@@ -95,6 +95,7 @@ GENERIC_CURRENCY_SYMBOL = '¤'
 
 DEFAULT_HOST = 'http://127.0.0.1:8000/'
 DEFAULT_DATA_FOLDER = 'data'
+DEFAULT_ENV_FILE = '.env'
 DEFAULT_DB_VAR = 'DATABASE_URL'
 DEFAULT_PROGRESS = 150
 
@@ -107,6 +108,10 @@ def parse_args():
                         help=f'Path to data folder; '
                              f'default {DEFAULT_DATA_FOLDER}',
                         default=DEFAULT_DATA_FOLDER)
+    parser.add_argument('-ef', '--env_file',
+                        help=f'Path to the environment file; '
+                             f'default {DEFAULT_ENV_FILE}',
+                        default=DEFAULT_ENV_FILE)
     parser.add_argument('-dv', '--db_var',
                         help=f'Name of environment variable containing '
                              f'database connection string; '
@@ -161,20 +166,26 @@ def parse_args():
                         help=f'Progress indicator rate; '
                              f'default {DEFAULT_PROGRESS}',
                         default=DEFAULT_PROGRESS)
+    parser.add_argument('-rc', '--recipe_count', type=int,
+                        help=f'Max number of recipes to load; '
+                             f'default all',
+                        default=DEFAULT_LOAD_COUNT)
     args = parser.parse_args()
     return args
 
 
 def process():
+    args = parse_args()
+
     env = environ.Env()
-    # Take environment variables from .env file
-    os.environ.setdefault('ENV_FILE', '.env')
+    # Take environment variables from env file
+    os.environ.setdefault('ENV_FILE', DEFAULT_ENV_FILE)
     os.environ.setdefault('SB_HOST', DEFAULT_HOST)
     environ.Env.read_env(
-        os.path.join(BASE_DIR, env('ENV_FILE'))
+        os.path.join(
+            BASE_DIR, args.env_file if args.env_file != DEFAULT_ENV_FILE else
+            env('ENV_FILE')), overwrite=True
     )
-
-    args = parse_args()
 
     db_url = env(args.db_var)
 

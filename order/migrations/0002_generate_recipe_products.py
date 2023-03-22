@@ -4,10 +4,13 @@ from random import uniform
 from django.db import migrations
 
 from recipesnstuff import RECIPES_APP_NAME
-from recipesnstuff.settings import PRICING_FACTOR, DEFAULT_CURRENCY
+from recipesnstuff.settings import DEFAULT_CURRENCY
 from recipes.models import Recipe
 from order.misc import generate_sku
 from order.models import ProductType
+from order.views.maintenance import (
+    generate_random_price, INGREDIENT_MIN_PRICE, INGREDIENT_MAX_PRICE
+)
 from utils.database import table_exists
 
 
@@ -31,7 +34,8 @@ class Migration(migrations.Migration):
                      "base_currency) VALUES (%s, %s, %s, %s, %s, %s);", [
                         ProductType.INGREDIENT_BOX.choice, sku, recipe_id,
                         f'Ingredient box for {name}',
-                        round(uniform(3.0, 6.0), PRICING_FACTOR),
+                        generate_random_price(
+                            INGREDIENT_MIN_PRICE, INGREDIENT_MAX_PRICE),
                         DEFAULT_CURRENCY.upper()
                      ])
                 ],
@@ -40,9 +44,12 @@ class Migration(migrations.Migration):
                      "recipe_id=%s;", [recipe_id])
                 ]
             ) for sku, recipe_id, name in [
-                (generate_sku(ProductType.INGREDIENT_BOX, recipe=recipe),
-                 recipe.id, recipe.name)
-                for recipe in list(Recipe.objects.all())
+                (generate_sku(ProductType.INGREDIENT_BOX,
+                              recipe=recipe.get(Recipe.id_field())),
+                 recipe.get(Recipe.id_field()), recipe.get(Recipe.NAME_FIELD))
+                for recipe in list(Recipe.objects.values(
+                    Recipe.id_field(), Recipe.NAME_FIELD
+                ).all())
             ]
         ])
 

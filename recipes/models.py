@@ -25,12 +25,14 @@ from decimal import Decimal
 from datetime import timedelta, datetime, MINYEAR, timezone
 import html
 
+from cloudinary.models import CloudinaryField
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Field, Lookup
 
 from base.dto import ImagePool
+from recipesnstuff import IMAGES_FOLDER, DEVELOPMENT
 from user.models import User
 from utils import ModelMixin
 
@@ -44,7 +46,7 @@ from .constants import (
     FAT_CONTENT_FIELD, SATURATED_FAT_CONTENT_FIELD, CHOLESTEROL_CONTENT_FIELD,
     SODIUM_CONTENT_FIELD, CARBOHYDRATE_CONTENT_FIELD, FIBRE_CONTENT_FIELD,
     SUGAR_CONTENT_FIELD, PROTEIN_CONTENT_FIELD, INGREDIENT_FIELD,
-    QUANTITY_FIELD, INDEX_FIELD
+    QUANTITY_FIELD, INDEX_FIELD, PICTURE_FIELD
 )
 from recipes.images import recipe_main_image
 
@@ -336,6 +338,7 @@ class Recipe(ModelMixin, models.Model):
     TOTAL_TIME_FIELD = TOTAL_TIME_FIELD     # sum of prep & cook annotation
     DATE_PUBLISHED_FIELD = DATE_PUBLISHED_FIELD
     DESCRIPTION_FIELD = DESCRIPTION_FIELD
+    PICTURE_FIELD = PICTURE_FIELD
     CATEGORY_FIELD = CATEGORY_FIELD
     KEYWORDS_FIELD = KEYWORDS_FIELD
     AUTHOR_FIELD = AUTHOR_FIELD
@@ -377,6 +380,14 @@ class Recipe(ModelMixin, models.Model):
 
     description = models.CharField(
         _('description'), max_length=RECIPE_ATTRIB_DESC_MAX_LEN)
+
+    # ImageField for local dev, CloudinaryField for production
+    # https://cloudinary.com/documentation/django_image_and_video_upload#django_forms_and_models
+    picture = models.ImageField(
+        _('image'), default=None, upload_to=IMAGES_FOLDER, blank=True,
+        null=True
+    ) if DEVELOPMENT else CloudinaryField(
+        _('image'), default=None, folder=IMAGES_FOLDER, blank=True, null=True)
 
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
@@ -469,7 +480,7 @@ class RecipeIngredient(ModelMixin, models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     quantity = models.CharField(
-        max_length=RECIPE_INGREDIENT_ATTRIB_QUANTITY_MAX_LEN)
+        blank=True, max_length=RECIPE_INGREDIENT_ATTRIB_QUANTITY_MAX_LEN)
     index = models.PositiveSmallIntegerField(
         _('index in ingredient list'),
         default=RECIPE_INGREDIENT_ATTRIB_INDEX_MIN,

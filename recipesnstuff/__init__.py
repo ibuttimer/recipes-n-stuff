@@ -25,10 +25,10 @@ from .constants import (
     SUBSCRIPTION_APP_NAME, CHECKOUT_APP_NAME,
     ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL, USERS_URL,
     IMAGE_FILE_TYPES, DEV_IMAGE_FILE_TYPES, MIN_PASSWORD_LEN,
-    AVATAR_FOLDER,
-    HOME_ROUTE_NAME
+    AVATAR_FOLDER, IMAGES_FOLDER, HOME_ROUTE_NAME
 )
 from .settings import DEVELOPMENT, TEST
+from .utils import val_test_route_name, val_test_url, VAL_TEST_PATH_PREFIX
 
 __all__ = [
     'BASE_APP_NAME',
@@ -45,8 +45,12 @@ __all__ = [
     'DEV_IMAGE_FILE_TYPES',
     'MIN_PASSWORD_LEN',
     'AVATAR_FOLDER',
+    'IMAGES_FOLDER',
     'HOME_ROUTE_NAME',
-
     'DEVELOPMENT',
     'TEST',
+
+    'val_test_route_name',
+    'val_test_url',
+    'VAL_TEST_PATH_PREFIX',
 ]

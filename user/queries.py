@@ -24,29 +24,6 @@ from typing import List
 
 from allauth.socialaccount.models import SocialApp
 
-# from .constants import MODERATOR_GROUP, AUTHOR_GROUP
-from .models import User
-
-
-# def is_moderator(user: User) -> bool:
-#     """
-#     Check if user is a moderator
-#     :param user: user to check
-#     :return: True if moderator
-#     """
-#     return user.groups.filter(name=MODERATOR_GROUP).exists() \
-#         if user else False
-#
-#
-# def is_author(user: User) -> bool:
-#     """
-#     Check if user is an author
-#     :param user: user to check
-#     :return: True if author
-#     """
-#     return user.groups.filter(name=AUTHOR_GROUP).exists() \
-#         if user else False
-
 
 def get_social_providers() -> List[str]:
     """ Get a list of the social login providers """

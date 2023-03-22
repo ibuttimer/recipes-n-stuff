@@ -21,7 +21,7 @@
 #  DEALINGS IN THE SOFTWARE.
 #
 from enum import Enum, auto
-from typing import Any, Optional, Tuple, List, Union
+from typing import Any, Optional, Tuple, List
 
 from django.core.exceptions import BadRequest
 from django.db.models import Q
@@ -54,7 +54,6 @@ FILTERS_ORDER = [
 ]
 ALWAYS_FILTERS = [
     # always applied items
-    # option.query for option in OPINION_APPLIED_DEFAULTS_QUERY_ARGS
 ]
 FILTERS_ORDER.extend(
     [q for q in FIELD_LOOKUPS if q not in FILTERS_ORDER]

@@ -28,20 +28,17 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views import View
 
 from base.templatetags.delete_modal_ids import delete_modal_ids
-from base.utils import raise_permission_denied
 from utils import (
-    Crud, reverse_q,
-    namespaced_url, redirect_on_success_or_render,
-    entity_delete_result_payload
+    Crud, redirect_on_success_or_render, entity_delete_result_payload
 )
 from .recipe_by import RecipeDetailUpdate
-from .ingredient_by import check_ordering, own_recipe_check
+from .ingredient_by import check_ordering
 from .recipe_queries import (
-    get_recipe, get_recipe_instruction, get_recipe_ingredients_list
+    get_recipe, get_recipe_instruction, own_recipe_check
 )
 from .utils import recipe_permission_check
 from ..constants import (
-    THIS_APP, RECIPE_ID_UPDATE_ROUTE_NAME, INSTRUCTIONS_QUERY
+    INSTRUCTIONS_QUERY
 )
 from ..forms import RecipeInstructionForm
 from ..models import Recipe, Instruction
@@ -96,20 +93,6 @@ class InstructionDetail(LoginRequiredMixin, View):
         """ Get the recipe for the specified instruction"""
         # TODO instruction should be a many-to-one relationship with recipe
         return list(instruction.recipe_set.all())[0]
-
-    # def render_info(self, form: InstructionForm) -> tuple[
-    #         str, dict[str, Instruction | list[str] | InstructionForm | bool]
-    # ]:
-    #     """
-    #     Get info to render a subscription entry
-    #     :param form: form to use
-    #     :return: tuple of template path and context
-    #     """
-    #     return for_subscription_form_render(
-    #         TITLE_UPDATE, Crud.UPDATE, **{
-    #             SUBMIT_URL_CTX: self.url(form.instance.pk),
-    #             SUBSCRIPTION_FORM_CTX: InstructionCreate.init_form(form)
-    #         })
 
     def delete(self, request: HttpRequest, pk: int,
                *args, **kwargs) -> HttpResponse:

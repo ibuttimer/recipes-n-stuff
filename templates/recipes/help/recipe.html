@@ -1,0 +1,69 @@
+{% load i18n %}
+
+<section>
+    <div class="row mt-2">
+        <div class="col-12">
+            <h2 id="recipe-home-help">{% trans "Home" %}</h2>
+            <p>
+                Recipe suggestions are displayed for users' convenience.
+            </p>
+        </div>
+    </div>
+</section>
+<section>
+    <div class="row mt-2">
+        <div class="col-12">
+            <h2 id="following-feed-help">{% trans "Recipe Menu" %}</h2>
+            <p>
+                The recipe menu provides preconfigured recipe keyword listings along with options to create your own recipes.
+            </p>
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-12">
+            <h3 id="create-recipe-help">{% trans "Create Recipe" %}</h3>
+            <p>
+                Select the <em>New</em> option from the recipe menu. Enter the basic recipe and save, you'll be directed to the recipe page so that ingredient and instructions can be added.
+            </p>
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-12">
+            <h3 id="recipe-time-help">{% trans "Prep and Cook Time Entry" %}</h3>
+            <p>Recipe preparation and cook times may be entered using the following syntax:</p>
+            <ul class="list-group mb-2">
+                {% for duration in duration_help %}
+                    <li class="list-group-item">
+                        {{ duration.symbol | safe }} - {{ duration.period | safe }} : {{ duration.enter_as | safe }}
+                    </li>
+                {% endfor %}
+            </ul>
+            <p>The order is not important.</p>
+        </div>
+    </div>
+</section>
+<section>
+    <div class="row mt-2">
+        <div class="col-12">
+            <h2 id="search-help">{% trans "Search" %}</h2>
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-12">
+            <h3 id="basic-search-help">{% trans "Basic Search" %}</h3>
+            <p>
+                Enter a keyword in the search box in the navigation bar at the top of the screen,
+                and click <em>Search</em> to find recipes containing the keyword.
+            </p>
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-12">
+            <h3 id="category-search-help">{% trans "Category Search" %}</h3>
+            <p>
+                From the navigation bar select the <em>All</em> option to get a list of all categories in alphabetical order.
+            </p>
+        </div>
+    </div>
+</section>
+

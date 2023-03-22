@@ -25,8 +25,7 @@ from django.http import HttpRequest, HttpResponse
 from django.views.decorators.http import require_http_methods
 
 from utils import (
-    Crud, redirect_on_success_or_render,
-    POST
+    Crud, redirect_on_success_or_render, POST
 )
 from . import RecipeDetailUpdate
 from .instruction_by import check_instruction_ordering

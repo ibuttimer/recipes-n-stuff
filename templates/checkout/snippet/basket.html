@@ -1,0 +1,156 @@
+<!-- basket.html start -->
+{# --- basket.html template variable defines for includes --- #}
+{# basket template expects: 'basket' as Basket #}
+{#                          'currencies' as currency choices for select #}
+
+{% load i18n  image_url  lookup_value %}
+
+<div class="table-responsive d-none d-lg-block">
+    <table class="table text-center">
+        <thead>
+            <tr>
+                <th scope="col"></th>
+                <th scope="col">Description</th>
+                <th scope="col">Unit cost</th>
+                <th scope="col">Units</th>
+                <th scope="col">Item total</th>
+                <th scope="col">Currency</th>
+                <th scope="col">SKU</th>
+                <th scope="col"><em>Subtotal<br>{{ basket.currency_symbol }}</em></th>
+            </tr>
+        </thead>
+        <tbody class="table-group-divider">
+            {% for item in basket.items %}
+                <tr id="id__item-row-{{ forloop.counter0 }}">
+                    <td>
+                        <img class="img__checkout_product" alt="product image" src="{% image_url item.image %}">
+                    </td>
+                    <td>
+                        {% if item.url %}
+                            <a href="{{ item.url }}" aria-label="view product">{{ item.description | safe }}</a>
+                        {% else %}
+                            {{ item.description | safe }}
+                        {% endif %}
+                    </td>
+                    <td>{{ item.amt_str }}</td>
+                    <td>
+                        <div class="d-flex justify-content-center align-content-center">
+                            <input type="number" class="form-control form-control-sm w-50 p-1 justify--center" id="id__units-item-{{ forloop.counter0 }}"
+                                   value="{{ item.count }}" min="1"  data-bs-href="{% url 'checkout:update_basket' %}?item={{forloop.counter0}}">
+                            <a class="text-reset text-decoration-none" href="{% url 'checkout:update_basket' %}?item={{forloop.counter0}}"
+                               id="id__item-delete-{{ forloop.counter0 }}">
+                                <i class="fa-solid fa-trash-can p-2"></i>
+                            </a>
+                        </div>
+                    </td>
+                    <td>{{ item.item_total_str }}</td>
+                    <td>{{ item.currency }}</td>
+                    <td>{{ item.sku }}</td>
+                    <td>{% lookup_value basket.subtotals forloop.counter0 %}</td>
+                </tr>
+                {% if item.instructions %}
+                    <tr>
+                        <td><em>Instructions</em></td>
+                        <td colspan="5">{{ item.instructions }}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+        <tfoot class="table-group-divider">
+            <tr>
+                <td>
+                    <div class="col-sm-12 d-flex justify-content-end align-content-center">
+                        <em>Pay in</em>
+                    </div>
+                </td>
+                <td>
+                    <div class="col-sm-12 d-flex justify-content-start align-content-center">
+                        <div class="d-flex justify-content-center">
+                            <select id="id__pay-ccy-select" class="form-select form-select-sm" aria-label="payment currency selection">
+                                {% for currency in currencies %}
+                                <option value="{{ currency.0 }}" {% if currency.0 == basket.currency %} selected {% endif %}>{{ currency.1 }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </td>
+                <td colspan="4">
+                </td>
+                <td><b><em>Total&nbsp;{{ basket.currency_symbol }}</em></b></td>
+                <td><em>{{ basket.subtotal_str }}</em></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<div class="container d-lg-none">
+    {% for item in basket.items %}
+        <div class="row">
+            <div class="col-sm-9 offset-sm-3"><img class="img__checkout_product" alt="product image" src="{% image_url item.image %}"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3"><b>Description</b></div>
+            <div class="col-sm-9">
+                {% if item.url %}
+                    <a href="{{ item.url }}" aria-label="view product">{{ item.description | safe }}</a>
+                {% else %}
+                    {{ item.description | safe }}
+                {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3"><b>Unit cost</b></div>
+            <div class="col-sm-9">{{ item.amt_str }}</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3"><b>Units</b></div>
+            <div class="col-sm-9">
+                <div class="d-flex justify-content-center align-content-center">
+                    <input type="number" class="form-control form-control-sm w-50 p-1 justify--center" id="id__units-item-sml-{{ forloop.counter0 }}"
+                           value="{{ item.count }}" min="1"  data-bs-href="{% url 'checkout:update_basket' %}?item={{forloop.counter0}}">
+                    <a class="text-reset text-decoration-none" href="{% url 'checkout:update_basket' %}?item={{forloop.counter0}}"
+                       id="id__item-delete-sml-{{ forloop.counter0 }}">
+                        <i class="fa-solid fa-trash-can p-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3"><b>Item total</b></div>
+            <div class="col-sm-9">{{ item.item_total_str }}</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3"><b>Currency</b></div>
+            <div class="col-sm-9">{{ item.currency }}</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3"><b>SKU</b></div>
+            <div class="col-sm-9">{{ item.sku }}</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3"><b><em>Subtotal {{ basket.currency_symbol }}</em></b></div>
+            <div class="col-sm-9">{% lookup_value basket.subtotals forloop.counter0 %}</div>
+        </div>
+        {% if item.instructions %}
+        <div class="row">
+            <div class="col-sm-3"><em>Instructions</em></div>
+            <div class="col-sm-9">{{ item.instructions }}</div>
+        </div>
+        {% endif %}
+        {% if not forloop.last %}<hr>{% endif %}
+    {% endfor %}
+    <hr class="border border-1 border-dark">
+    <div class="row">
+        <div class="col-sm-3"><em>Pay in</em></div>
+        <div class="col-sm-3">
+            <select id="id__pay-ccy-select-sml" class="form-select form-select-sm" aria-label="payment currency selection">
+                {% for currency in currencies %}
+                    <option value="{{ currency.0 }}" {% if currency.0 == basket.currency %} selected {% endif %}>{{ currency.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-sm-3"><b><em>Total&nbsp;{{ basket.currency_symbol }}</em></b></div>
+        <div class="col-sm-3"><em>{{ basket.subtotal_str }}</em></div>
+    </div>
+</div>
+
+<!-- basket.html end -->

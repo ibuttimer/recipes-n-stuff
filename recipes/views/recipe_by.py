@@ -21,6 +21,7 @@
 #  DEALINGS IN THE SOFTWARE.
 from dataclasses import dataclass
 from http import HTTPStatus
+from random import choice
 from typing import Union, Tuple, TypeVar
 
 from django.contrib.auth.decorators import login_required
@@ -31,13 +32,16 @@ from django.shortcuts import render
 from django.views import View
 from django.views.decorators.http import require_http_methods
 
+from base.entity_conv import unescape_entities
+from base.templatetags.delete_modal_ids import delete_modal_ids
 from checkout.basket import add_ingredient_box_to_basket
 from order.views.utils import order_permission_check
-from utils.content_list_mixin import get_query_args
+from utils.content_list_mixin import get_query_args, SUBMIT_URL_CTX
 from .dto import RecipeDto
+from .recipe_create import for_recipe_form_render, handle_image
 from .recipe_queries import (
     get_recipe, get_recipe_ingredients_list, get_recipe_box_product,
-    get_recipe_count
+    get_recipe_count, nutritional_info_valid, chk_permission_get_recipe
 )
 from ..constants import (
     THIS_APP, INGREDIENTS_CTX, NEW_INGREDIENT_FORM_CTX,
@@ -46,17 +50,21 @@ from ..constants import (
     INSTRUCTIONS_CTX, NEW_INSTRUCTION_FORM_CTX,
     RECIPE_ID_INSTRUCTION_NEW_ROUTE_NAME, COUNT_OPTIONS_CTX,
     SELECTED_COUNT_CTX, CUSTOM_COUNT_CTX, CCY_SYMBOL_CTX, UNIT_PRICE_CTX,
-    QUANTITY_FIELD, NEXT_QUERY, INGREDIENT_LIST_CTX, RECIPE_COUNT_CTX
+    QUANTITY_FIELD, NEXT_QUERY, INGREDIENT_LIST_CTX, RECIPE_COUNT_CTX,
+    CAN_PURCHASE_CTX, IS_OWN_CTX, NUTRITIONAL_INFO_CTX, RECIPE_QUERY,
+    RECIPE_FORM_CTX, INGREDIENT_ID_MAP_CTX, RECIPES_ROUTE_NAME, CALL_TO_BUY_CTX
 )
 from utils import (
     Crud, app_template_path, reverse_q,
     namespaced_url, PAGE_HEADING_CTX, TITLE_CTX, QueryOption, PATCH,
-    redirect_payload
+    redirect_payload, redirect_on_success_or_render,
+    entity_delete_result_payload
 )
-from .utils import recipe_permission_check
+from .utils import recipe_permission_check, encode_timedelta
 from ..constants import RECIPE_ID_ROUTE_NAME, RECIPE_DTO_CTX
 from ..forms import (
-    RecipeIngredientForm, RecipeIngredientNewForm, RecipeInstructionForm
+    RecipeIngredientForm, RecipeIngredientNewForm, RecipeInstructionForm,
+    RecipeForm
 )
 from ..models import Recipe, Instruction, Ingredient
 
@@ -65,6 +73,7 @@ TITLE_UPDATE = 'Update Recipe'
 UPDATE_QUERY_ARGS = [
     QueryOption.of_no_cls_dflt(INGREDIENTS_QUERY),
     QueryOption.of_no_cls_dflt(INSTRUCTIONS_QUERY),
+    QueryOption.of_no_cls_dflt(RECIPE_QUERY),
 ]
 
 MAX_PRESET_BOX_COUNT = 10
@@ -76,6 +85,15 @@ BOX_COUNT_OPTIONS = [
 ]
 
 TypeRedirectNext = TypeVar("TypeRedirectNext", bound="RedirectNext")
+
+CALL_TO_BUY = [
+    'Like the look of this? Save yourself a trip to the shops and purchase '
+    'ingredient boxes here!',
+    'Take the hassle out of catering a party, ingredient boxes delivered to '
+    'your door.',
+    "Feeding 1 or 50? We've got you covered. Just a few clicks and your "
+    "ingredient boxes are on the way.",
+]
 
 
 class RecipeDetail(LoginRequiredMixin, View):
@@ -97,105 +115,69 @@ class RecipeDetail(LoginRequiredMixin, View):
 
         recipe_dto = RecipeDto.from_id(pk, nutri_text=True)
 
-        box_product, currency = get_recipe_box_product(pk)
+        box_product, currency = get_recipe_box_product(pk, get_or_404=False)
 
-        return render(
-            request, app_template_path(THIS_APP, 'recipe_view.html'),
-            context={
-                TITLE_CTX: recipe_dto.name,
-                RECIPE_DTO_CTX: recipe_dto,
-                RECIPE_COUNT_CTX: get_recipe_count(recipe_dto.author.username),
+        is_own = recipe_dto.author == request.user
+        can_purchase = box_product is not None
+        can_delete = is_own or recipe_permission_check(
+            request, Crud.DELETE, raise_ex=False)
+
+        context = {
+            TITLE_CTX: recipe_dto.name,
+            RECIPE_DTO_CTX: recipe_dto,
+            RECIPE_COUNT_CTX: get_recipe_count(recipe_dto.author.username),
+            CAN_PURCHASE_CTX: can_purchase,
+            IS_OWN_CTX: is_own,
+            NUTRITIONAL_INFO_CTX: nutritional_info_valid(recipe_dto.id),
+        }
+        if can_purchase:
+            context.update({
                 COUNT_OPTIONS_CTX: BOX_COUNT_OPTIONS,
                 SELECTED_COUNT_CTX: 0,
                 CUSTOM_COUNT_CTX: CUSTOM_BOX_COUNT,
                 CCY_SYMBOL_CTX: currency.symbol,
                 UNIT_PRICE_CTX: box_product.unit_price,
-            }
+                CALL_TO_BUY_CTX: choice(CALL_TO_BUY)
+            })
+        if can_delete:
+            context.update({
+                REFRESH_URL_CTX: reverse_q(
+                    namespaced_url(THIS_APP, RECIPES_ROUTE_NAME)
+                )
+            })
+
+        return render(
+            request, app_template_path(THIS_APP, 'recipe_view.html'),
+            context=context
         )
 
-    # def post(self, request: HttpRequest, pk: int,
-    #          *args, **kwargs) -> HttpResponse:
-    #     """
-    #     POST method to update Recipe
-    #     :param request: http request
-    #     :param pk: id of address
-    #     :param args: additional arbitrary arguments
-    #     :param kwargs: additional keyword arguments
-    #     :return: http response
-    #     """
-    #     subscription_permission_check(request, Crud.UPDATE)
-    #
-    #     subscription, query_param = get_subscription(pk)
-    #
-    #     form = RecipeForm(data=request.POST, instance=subscription)
-    #
-    #     if form.is_valid():
-    #         # update object
-    #         # django autocommits changes
-    #         # https://docs.djangoproject.com/en/4.1/topics/db/transactions/#autocommit
-    #         form.save()
-    #
-    #         redirect_to = reverse_q(
-    #             namespaced_url(THIS_APP, SUBSCRIPTIONS_ROUTE_NAME)
-    #         )
-    #         template_path, context = None, None
-    #     else:
-    #         redirect_to = None
-    #         template_path, context = self.render_info(form)
-    #
-    #     return redirect_on_success_or_render(
-    #         request, redirect_to is not None, redirect_to=redirect_to,
-    #         template_path=template_path, context=context)
+    def delete(self, request: HttpRequest, pk: int,
+               *args, **kwargs) -> HttpResponse:
+        """
+        DELETE method to delete Recipe
+        :param request: http request
+        :param pk: id of address
+        :param args: additional arbitrary arguments
+        :param kwargs: additional keyword arguments
+        :return: http response
+        """
+        recipe = chk_permission_get_recipe(request, pk, Crud.DELETE)
 
-    # def render_info(self, form: RecipeForm) -> tuple[
-    #         str, dict[str, Recipe | list[str] | RecipeForm | bool]
-    # ]:
-    #     """
-    #     Get info to render a subscription entry
-    #     :param form: form to use
-    #     :return: tuple of template path and context
-    #     """
-    #     return for_subscription_form_render(
-    #         TITLE_UPDATE, Crud.UPDATE, **{
-    #             SUBMIT_URL_CTX: self.url(form.instance.pk),
-    #             SUBSCRIPTION_FORM_CTX: RecipeCreate.init_form(form)
-    #         })
-    #
-    # def delete(self, request: HttpRequest, pk: int,
-    #            *args, **kwargs) -> HttpResponse:
-    #     """
-    #     DELETE method to delete Recipe
-    #     :param request: http request
-    #     :param pk: id of address
-    #     :param args: additional arbitrary arguments
-    #     :param kwargs: additional keyword arguments
-    #     :return: http response
-    #     """
-    #     subscription_permission_check(request, Crud.UPDATE)
-    #
-    #     address, _ = get_subscription(pk)
-    #
-    #     # TODO refactor delete modals to single template
-    #
-    #     status = HTTPStatus.OK
-    #     # delete address
-    #     count, _ = address.delete()
-    #     payload = replace_inner_html_payload(
-    #         "#id--subscription-deleted-modal-body",
-    #         render_to_string(
-    #             app_template_path(
-    #                 THIS_APP, "snippet", "subscription_delete.html"),
-    #             context={
-    #                 STATUS_CTX: count > 0
-    #             },
-    #             request=request)
-    #     )
-    #     if count == 0:
-    #         status = HTTPStatus.BAD_REQUEST
-    #
-    #     return JsonResponse(payload, status=status)
+        status = HTTPStatus.OK
+        # delete recipe
+        count, _ = recipe.delete()
+        if count == 0:
+            status = HTTPStatus.BAD_REQUEST
 
-    def url(self, pk: int) -> str:
+        entity = 'recipe'
+        ids = delete_modal_ids(entity)
+        payload = entity_delete_result_payload(
+            f"#{ids['deleted_id_body']}", count > 0, entity)
+
+        return JsonResponse(payload, status=status)
+
+    @staticmethod
+    def url(pk: int) -> str:
         """
         Get url for address update/delete
         :param pk: id of entity
@@ -236,26 +218,86 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
         :param kwargs: additional keyword arguments
         :return: http response
         """
-        recipe_permission_check(request, Crud.UPDATE)
+        recipe = chk_permission_get_recipe(request, pk, Crud.UPDATE)
 
         query_args = get_query_args(request, UPDATE_QUERY_ARGS)
 
-        for query, field in [
-            (INGREDIENTS_QUERY, Recipe.INGREDIENTS_FIELD),
-            (INSTRUCTIONS_QUERY, Recipe.INSTRUCTIONS_FIELD),
+        for query in [
+            INGREDIENTS_QUERY, INSTRUCTIONS_QUERY, RECIPE_QUERY
         ]:
             if query_args[query].was_set_to_boolean_true():
-                field_name = field
+                field_name = query
                 break
         else:
             raise BadRequest('Malformed request; query not specified')
 
-        if field_name == Recipe.INGREDIENTS_FIELD:
+        if field_name == INGREDIENTS_QUERY:
             template, context = self.render_update_ingredients(request, pk)
-        else:
+        elif field_name == INSTRUCTIONS_QUERY:
             template, context = self.render_update_instructions(request, pk)
+        else:
+            form = RecipeForm(instance=recipe)
+
+            form.initial[RecipeForm.PREP_TIME_FF] = \
+                encode_timedelta(recipe.prep_time)
+            form.initial[RecipeForm.COOK_TIME_FF] = \
+                encode_timedelta(recipe.cook_time)
+            form.initial[RecipeForm.CATEGORY_FF] = recipe.category.name
+
+            template, context = self.render_info(form, pk)
 
         return render(request, template, context=context)
+
+    def render_info(self, form: RecipeForm, pk: int, query: str = None):
+        """
+        Get info to render a recipe form
+        :param form: form to use
+        :param pk: id of recipe
+        :param query: query field
+        :return: tuple of template path and context
+        """
+        return for_recipe_form_render(
+            TITLE_UPDATE, Crud.UPDATE, **{
+                SUBMIT_URL_CTX: self.url(pk, query),
+                RECIPE_FORM_CTX: form
+            })
+
+    def post(self, request: HttpRequest, pk: int,
+             *args, **kwargs) -> HttpResponse:
+        """
+        POST method for Recipe
+        :param request: http request
+        :param pk: id of recipe
+        :param args: additional arbitrary arguments
+        :param kwargs: additional keyword arguments
+        :return: http response
+        """
+        recipe = chk_permission_get_recipe(request, pk, Crud.UPDATE)
+
+        form = RecipeForm(
+            data=request.POST, files=request.FILES, instance=recipe)
+        form.full_clean()
+
+        if form.is_valid():
+            # update object
+            handle_image(form, form.instance)
+
+            recipe = form.save()
+            # django autocommits changes
+            # https://docs.djangoproject.com/en/4.1/topics/db/transactions/#autocommit
+
+            redirect_to = reverse_q(
+                namespaced_url(THIS_APP, RECIPE_ID_ROUTE_NAME),
+                args=[recipe.id]
+            )
+            template_path, context = None, None
+        else:
+            redirect_to = None
+            template_path, context = self.render_info(form, pk)
+
+        return redirect_on_success_or_render(
+            request, redirect_to is not None, redirect_to=redirect_to,
+            template_path=template_path, context=context)
 
     @staticmethod
     def render_update_ingredients(
@@ -278,7 +320,7 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
         if not new_form:
             new_form = RecipeIngredientNewForm()
             new_form.initial[RecipeIngredientForm.INDEX_FF] = \
-                ingredients[-1].index + 1
+                ingredients[-1].index + 1 if len(ingredients) else 1
 
         context = {
             TITLE_CTX: 'Update Ingredients',
@@ -295,6 +337,15 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
                 map(lambda ingred: ingred.name,
                     Ingredient.objects.order_by(Ingredient.NAME_FIELD).all())
             ),
+            # Due to mixed html entity encoding on ingredient names from the
+            # kaggle dataset, can't look up ingredient by name, so provide a
+            # map with unescaped name as the key and id as the value, so id
+            # may be used as the returned value
+            INGREDIENT_ID_MAP_CTX: {
+                iname: ikey for iname, ikey in map(
+                    lambda ingred: (unescape_entities(ingred.name), ingred.id),
+                    Ingredient.objects.order_by(Ingredient.NAME_FIELD).all())
+            },
             NEW_URL_CTX: reverse_q(
                 namespaced_url(THIS_APP, RECIPE_ID_INGREDIENT_NEW_ROUTE_NAME),
                 args=[recipe.id]
@@ -328,7 +379,7 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
         if not new_form:
             new_form = RecipeInstructionForm()
             new_form.initial[RecipeInstructionForm.INDEX_FF] = \
-                instructions[-1].index + 1
+                instructions[-1].index + 1 if len(instructions) else 1
 
         context = {
             TITLE_CTX: 'Update Instructions',
@@ -352,7 +403,7 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
         return app_template_path(THIS_APP, 'instructions_form.html'), context
 
     @staticmethod
-    def url(pk: int, query: str) -> str:
+    def url(pk: int, query: str = None) -> str:
         """
         Get url for address update/delete
         :param pk: id of entity
@@ -363,7 +414,7 @@ class RecipeDetailUpdate(LoginRequiredMixin, View):
             namespaced_url(THIS_APP, RECIPE_ID_UPDATE_ROUTE_NAME),
             args=[pk], query_kwargs={
                 query: 'y'
-            }
+            } if query else None
         )
 
 

@@ -28,21 +28,19 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F
 from django.http import HttpRequest
 from django.template.loader import render_to_string
-from django.contrib import messages
 
 from base.utils import raise_permission_denied
 from base.views import MESSAGE_CTX
 from utils import (
     QueryArg, SortOrder, QuerySetParams, QueryOption, ContentListMixin,
     TITLE_CTX, LIST_HEADING_CTX, PAGE_HEADING_CTX, NO_CONTENT_MSG_CTX,
-    NO_CONTENT_HELP_CTX,
     Crud, app_template_path, ORDER_QUERY, PAGE_QUERY, PER_PAGE_QUERY, PerPage8,
-    REORDER_QUERY, REORDER_REQ_QUERY_ARGS, YesNo,
-    READ_ONLY_CTX, AMOUNT_QUERY_ARGS, REPEAT_SEARCH_TERM_CTX,
+    REORDER_QUERY, REORDER_REQ_QUERY_ARGS,
+    READ_ONLY_CTX, REPEAT_SEARCH_TERM_CTX,
     query_search_term, LIST_SUB_HEADING_CTX, ChoiceArg
 )
 from utils.content_list_mixin import SELECTED_SORT_CTX
-from utils.search import SEARCH_QUERY
+from utils.search import SEARCH_QUERY, USER_QUERY
 
 from recipes.constants import (
     THIS_APP, RECIPE_LIST_CTX, AUTHOR_QUERY, KEYWORD_QUERY, TIME_CTX,
@@ -75,11 +73,10 @@ assert REORDER_REQ_QUERY_ARGS == list(
 LIST_QUERY_ARGS = REORDER_QUERY_ARGS.copy()
 LIST_QUERY_ARGS.extend([
     # non-reorder query args
-    QueryOption.of_no_cls_dflt(SEARCH_QUERY),
-    QueryOption.of_no_cls_dflt(KEYWORD_QUERY),
-    QueryOption.of_no_cls_dflt(INGREDIENT_QUERY),
-    QueryOption.of_no_cls_dflt(CATEGORY_QUERY),
-    QueryOption.of_no_cls_dflt(AUTHOR_QUERY),
+    QueryOption.of_no_cls_dflt(query) for query in [
+        SEARCH_QUERY, KEYWORD_QUERY, INGREDIENT_QUERY, CATEGORY_QUERY,
+        AUTHOR_QUERY, USER_QUERY,
+    ]
 ])
 # request arguments for an opinion search request
 SEARCH_QUERY_ARGS = LIST_QUERY_ARGS.copy()
@@ -87,7 +84,6 @@ SEARCH_QUERY_ARGS.extend([
     QueryOption.of_no_cls_dflt(query) for query in [
     ]
 ])
-# LIST_QUERY_ARGS.extend(OPINION_APPLIED_DEFAULTS_QUERY_ARGS)
 
 
 class ListTemplate(Enum):

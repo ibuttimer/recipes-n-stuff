@@ -29,7 +29,6 @@ from django.apps import AppConfig
 from django.http import HttpRequest
 
 from checkout.constants import ON_COMPLETE_SES
-from user.models import User
 
 TypeOnCompleteItem = TypeVar("TypeOnCompleteItem", bound="OnCompleteItem")
 TypeOnComplete = TypeVar("TypeOnComplete", bound="OnComplete")

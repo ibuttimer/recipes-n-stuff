@@ -151,7 +151,8 @@ class OrderProductDto(BaseDto):
         dto.url = reverse_q(
             namespaced_url(RECIPES_APP_NAME, RECIPE_ID_ROUTE_NAME),
             args=[order_prod.recipe.id]
-        )
+        ) if ProductType.from_choice(order_prod.type).is_recipe_option \
+            else None
 
         return dto
 
@@ -198,8 +199,7 @@ class OrderIdsBundle(BaseDto):
                     prod_type=ProductType.from_choice(
                         order_item.order_prod.type),
                     type_id=order_prod_type_id(order_item)
-                ), order.orderitem_set.all()
-            )
+                ), order.orderitem_set.all())
         )
         return dto
 

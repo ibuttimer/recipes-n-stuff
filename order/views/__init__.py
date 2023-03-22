@@ -22,6 +22,7 @@
 from .order_list import OrderList, SearchOrderList
 from .order_by import OrderDetail
 from .dto import OrderDto
+from .maintenance import generate_order_product
 
 
 __all__ = [
@@ -31,4 +32,6 @@ __all__ = [
     'OrderDetail',
 
     'OrderDto',
+
+    'generate_order_product',
 ]

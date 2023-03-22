@@ -23,13 +23,16 @@
 
 from django.http import HttpRequest
 
+from recipes.constants import RECIPE_HOME_ROUTE_NAME
 from recipesnstuff.constants import (
     HOME_MENU_CTX, HELP_MENU_CTX, HELP_ROUTE_NAME, HOME_ROUTE_NAME,
-    APP_NAME, ABOUT_MENU_CTX, ABOUT_ROUTE_NAME, VAL_TEST_PATH_PREFIX
+    APP_NAME, ABOUT_MENU_CTX, ABOUT_ROUTE_NAME, NO_ROBOTS_CTX
 )
+from recipesnstuff import VAL_TEST_PATH_PREFIX
 from utils import resolve_req, add_navbar_attr
 
-from .constants import APP_NAME_CTX, VAL_TEST_CTX
+from .constants import APP_NAME_CTX, VAL_TEST_CTX, TOAST_POSITION_CTX
+from .views import ToastPosition
 
 
 def base_context(request: HttpRequest) -> dict:
@@ -42,15 +45,29 @@ def base_context(request: HttpRequest) -> dict:
         APP_NAME_CTX: APP_NAME,
         VAL_TEST_CTX: request.path.find(VAL_TEST_PATH_PREFIX) >= 0
     }
+    no_robots = False
     called_by = resolve_req(request)
     if called_by:
         for ctx, routes in [
             (HOME_MENU_CTX, [
-                HOME_ROUTE_NAME
+                HOME_ROUTE_NAME, RECIPE_HOME_ROUTE_NAME
             ]),
             (HELP_MENU_CTX, [HELP_ROUTE_NAME]),
             (ABOUT_MENU_CTX, [ABOUT_ROUTE_NAME]),
         ]:
             add_navbar_attr(
                 context, ctx, is_active=called_by.url_name in routes)
+
+        # set no robots
+        # allauth route names start with 'account_' and have no app name
+        no_robots = called_by.app_name == '' and \
+            called_by.url_name.startswith('account_')
+        # admin routes have app name 'admin'
+        no_robots = no_robots or called_by.app_name == 'admin'
+
+    context.update({
+        NO_ROBOTS_CTX: no_robots,
+        TOAST_POSITION_CTX: ToastPosition.DEFAULT.value
+    })
+
     return context

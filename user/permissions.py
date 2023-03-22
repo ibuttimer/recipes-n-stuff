@@ -1,4 +1,3 @@
-
 #  MIT License
 #
 #  Copyright (c) 2023 Ian Buttimer
@@ -33,8 +32,13 @@ from django.db.models import Model
 
 from order.models import Order
 from profiles.models import Address
+from recipes.models import (
+    Category, Image, Ingredient, Instruction, Keyword, Measure, Recipe
+)
 from recipesnstuff import PROFILES_APP_NAME
-from recipesnstuff.constants import SUBSCRIPTION_APP_NAME, ORDER_APP_NAME
+from recipesnstuff.constants import (
+    SUBSCRIPTION_APP_NAME, ORDER_APP_NAME, RECIPES_APP_NAME, USER_APP_NAME
+)
 from subscription.models import Subscription
 from utils import permission_name, Crud, ensure_list
 from .constants import REGISTERED_GROUP
@@ -43,15 +47,38 @@ from .models import User
 ADD = 'add'
 REMOVE = 'remove'
 PermSetting = namedtuple(
-    'PermSetting',
-    ['model', 'all', 'perms', 'app', 'action'],
+    'PermSetting', ['model', 'all', 'perms', 'app', 'action'],
     defaults=[None, False, [], '', ADD]
 )
+ALL_CRUD = '__all__'
 
-SUBS_PERMS_REGISTERED = Crud.READ
-ORDER_PERMS_REGISTERED = [
+
+PermConfig = namedtuple(
+    'PermConfig', ['model', 'perms', 'app',], defaults=[None, [], '']
+)
+ORDER_PERMS_REGISTERED = PermConfig(model=Order, perms=[
     opt for opt in Crud if opt != Crud.DELETE
-]
+], app=ORDER_APP_NAME)
+ADDRESS_PERMS_REGISTERED = PermConfig(
+    model=Address, perms=ALL_CRUD, app=PROFILES_APP_NAME)
+CATEGORY_PERMS_REGISTERED = PermConfig(
+    model=Category, perms=Crud.READ, app=RECIPES_APP_NAME)
+RECIPE_IMAGE_PERMS_REGISTERED = PermConfig(
+    model=Image, perms=ALL_CRUD, app=RECIPES_APP_NAME)
+RECIPE_INGREDIENT_PERMS_REGISTERED = PermConfig(
+    model=Ingredient, perms=Crud.READ, app=RECIPES_APP_NAME)
+RECIPE_INSTRUCTION_PERMS_REGISTERED = PermConfig(
+    model=Instruction, perms=ALL_CRUD, app=RECIPES_APP_NAME)
+KEYWORD_PERMS_REGISTERED = PermConfig(
+    model=Keyword, perms=Crud.READ, app=RECIPES_APP_NAME)
+MEASURE_PERMS_REGISTERED = PermConfig(
+    model=Measure, perms=Crud.READ, app=RECIPES_APP_NAME)
+RECIPE_PERMS_REGISTERED = PermConfig(
+    model=Recipe, perms=ALL_CRUD, app=RECIPES_APP_NAME)
+SUBS_PERMS_REGISTERED = PermConfig(
+    model=Subscription, perms=Crud.READ, app=SUBSCRIPTION_APP_NAME)
+USER_PERMS_REGISTERED = PermConfig(
+    model=User, perms=Crud.READ, app=USER_APP_NAME)
 
 
 def create_registered_group(
@@ -247,7 +274,7 @@ def reverse_migrate_permissions(
 
 def set_group_permissions(
         assignees: Union[str, List[str]],
-        model: Model, ops: Union[List[Crud], Crud], app_name: str,
+        model: Model, ops: Union[List[Crud], Crud, str], app_name: str,
         action: str, apps: StateApps = None,
         schema_editor: BaseDatabaseSchemaEditor = None):
     """
@@ -270,16 +297,16 @@ def set_group_permissions(
 
     permissions = [
         permission_name(model, cmt) for cmt in ensure_list(ops)
-    ]
+    ] if ops != ALL_CRUD else []
     for group in to_assign:
         set_basic_permissions(group, [
-            PermSetting(model=model, perms=permissions,
+            PermSetting(model=model, all=ops == ALL_CRUD, perms=permissions,
                         app=app_name, action=action)
         ], apps=apps, schema_editor=schema_editor)
 
 
 def add_permissions_for_registered(
-        model: Model, ops: Union[List[Crud], Crud], app_name: str,
+        model: Model, ops: Union[List[Crud], Crud, str], app_name: str,
         apps: StateApps = None,
         schema_editor: BaseDatabaseSchemaEditor = None):
     """
@@ -298,7 +325,7 @@ def add_permissions_for_registered(
 
 
 def remove_permissions_for_registered(
-        model: Model, ops: Union[List[Crud], Crud], app_name: str,
+        model: Model, ops: Union[List[Crud], Crud, str], app_name: str,
         apps: StateApps = None,
         schema_editor: BaseDatabaseSchemaEditor = None):
     """
@@ -324,9 +351,9 @@ def add_subs_permissions_for_registered(
     :param schema_editor:
         editor generating statements to change database schema, default None
     """
+    model, ops, app_name = SUBS_PERMS_REGISTERED
     add_permissions_for_registered(
-        Subscription, SUBS_PERMS_REGISTERED, SUBSCRIPTION_APP_NAME,
-        apps=apps, schema_editor=schema_editor)
+        model, ops, app_name, apps=apps, schema_editor=schema_editor)
 
 
 def remove_subs_permissions_for_registered(
@@ -338,9 +365,9 @@ def remove_subs_permissions_for_registered(
     :param schema_editor:
         editor generating statements to change database schema, default None
     """
+    model, ops, app_name = SUBS_PERMS_REGISTERED
     remove_permissions_for_registered(
-        Subscription, SUBS_PERMS_REGISTERED, SUBSCRIPTION_APP_NAME,
-        apps=apps, schema_editor=schema_editor)
+        model, ops, app_name, apps=apps, schema_editor=schema_editor)
 
 
 def add_order_permissions_for_registered(
@@ -352,9 +379,9 @@ def add_order_permissions_for_registered(
     :param schema_editor:
         editor generating statements to change database schema, default None
     """
+    model, ops, app_name = ORDER_PERMS_REGISTERED
     add_permissions_for_registered(
-        Order, ORDER_PERMS_REGISTERED, ORDER_APP_NAME,
-        apps=apps, schema_editor=schema_editor)
+        model, ops, app_name, apps=apps, schema_editor=schema_editor)
 
 
 def remove_order_permissions_for_registered(
@@ -366,6 +393,56 @@ def remove_order_permissions_for_registered(
     :param schema_editor:
         editor generating statements to change database schema, default None
     """
+    model, ops, app_name = ORDER_PERMS_REGISTERED
     remove_permissions_for_registered(
-        Order, ORDER_PERMS_REGISTERED, ORDER_APP_NAME,
-        apps=apps, schema_editor=schema_editor)
+        model, ops, app_name, apps=apps, schema_editor=schema_editor)
+
+
+def add_recipe_etc_permissions_for_registered(
+        apps: StateApps = None,
+        schema_editor: BaseDatabaseSchemaEditor = None):
+    """
+    Add recipe etc. permissions for registered group
+    :param apps: apps registry, default None
+    :param schema_editor:
+        editor generating statements to change database schema, default None
+    """
+    for perm_cfg in [
+        ADDRESS_PERMS_REGISTERED,
+        CATEGORY_PERMS_REGISTERED,
+        RECIPE_IMAGE_PERMS_REGISTERED,
+        RECIPE_INGREDIENT_PERMS_REGISTERED,
+        RECIPE_INSTRUCTION_PERMS_REGISTERED,
+        KEYWORD_PERMS_REGISTERED,
+        MEASURE_PERMS_REGISTERED,
+        RECIPE_PERMS_REGISTERED,
+        USER_PERMS_REGISTERED
+    ]:
+        model, ops, app_name = perm_cfg
+        add_permissions_for_registered(
+            model, ops, app_name, apps=apps, schema_editor=schema_editor)
+
+
+def remove_recipe_etc_permissions_for_registered(
+        apps: StateApps = None,
+        schema_editor: BaseDatabaseSchemaEditor = None):
+    """
+    Remove recipe etc. permissions for registered group
+    :param apps: apps registry, default None
+    :param schema_editor:
+        editor generating statements to change database schema, default None
+    """
+    for perm_cfg in [
+        ADDRESS_PERMS_REGISTERED,
+        CATEGORY_PERMS_REGISTERED,
+        RECIPE_IMAGE_PERMS_REGISTERED,
+        RECIPE_INGREDIENT_PERMS_REGISTERED,
+        RECIPE_INSTRUCTION_PERMS_REGISTERED,
+        KEYWORD_PERMS_REGISTERED,
+        MEASURE_PERMS_REGISTERED,
+        RECIPE_PERMS_REGISTERED,
+        USER_PERMS_REGISTERED
+    ]:
+        model, ops, app_name = perm_cfg
+        remove_permissions_for_registered(
+            model, ops, app_name, apps=apps, schema_editor=schema_editor)

@@ -25,14 +25,17 @@ from string import capwords
 from typing import TypeVar, Optional, Union
 
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.templatetags.static import static
 from django.views.decorators.http import require_GET
 
-from recipesnstuff import ADMIN_URL, ACCOUNTS_URL
-from recipesnstuff.constants import CHECKOUT_URL, ROBOTS_URL
-from utils import app_template_path
+from recipes.constants import RECIPE_HOME_ROUTE_NAME
+from recipesnstuff import ADMIN_URL, ACCOUNTS_URL, VAL_TEST_PATH_PREFIX
+from recipesnstuff.constants import (
+    CHECKOUT_URL, ROBOTS_URL, USERS_URL, RECIPES_APP_NAME
+)
+from utils import app_template_path, namespaced_url
 from utils.views import REDIRECT_CTX
 
 from .constants import (
@@ -41,7 +44,7 @@ from .constants import (
 )
 
 DISALLOWED_URLS = [
-    ADMIN_URL, ACCOUNTS_URL, CHECKOUT_URL
+    ADMIN_URL, ACCOUNTS_URL, USERS_URL, CHECKOUT_URL
 ]
 
 TITLE_CTX = 'title'
@@ -58,18 +61,7 @@ TypeToastTemplate = \
 
 
 CAROUSEL_CTX = 'carousel'
-
-CAROUSEL = [(
-    'img/chef-4807317_1920.jpg', 'Oriental chef image',
-    'Oriental inspiration', True
-), (
-    'img/meat-skewer-1440105_1920.jpg', 'Barbeque skewers image',
-    'Chillin while grilling', False
-), (
-    'img/baked-goods-1846460_1920.jpg', 'Baked goods image',
-    'Blueberry bakes', False
-),
-]
+CAROUSEL_LIST_CTX = 'carousel_list'
 
 
 @dataclass
@@ -79,6 +71,19 @@ class CarouselItem:
     alt: str
     lead: str
     active: bool
+
+
+CAROUSEL = [(
+    'img/chef-4807317_1920.jpg', 'Oriental chef image',
+    'Oriental inspiration', True
+    ), (
+    'img/meat-skewer-1440105_1920.jpg', 'Barbeque skewers image',
+    'Chillin while grilling', False
+    ), (
+        'img/baked-goods-1846460_1920.jpg', 'Baked goods image',
+        'Blueberry bakes', False
+    ),
+]
 
 
 @require_GET
@@ -95,6 +100,32 @@ def get_landing(request: HttpRequest) -> HttpResponse:
                           for url, alt, lead, active in CAROUSEL
                       ]
                   })
+
+
+@require_GET
+def get_home(request: HttpRequest) -> HttpResponse:
+    """
+    Render home page
+    :param request: request
+    :return: response
+    """
+    return get_landing(request) \
+        if not request.user or not request.user.is_authenticated else \
+        redirect(namespaced_url(RECIPES_APP_NAME, RECIPE_HOME_ROUTE_NAME))
+
+
+@require_GET
+def get_help(request: HttpRequest) -> HttpResponse:
+    """
+    Render help page
+    :param request: request
+    :return: response
+    """
+    from recipes.views.utils import duration_help_context
+
+    context = duration_help_context()
+    return render(request, app_template_path(THIS_APP, 'help.html'),
+                  context=context)
 
 
 @dataclass(kw_only=True)
@@ -329,9 +360,14 @@ def robots_txt(request):
     """
     lines = [
         "User-Agent: *",
+        f"Disallow: /{VAL_TEST_PATH_PREFIX}"
     ]
     lines.extend([
         f"Disallow: /{url}" for url in DISALLOWED_URLS
+    ])
+    lines.extend([
+        f"Disallow: /{app_name}/{VAL_TEST_PATH_PREFIX}"
+        for app_name in [RECIPES_APP_NAME]
     ])
     lines.append(
         'Sitemap: {}'.format(

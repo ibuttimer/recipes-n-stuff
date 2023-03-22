@@ -34,8 +34,6 @@ from .search import (
     ORDER_QUERY, PER_PAGE_QUERY, REORDER_QUERY, USER_QUERY,
     REORDER_REQ_QUERY_ARGS
 )
-# from user.models import User
-# from django.contrib.auth.models import AbstractUser
 
 from .misc import Crud
 from .models import DESC_LOOKUP
@@ -459,8 +457,9 @@ class ContentListMixin(generic.ListView):
         :param query_params: query params
         :return: True is current user is author in query
         """
+        # query params are not case-sensitive
         return self.query_value_was_set_as_value(
-            query_params, USER_QUERY, self.user.username)
+            query_params, USER_QUERY, self.user.username.lower())
 
     @staticmethod
     def query_param_was_set(query_params: dict[str, QueryArg]) -> bool:
@@ -485,9 +484,6 @@ class ContentListMixin(generic.ListView):
         :return: since date or None
         """
         return None
-        # if \
-        # query_params.get(FILTER_QUERY, FilterMode.DEFAULT).value == \
-        # FilterMode.ALL else self.user.previous_login
 
     @staticmethod
     def is_reorder(query_params: dict[str, QueryArg]):

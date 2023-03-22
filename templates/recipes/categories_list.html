@@ -25,19 +25,20 @@
 {% endblock extra_css %}
 
 {% block content %}
-<div class="row mt-2">
-{% if page_heading %}
-    <div class="col-12 text-center">
-        <h3>{{ page_heading | safe }}</h3>
-    </div>
-{% endif %}
-</div>
 
 <div class="row flex-grow-1 overflow-auto d-flex justify-content-center">
-    {# sort order select #}
-    {% include "snippet/sort_order_select.html" %}
-
     <article id="article-content" class="row d-flex justify-content-center">
+        <div class="row mt-2">
+            {% if page_heading %}
+            <div class="col-12 text-center">
+                <h3>{{ page_heading | safe }}</h3>
+            </div>
+            {% endif %}
+        </div>
+
+        {# sort order select #}
+        {% include "snippet/sort_order_select.html" %}
+
         {% include "recipes/category_list_content.html" %}
     </article>
 </div>

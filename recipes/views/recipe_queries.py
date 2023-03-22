@@ -20,14 +20,16 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 #
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum, auto
-from typing import Any, Type, Optional, Tuple, List, Union
+from typing import Any, Optional, Tuple, List, Union
 from zoneinfo import ZoneInfo
 
 from django.db.models import Q, QuerySet, Prefetch, Model
+from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 
+from base.utils import raise_permission_denied
 from checkout.models import Currency
 from order.models import OrderProduct
 from recipes.constants import (
@@ -36,13 +38,14 @@ from recipes.constants import (
 from recipes.models import (
     Recipe, Ingredient, Instruction, RecipeIngredient, Keyword, Category
 )
+from recipes.views.utils import recipe_permission_check
 from user.models import User
 from utils import (
     SEARCH_QUERY, DATE_QUERIES,
     regex_matchers, regex_date_matchers, QuerySetParams,
     TERM_GROUP, KEY_TERM_GROUP, DATE_QUERY_GROUP, DATE_KEY_TERM_GROUP,
     DATE_QUERY_YR_GROUP, DATE_QUERY_MTH_GROUP,
-    DATE_QUERY_DAY_GROUP, USER_QUERY, get_object_and_related_or_404
+    DATE_QUERY_DAY_GROUP, USER_QUERY, get_object_and_related_or_404, Crud
 )
 from utils.query_params import SearchType, QueryTerm
 from utils.search import MARKER_CHARS
@@ -59,13 +62,10 @@ FIELD_LOOKUPS = {
     KEYWORD_QUERY: f'{Recipe.KEYWORDS_FIELD}__in',
     INGREDIENT_QUERY: f'{Recipe.INGREDIENTS_FIELD}__in',
     CATEGORY_QUERY: f'{Recipe.CATEGORY_FIELD}__{Category.NAME_FIELD}__iexact',
+    # author username contains query param
     AUTHOR_QUERY: f'{Recipe.AUTHOR_FIELD}__{User.USERNAME_FIELD}__icontains',
-    # CATEGORY_QUERY: f'{Opinion.CATEGORIES_FIELD}__in',
-    # ON_OR_AFTER_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date__gte',
-    # ON_OR_BEFORE_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date__lte',
-    # AFTER_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date__gt',
-    # BEFORE_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date__lt',
-    # EQUAL_QUERY: f'{Opinion.SEARCH_DATE_FIELD}__date',
+    # author username equals query param
+    USER_QUERY: f'{Recipe.AUTHOR_FIELD}__{User.USERNAME_FIELD}',
 }
 # priority order list of query terms
 FILTERS_ORDER = [
@@ -75,14 +75,12 @@ FILTERS_ORDER = [
 ]
 ALWAYS_FILTERS = [
     # always applied items
-    # option.query for option in OPINION_APPLIED_DEFAULTS_QUERY_ARGS
 ]
 FILTERS_ORDER.extend(
     [q for q in FIELD_LOOKUPS if q not in FILTERS_ORDER]
 )
 # complex queries which require more than a simple lookup or context-related
 NON_LOOKUP_ARGS = [
-    # FILTER_QUERY, REVIEW_QUERY
 ]
 
 SEARCH_REGEX = [
@@ -386,6 +384,29 @@ def get_recipe(
     return entity, query_param
 
 
+def get_recipe_by_category_keyword(
+        category_name: str = None, keyword_name: List[str] = None) -> QuerySet:
+    """
+    Get recipe by specified `category` and/or `keyword`
+    :param category_name: name of category; default None
+    :param keyword_name: id of keyword; default None
+    :return: tuple of object and query param
+    """
+    query_param = {}
+    if category_name is not None:
+        query_param[
+            f'{Recipe.CATEGORY_FIELD}__{Category.NAME_FIELD}__icontains'
+        ] = category_name
+    if keyword_name is not None:
+        keyword_ids = Keyword.objects.filter(**{
+            f'{Keyword.NAME_FIELD}__icontains': keyword_name
+        }).values_list(Keyword.id_field())
+        query_param[f'{Recipe.KEYWORDS_FIELD}__in'] = [
+            kid[0] for kid in keyword_ids]
+
+    return Recipe.objects.filter(**query_param)
+
+
 def get_recipe_ingredients_list(
         recipe: Union[int, Recipe],
         order_by: str = RecipeIngredient.INDEX_FIELD,
@@ -442,19 +463,22 @@ def get_recipe_instruction(pk: int) -> Tuple[Instruction, dict]:
     return entity, query_param
 
 
-def get_recipe_box_product(pk: int) -> Tuple[OrderProduct, Currency]:
+def get_recipe_box_product(
+        pk: int, get_or_404: bool = True) -> Tuple[OrderProduct, Currency]:
     """
     Get the ingredient box product for a recipe
     :param pk: id of recipe
+    :param get_or_404: get ot 404 flag; default True
     :return: tuple of order product and base currency
     """
     query_param = {
         f'{OrderProduct.RECIPE_FIELD}': pk
     }
-    entity = get_object_or_404(OrderProduct, **query_param)
+    entity = get_object_or_404(OrderProduct, **query_param) \
+        if get_or_404 else OrderProduct.objects.filter(**query_param).first()
     currency = Currency.objects.get(**{
         f'{Currency.CURRENCY_CODE_FIELD}': entity.base_currency
-    })
+    }) if entity else None
     return entity, currency
 
 
@@ -474,3 +498,50 @@ def get_recipe_count(user: Union[User, int, str]) -> int:
     return Recipe.objects.filter(**{
         f'{Recipe.AUTHOR_FIELD}': user
     }).count()
+
+
+def nutritional_info_valid(pk: int) -> bool:
+    """
+    Check the nutritional info for a recipe is valid
+    :param pk: id of recipe
+    :return: True if valid
+    """
+    fields = Recipe.objects.filter(**Recipe.id_field_query(pk)).values_list(
+        *Recipe.nutritional_fields()
+    )
+    return any(fields.first())
+
+
+def own_recipe_check(request: HttpRequest, recipe: Recipe,
+                     raise_ex: bool = True) -> bool:
+    """
+    Check request user is recipe owner
+    :param request: http request
+    :param recipe: recipe
+    :param raise_ex: raise exception if not own; default True
+    """
+    is_own = request.user.id == recipe.author.id
+    if not (is_own or request.user.is_superuser) and raise_ex:
+        raise_permission_denied(request, recipe, plural='s')
+
+    return is_own
+
+
+def chk_permission_get_recipe(
+        request: HttpRequest, pk: int, op: Crud,
+        is_own: bool = True) -> Recipe:
+    """
+    Perform permission checks and get a Recipe
+    :param request: http request
+    :param pk: id of recipe
+    :param op: operation permission to check
+    :param is_own: perform is own check; default True
+    :return: recipe
+    """
+    recipe_permission_check(request, op)
+
+    recipe, _ = get_recipe(pk)
+    if is_own:
+        own_recipe_check(request, recipe)
+
+    return recipe

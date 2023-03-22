@@ -80,6 +80,7 @@ def reverse_q(viewname, urlconf=None, args=None, kwargs=None,
               current_app=None, query_kwargs: dict = None) -> str:
     """
     Wrapper to add query argument support to django's standard `reverse`
+    https://docs.djangoproject.com/en/4.1/topics/http/urls/#url-namespaces
     :param viewname: URL pattern name or the callable view object
     :param urlconf:
             URLconf module containing the URL patterns to use for reversing

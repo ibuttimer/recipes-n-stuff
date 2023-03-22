@@ -1,0 +1,60 @@
+<!-- recipe_home_dto.html start -->
+{# --- recipe_home_dto.html template variable defines for includes --- #}
+{# recipe home dto template expects: 'recipe_dto' as RecipeDto #}
+{#                                   'carousel' as CarouselItem #}
+{#                                   'identifier' as individual identifier #}
+{#                                   'recipe_idx' as index in recipe list #}
+
+{% load i18n %}
+{% load static %}
+{% load image_url  human_readable_timedelta  attr_append %}
+
+<div class="col-12 mb-4">
+    <a href="{% url 'recipes:recipe_id' recipe_dto.id %}" class="a__recipe-card" aria-label="view recipe">
+        <div class="card rounded-3">
+            <div class="row">
+                <div class="col-lg-6 text-center">
+                    <div id="id--landing-carousel-actions-{{ identifier }}" class="carousel slide">
+                        {% if carousel|length > 1 %}
+                            <div class="carousel-indicators">
+                                {% for item in carousel %}
+                                <button type="button" data-bs-target="#id--landing-carousel-actions-{{ identifier }}" data-bs-slide-to="{{forloop.counter0}}"
+                                        {% if item.active %}class="active" aria-current="true"{% endif %} aria-label="Slide {{forloop.counter}}"></button>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="carousel-inner">
+                            {% for item in carousel %}
+                                {% attr_append 'class="carousel-item py-2 px-2"' 'active' item.active as item_class %}
+                                <div {{ item_class | safe }}>
+                                    <div class="d-flex justify-content-center">
+                                    <img src="{{ item.url }}" class="d-block img__home-recipe-card " alt="{{ item.alt }}">
+                                    </div>
+                                    <div class="carousel-caption d-none d-md-block">
+                                        <div class="col-md-6 mx-auto">
+                                            <p class="lead mb-4 bg-dark bg-gradient rounded">{{ item.lead }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if carousel|length > 1 %}
+                            <button class="carousel-control-prev" type="button" data-bs-target="#id--landing-carousel-actions-{{ identifier }}" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#id--landing-carousel-actions-{{ identifier }}" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-lg-6 pt-2 my-2 px-2 text-center">
+                    <p class="display-6 fw-bold px-2 my-auto mx-auto">{{ recipe_dto.name | safe }}</p>
+                </div>
+            </div>
+        </div>
+    </a>
+</div>
+<!-- recipe_home_dto.html end -->

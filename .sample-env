@@ -59,3 +59,6 @@ EMAIL_PORT=587
 EMAIL_HOST_USER=recipesnstuff@gmail.com
 # Email user app password
 EMAIL_HOST_PASSWORD=stringofalphanumericchars
+
+# Facebook business page link
+FACEBOOK_PAGE=https://facebook.com

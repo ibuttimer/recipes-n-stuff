@@ -31,8 +31,6 @@
         {% include "snippet/jquery.html" %}
     {% endblock extra_js_head %}
 
-    <script src="{% static 'js/script.js' %}"></script>
-
     <title>{% block head_title %}{% endblock head_title %}</title>
     {% block extra_head %}
     {% endblock extra_head %}
@@ -53,7 +51,7 @@
                 </button>
                 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
                     <div class="offcanvas-header">
-                        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Offcanvas</h5>
+                        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">{{ app_name }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                     </div>
                     <div class="offcanvas-body">
@@ -75,6 +73,9 @@
                                     <li><a class="dropdown-item" href="{% url 'recipes:recipes' %}?category=Dessert">Dessert</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{% url 'recipes:recipes' %}">All</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{% url 'recipes:recipes' %}?user={{user.username}}">Mine</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'recipes:recipe_new' %}">New</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
@@ -97,24 +98,43 @@
                                         <li><a class="dropdown-item" href="{% url 'subscription:subscription_new' %}">New</a></li>
                                     </ul>
                                 </li>
+                                {% if is_development %}
+                                <li class="nav-item dropdown">
+                                    <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                       {% with has_permission=maintenance_menu.has_permission active=maintenance_menu.active disabled=maintenance_menu.disabled %}{% include "snippet/menu_dropdown_class.html" %}{% endwith %}>
+                                        Maintenance
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{% url 'order:gen-order-pnum' %}?ingredient=y">Generate Ingredient Box Products</a></li>
+                                        <li><a class="dropdown-item" href="{% url 'order:gen-order-pnum' %}?subscription=y">Generate Subscription Products</a></li>
+                                        <li><a class="dropdown-item" href="{% url 'order:gen-order-pnum' %}?delivery=y">Generate Delivery Products</a></li>
+                                        <li><a class="dropdown-item" href="{% url 'order:gen-order-pnum' %}?ingredient=y&subscription=y&delivery=y">Generate All Products</a></li>
+                                    </ul>
+                                </li>
                                 {% endif %}
                             {% endif %}
+                            {% endif %}
+                            <li class="nav-item">
+                                <a {{ help_menu.a_attr | safe }} href="{% url 'help' %}">
+                                    <span {{ help_menu.span_attr | safe }}>Help</span>
+                                </a>
+                            </li>
                             <li class="nav-item">
                                 <a {{ about_menu.a_attr | safe }} href="{% url 'about' %}">
                                     <span {{ about_menu.span_attr | safe }}>About</span>
                                 </a>
                             </li>
                         </ul>
+                        {% if user.is_authenticated %}
                         <form class="d-flex" role="search" method="get" action="{% url 'recipes:recipe_search' %}">
                             <input class="form-control me-2" type="search" placeholder="Type to search..." aria-label="Search" list="id__keyword-datalist"
                                    name="search">
                             <datalist id="id__keyword-datalist">
-                                {% for word in keywords %}
-                                    <option value="{{ word }}">
-                                {% endfor %}
+                                {% for word in keywords %}<option value="{{ word }}">{% endfor %}
                             </datalist>
                             <button class="btn btn-outline-success" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
                         </form>
+                        {% endif %}
                         <span class="navbar-nav ms-auto mb-2 ms-2 me-2 mb-lg-0 d-flex align-items-center" id="id__navbar-basket-container">
                             {# --- navbar_basket.html template variable defines for includes --- #}
                             {# navbar basket template expects: 'basket_item_cnt' as number of basket items #}
@@ -135,7 +155,7 @@
                                         {% endif %}
                                     </span>
                                 </a>
-                                <ul class="dropdown-menu">
+                                <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
                                         <a class="dropdown-item" href="{% url 'user:user_id' user.id %}" aria-label="view profile">Profile</a>
                                     </li>
@@ -209,105 +229,124 @@
 
     {# footer #}
     <footer class="container d-flex flex-wrap justify-content-between align-items-center py-3 border-top bg-white div__panel">
-        <div class="col-lg-4 col-12">
-            <div class="row d-flex flex-column align-items-center">
-                <ul class="nav list-unstyled d-flex justify-content-center col-12">
-                    {% for social in socials %}
-                    <li>
-                    <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="{{ social.name }}">
-                        <a href="{{ social.url }}" target="_blank" rel="noopener"
-                           aria-label="visit our {{ social.name }} page in another tab"
-                           class="socials">
-                            <i class="{{ social.icon }} text-muted"></i>
-                        </a>
-                    </span>
-                    </li>
-                    {% endfor %}
-                </ul>
-                <div class="col-12 mt-4 d-flex justify-content-around w-100">
-                    <span>
-                        <a href="{% url 'home' %}" class="ms-2 me-2 mb-md-0 text-muted text-decoration-none lh-1">
-                            <img class="bi" width="24" height="24" src="{% static 'fontawesome/svgs/solid/bowl-rice.svg' %}" alt="{{app_name}} logo">
-                        </a>
-                        <span class="mb-md-0 text-muted">&copy; {{ copyright_year }} {{ copyright }}</span>
-                    </span>
-                    <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Admin">
-                        <a href="{% url 'admin:index' %}" target="_blank" rel="noopener"
-                           aria-label="visit admin page in another tab"
-                           class="socials">
-                            <i class="fa-solid fa-screwdriver-wrench text-muted"></i>
-                        </a>
-                    </span>
-                </div>
-                <div class="col-12 mt-4 text-center">
-                    <a href="{% url 'privacy' %}" aria-label="view privacy policy">{{ app_name | safe }} Privacy Policy</a>
-                </div>
+        <div class="col-md-3 col-sm-6 d-flex align-items-center">
+            <a href="{% url 'home' %}" class="ms-2 me-2 mb-md-0 text-muted text-decoration-none lh-1">
+                <img class="bi" width="24" height="24" src="{% static 'fontawesome/svgs/solid/bowl-rice.svg' %}" alt="{{app_name}} logo">
+            </a>
+            <span class="mb-md-0 text-muted">&copy; {{ copyright_year }} {{ copyright }}</span>
+        </div>
+
+        <div class="col-md-1 col-sm-2 d-flex align-items-center justify-content-center">
+            <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Admin">
+                <a href="{% url 'admin:index' %}" target="_blank" rel="noopener"
+                   aria-label="visit admin page in another tab"
+                   class="socials">
+                    <i class="fa-solid fa-screwdriver-wrench text-muted"></i>
+                </a>
+            </span>
+        </div>
+
+        <div class="col-md-3 col-sm-4 d-flex align-items-center justify-content-md-center justify-content-sm-end">
+            <div class="text-center">
+                <a href="{% url 'privacy' %}" aria-label="view privacy policy">Privacy Policy</a>
             </div>
         </div>
 
-        <div class="col-lg-8 col-12">
-            <!-- Begin Mailchimp Signup Form -->
-            <div id="mc_embed_signup">
-                <form action="https://herokuapp.us17.list-manage.com/subscribe/post?u=1afa681ab3573cf02bcf0bef2&amp;id=4857ad271a&amp;v_id=4194&amp;f_id=00355be0f0" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
-                    <div id="mc_embed_signup_scroll">
-                        <div class="row m-0 p-0 g-0">
-                            <div class="col-sm-6">
-                                <h2>Subscribe</h2>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="indicates-required"><span class="asterisk">*</span> indicates required</div>
-                            </div>
-                        </div>
-                        <div class="row m-0 p-0 g-0">
-                            <div class="col-lg-4 col-sm-6">
-                                <div class="mc-field-group">
-                                    <label for="mce-EMAIL">Email Address  <span class="asterisk">*</span>
-                                    </label>
-                                    <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" required>
-                                    <span id="mce-EMAIL-HELPERTEXT" class="helper_text"></span>
+        <div class="col-md-3 col-sm-6 d-flex align-items-center justify-content-md-center justify-content-sm-start">
+            <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Subscribe to newsletter">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#subscribeModal">
+                    Subscribe
+                </button>
+            </span>
+        </div>
+
+        <ul class="nav col-md-2 col-sm-6 justify-content-end list-unstyled d-flex">
+            {% for social in socials %}
+            <li>
+                <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="{{ social.name }}">
+                    <a href="{{ social.url }}" target="_blank" rel="noopener"
+                       aria-label="visit our {{ social.name }} page in another tab"
+                       class="socials">
+                        <i class="{{ social.icon }} text-muted"></i>
+                    </a>
+                </span>
+            </li>
+            {% endfor %}
+        </ul>
+    </footer>
+
+    <div class="modal fade" id="subscribeModal" tabindex="-1" aria-labelledby="subscribeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="subscribeModalLabel">Subscribe</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Begin Mailchimp Signup Form -->
+                    <div id="mc_embed_signup">
+                        <form action="https://herokuapp.us17.list-manage.com/subscribe/post?u=1afa681ab3573cf02bcf0bef2&amp;id=4857ad271a&amp;v_id=4194&amp;f_id=00355be0f0" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+                            <div id="mc_embed_signup_scroll">
+                                <div class="row m-0 p-0 g-0">
+                                    <div class="col-sm-6 offset-sm-6">
+                                        <div class="indicates-required"><span class="asterisk">*</span> indicates required</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-lg-8 col-sm-6">
-                                <div id="mergeRow-gdpr" class="mergeRow gdpr-mergeRow content__gdprBlock mc-field-group">
-                                    <div class="content__gdpr">
-                                        <label>Marketing Permissions</label>
-                                        <p>Please select all the ways you would like to hear from Recipes 'N' Stuff:</p>
-                                        <fieldset class="mc_fieldset gdprRequired mc-field-group" name="interestgroup_field">
-                                            <label class="checkbox subfield" for="gdpr_89534">
-                                                <input type="checkbox" id="gdpr_89534" name="gdpr[89534]" value="Y" class="av-checkbox gdpr"><span>Email</span>
+                                <div class="row m-0 p-0 g-0">
+                                    <div class="col-lg-4 col-sm-6">
+                                        <div class="mc-field-group">
+                                            <label for="mce-EMAIL">Email Address  <span class="asterisk">*</span>
                                             </label>
-                                        </fieldset>
+                                            <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" required>
+                                            <span id="mce-EMAIL-HELPERTEXT" class="helper_text"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-8 col-sm-6">
+                                        <div id="mergeRow-gdpr" class="mergeRow gdpr-mergeRow content__gdprBlock mc-field-group">
+                                            <div class="content__gdpr">
+                                                <label>Marketing Permissions</label>
+                                                <p>Please select all the ways you would like to hear from Recipes 'N' Stuff:</p>
+                                                <fieldset class="mc_fieldset gdprRequired mc-field-group" name="interestgroup_field">
+                                                    <label class="checkbox subfield" for="gdpr_89534">
+                                                        <input type="checkbox" id="gdpr_89534" name="gdpr[89534]" value="Y" class="av-checkbox gdpr"><span>Email</span>
+                                                    </label>
+                                                </fieldset>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row m-0 p-0 g-0">
+                                    <div id="mergeRow-gdpr-2" class="mergeRow gdpr-mergeRow content__gdprBlock mc-field-group">
+                                        <div class="content__gdpr">
+                                            <p>You can unsubscribe at any time by clicking the link in the footer of our emails. For information about our privacy practices, please visit our website.</p>
+                                        </div>
+                                        <div class="content__gdprLegal">
+                                            <p class="mb-0">We use Mailchimp as our marketing platform. By clicking below to subscribe, you acknowledge that your information will be transferred to Mailchimp for processing. <a href="https://mailchimp.com/legal/terms" target="_blank">Learn more about Mailchimp's privacy practices here.</a></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="mce-responses" class="clear foot">
+                                    <div class="response" id="mce-error-response" style="display:none"></div>
+                                    <div class="response" id="mce-success-response" style="display:none"></div>
+                                </div>    <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+                                <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_1afa681ab3573cf02bcf0bef2_4857ad271a" tabindex="-1" value=""></div>
+                                <div class="optionalParent">
+                                    <div class="clear foot">
+                                        <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
+                                        <p class="brandingLogo"><a href="http://eepurl.com/imv-po" title="Mailchimp - email marketing made easy and fun"><img src="https://eep.io/mc-cdn-images/template_images/branding_logo_text_dark_dtp.svg" alt="mailchimp logo"></a></p>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row m-0 p-0 g-0">
-                            <div id="mergeRow-gdpr-2" class="mergeRow gdpr-mergeRow content__gdprBlock mc-field-group">
-                                <div class="content__gdpr">
-                                    <p>You can unsubscribe at any time by clicking the link in the footer of our emails. For information about our privacy practices, please visit our website.</p>
-                                </div>
-                                <div class="content__gdprLegal">
-                                    <p class="mb-0">We use Mailchimp as our marketing platform. By clicking below to subscribe, you acknowledge that your information will be transferred to Mailchimp for processing. <a href="https://mailchimp.com/legal/terms" target="_blank">Learn more about Mailchimp's privacy practices here.</a></p>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="mce-responses" class="clear foot">
-                            <div class="response" id="mce-error-response" style="display:none"></div>
-                            <div class="response" id="mce-success-response" style="display:none"></div>
-                        </div>    <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
-                        <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_1afa681ab3573cf02bcf0bef2_4857ad271a" tabindex="-1" value=""></div>
-                        <div class="optionalParent">
-                            <div class="clear foot">
-                                <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button">
-                                <p class="brandingLogo"><a href="http://eepurl.com/imv-po" title="Mailchimp - email marketing made easy and fun"><img src="https://eep.io/mc-cdn-images/template_images/branding_logo_text_dark_dtp.svg"></a></p>
-                            </div>
-                        </div>
+                        </form>
                     </div>
-                </form>
+                    <!--End mc_embed_signup-->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
             </div>
-            <!--End mc_embed_signup-->
         </div>
-    </footer>
+    </div>
 
     {% include 'base/snippet/toast_info.html' %}
     {% include 'base/snippet/toast_error.html' %}
@@ -315,11 +354,13 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous"></script>
+    {% if not val_test %}
     <!--Mailchimp mc_embed_signup-->
-    <script type='text/javascript' src='//s3.amazonaws.com/downloads.mailchimp.com/js/mc-validate.js'></script>
+    <script src='//s3.amazonaws.com/downloads.mailchimp.com/js/mc-validate.js'></script>
     <script type='text/javascript'>(function($) {window.fnames = new Array(); window.ftypes = new Array();fnames[0]='EMAIL';ftypes[0]='email';fnames[1]='FNAME';ftypes[1]='text';fnames[2]='LNAME';ftypes[2]='text';fnames[3]='ADDRESS';ftypes[3]='address';fnames[4]='PHONE';ftypes[4]='phone';fnames[5]='BIRTHDAY';ftypes[5]='birthday';}(jQuery));var $mcj = jQuery.noConflict(true);</script>
     <!-- Stripe -->
     <script src="https://js.stripe.com/v3/"></script>
+    {% endif %}
     {% block extra_js_body %}
     {% endblock extra_js_body %}
     <script src="{% static 'js/info_modal.js' %}"></script>

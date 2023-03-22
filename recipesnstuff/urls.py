@@ -21,21 +21,34 @@ from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
 from django.urls import path, include
 
+from allauth.account import views
+
 from base.sitemap import BaseSitemap
 from profiles.sitemap import ProfilesSitemap
 from recipes.sitemap import RecipeSitemap
-from recipesnstuff import settings
+from recipesnstuff import settings, val_test_url
 from subscription.sitemap import SubscriptionSitemap
 from .constants import (
     BASE_APP_NAME, ADMIN_URL, ACCOUNTS_URL, SUMMERNOTE_URL,
     USERS_URL, USER_APP_NAME, PROFILES_APP_NAME, PROFILES_URL,
     SUBSCRIPTION_APP_NAME, SUBSCRIPTIONS_URL, CHECKOUT_URL, CHECKOUT_APP_NAME,
-    RECIPES_URL, RECIPES_APP_NAME, SITEMAP_URL, ORDER_APP_NAME, ORDERS_URL
+    RECIPES_URL, RECIPES_APP_NAME, SITEMAP_URL, ORDER_APP_NAME, ORDERS_URL,
+    VAL_TEST_REGISTER_ROUTE_NAME, VAL_TEST_LOGIN_ROUTE_NAME,
+    VAL_TEST_LOGOUT_ROUTE_NAME
 )
 from .settings import STATIC_URL
 
 
 urlpatterns = [
+    # val-test urls for allauth paths
+    path(val_test_url("signup/"), views.signup,
+         name=VAL_TEST_REGISTER_ROUTE_NAME),
+    path(val_test_url("login/"), views.login,
+         name=VAL_TEST_LOGIN_ROUTE_NAME),
+    path(val_test_url("logout/"), views.logout,
+         name=VAL_TEST_LOGOUT_ROUTE_NAME),
+
+    # standard app urls
     path(ADMIN_URL, admin.site.urls),
     path(SUMMERNOTE_URL, include('django_summernote.urls')),
 

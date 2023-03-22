@@ -20,7 +20,6 @@
 #  FROM,OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
 from dataclasses import dataclass
-from typing import List, Union, Tuple, Optional
 
 from allauth.account import app_settings
 from cloudinary.forms import CloudinaryFileField
@@ -225,8 +224,11 @@ class UserForm(FormMixin, forms.ModelForm):
         }
         error_messages = error_messages(
             model.model_name_caps(),
-            *[ErrorMsgs(field, max_length=True)
-              for field in (FIRST_NAME, LAST_NAME)]
+            *[ErrorMsgs(field, max_length=max_len)
+              for field, max_len in [
+                  (FIRST_NAME, User.USER_ATTRIB_FIRST_NAME_MAX_LEN),
+                  (LAST_NAME, User.USER_ATTRIB_LAST_NAME_MAX_LEN)
+              ]]
         )
 
         summernote_attr = SUMMERNOTE_CONFIG.copy()

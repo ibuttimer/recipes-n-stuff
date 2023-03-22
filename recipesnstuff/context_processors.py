@@ -29,7 +29,7 @@ from .constants import (
     COPYRIGHT_YEAR, COPYRIGHT, IS_DEVELOPMENT_CTX, IS_TEST_CTX
 )
 from .settings import (
-    DEVELOPMENT, TEST, GOOGLE_SITE_VERIFICATION, FOOD_DOT_COM
+    DEVELOPMENT, TEST, GOOGLE_SITE_VERIFICATION, FOOD_DOT_COM, FACEBOOK_PAGE
 )
 
 Social = namedtuple("Social", ["name", "icon", "url"])
@@ -46,7 +46,7 @@ def footer_context(request: HttpRequest) -> dict:
         "copyright": COPYRIGHT,
         "socials": [
             Social("Facebook", "fa-brands fa-square-facebook",
-                   "https://facebook.com"),
+                   FACEBOOK_PAGE),
             Social("Twitter", "fa-brands fa-square-twitter",
                    "https://twitter.com"),
             Social("Instagram", "fa-brands fa-square-instagram",

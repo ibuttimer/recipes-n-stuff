@@ -2,7 +2,7 @@
 
 {% load i18n %}
 
-{% block head_title %}About{% endblock %}
+{% block head_title %}About {{ app_name}}{% endblock %}
 
 {% block content %}
 <article id="id__about-content">
@@ -13,6 +13,7 @@
         </div>
     </div>
 
+    {% include "base/help/info.html" %}
     {% include "base/help/credits.html" %}
 
 </article>

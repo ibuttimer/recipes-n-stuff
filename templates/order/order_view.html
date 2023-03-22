@@ -3,6 +3,7 @@
 <!-- order_view.html start -->
 {# --- order_view.html template variable defines for includes --- #}
 {# order view template expects: 'order_dto' as OrderDto #}
+{#                              'order_reorder' if can reorder #}
 
 {% load i18n %}
 {% load static %}
@@ -80,11 +81,13 @@
         </div>
         {% endfor %}
     </div>
+    {% if order_reorder %}
     <div class="row mb-3 text-center">
         <div class="col-sm-2 offset-sm-5">
             <a class="btn btn-primary btn__text" href="{% url 'checkout:reorder' order_dto.id %}">{% trans "Reorder" %}</a>
         </div>
     </div>
+    {% endif %}
 
 </article>
 

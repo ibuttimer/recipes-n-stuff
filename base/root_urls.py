@@ -37,18 +37,31 @@ Including another URLconf
 """
 from django.urls import path
 
+from recipesnstuff import val_test_url, val_test_route_name
 from recipesnstuff.constants import (
-    LANDING_ROUTE_NAME, HOME_ROUTE_NAME, HELP_ROUTE_NAME, HELP_URL,
+    HOME_ROUTE_NAME, HELP_ROUTE_NAME, HELP_URL,
     ABOUT_URL, ABOUT_ROUTE_NAME, PRIVACY_URL, PRIVACY_ROUTE_NAME, ROBOTS_URL,
     ROBOTS_ROUTE_NAME
 )
-from .views import get_landing, get_about, get_privacy, robots_txt
+from .views import get_about, get_privacy, robots_txt, get_home, get_help
+
+_url_info = [
+    # url, endpoint, route name
+    (ABOUT_URL, get_about, ABOUT_ROUTE_NAME),
+    (HELP_URL, get_help, HELP_ROUTE_NAME),
+    (PRIVACY_URL, get_privacy, PRIVACY_ROUTE_NAME),
+    ('', get_home, HOME_ROUTE_NAME),
+]
 
 urlpatterns = [
-    path(ABOUT_URL, get_about, name=ABOUT_ROUTE_NAME),
-    path(HELP_URL, get_landing, name=HELP_ROUTE_NAME),
-    path(PRIVACY_URL, get_privacy, name=PRIVACY_ROUTE_NAME),
-    path(ROBOTS_URL, robots_txt, name=ROBOTS_ROUTE_NAME),
-    path('', get_landing, name=HOME_ROUTE_NAME),
-    path('', get_landing, name=LANDING_ROUTE_NAME),
+    # val-test urls
+    path(val_test_url(url), endpoint, name=val_test_route_name(route))
+    for url, endpoint, route in _url_info
 ]
+urlpatterns.extend([
+    path(ROBOTS_URL, robots_txt, name=ROBOTS_ROUTE_NAME),
+])
+urlpatterns.extend([
+    # standard urls
+    path(url, endpoint, name=route) for url, endpoint, route in _url_info
+])

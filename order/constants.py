@@ -49,17 +49,25 @@ ORDER_FIELD = 'order'
 ORDER_PROD_FIELD = 'order_prod'
 QUANTITY_FIELD = 'quantity'
 
-# Recipe routes related
+# Order routes related
 PK_PARAM_NAME = "pk"
 ORDERS_URL = ""
 ORDER_SEARCH_URL = url_path(ORDERS_URL, "search")
 ORDER_ID_URL = url_path(ORDERS_URL, f"<int:{PK_PARAM_NAME}>")
+GENERATE_ORDER_PROD_URL = "gen-order-pnum"
 
 # convention is orders route names begin with 'order'
 ORDERS_ROUTE_NAME = "orders"
 ORDER_SEARCH_ROUTE_NAME = "order_search"
 ORDER_ID_ROUTE_NAME = "order_id"
+GENERATE_ORDER_PROD_ROUTE_NAME = "gen-order-pnum"
+
+# query related
+INGREDIENT_QUERY = 'ingredient'
+SUBSCRIPTION_QUERY = 'subscription'
+DELIVERY_QUERY = 'delivery'
 
 # context related
 ORDER_LIST_CTX = 'order_list'
 ORDER_DTO_CTX = 'order_dto'
+ORDER_REORDER_CTX = 'order_reorder'

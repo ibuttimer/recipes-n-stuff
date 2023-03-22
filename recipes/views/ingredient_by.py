@@ -28,14 +28,14 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views import View
 
 from base.templatetags.delete_modal_ids import delete_modal_ids
-from base.utils import raise_permission_denied
 from utils import (
     Crud, redirect_on_success_or_render,
     entity_delete_result_payload
 )
 from .recipe_by import RecipeDetailUpdate
 from .recipe_queries import (
-    get_recipe, get_recipe_ingredient, get_recipe_ingredients_list
+    get_recipe, get_recipe_ingredient, get_recipe_ingredients_list,
+    own_recipe_check
 )
 from .utils import recipe_permission_check
 from ..constants import INGREDIENTS_QUERY
@@ -84,20 +84,6 @@ class RecipeIngredientDetail(LoginRequiredMixin, View):
         return redirect_on_success_or_render(
             request, redirect_to is not None, redirect_to=redirect_to,
             template_path=template_path, context=context)
-
-    # def render_info(self, form: IngredientForm) -> tuple[
-    #         str, dict[str, Ingredient | list[str] | IngredientForm | bool]
-    # ]:
-    #     """
-    #     Get info to render a subscription entry
-    #     :param form: form to use
-    #     :return: tuple of template path and context
-    #     """
-    #     return for_subscription_form_render(
-    #         TITLE_UPDATE, Crud.UPDATE, **{
-    #             SUBMIT_URL_CTX: self.url(form.instance.pk),
-    #             SUBSCRIPTION_FORM_CTX: IngredientCreate.init_form(form)
-    #         })
 
     def delete(self, request: HttpRequest, pk: int,
                *args, **kwargs) -> HttpResponse:
@@ -185,18 +171,3 @@ def check_ingredient_ordering(recipe: Union[int, Recipe]):
 
     check_ordering(ingredients, RecipeIngredient.INDEX_FIELD,
                    start=RecipeIngredient.RECIPE_INGREDIENT_ATTRIB_INDEX_MIN)
-
-
-def own_recipe_check(request: HttpRequest, recipe: Recipe,
-                     raise_ex: bool = True) -> bool:
-    """
-    Check request user is recipe owner
-    :param request: http request
-    :param recipe: recipe
-    :param raise_ex: raise exception if not own; default True
-    """
-    is_own = request.user.id == recipe.author.id
-    if not (is_own or request.user.is_superuser) and raise_ex:
-        raise_permission_denied(request, recipe, plural='s')
-
-    return is_own

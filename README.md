@@ -16,12 +16,18 @@
       - [Content edit](#content-edit)
       - [Content delete](#content-delete)
           - [Fig 5: Content CRUD](#fig-5-content-crud)
-    - [Content interaction](#content-interaction)
-          - [Fig 6: Content interaction](#fig-6-content-interaction)
     - [Content search](#content-search)
           - [Fig 6: Content search](#fig-6-content-search)
-    - [Recipe feeds](#recipe-feeds)
-          - [Fig 7: Recipe feeds](#fig-7-recipe-feeds)
+    - [E-commerce features](#e-commerce-features)
+      - [Subscriptions](#subscriptions)
+          - [Fig 7: Subscriptions](#fig-7-subscriptions)
+      - [Order products](#order-products)
+      - [Basket](#basket)
+          - [Fig 8: Basket](#fig-8-basket)
+      - [Previous orders](#previous-orders)
+          - [Fig 9: Previous orders](#fig-9-previous-orders)
+    - [Search Engine Optimisation](#search-engine-optimisation)
+    - [Marketing](#marketing)
     - [Future enhancements](#future-enhancements)
   - [Design](#design)
   - [Development and Local Deployment](#development-and-local-deployment)
@@ -33,14 +39,24 @@
       - [Python Setup](#python-setup)
         - [Production versus Development Setup](#production-versus-development-setup)
           - [Table 1: Configuration settings](#table-1-configuration-settings)
+      - [Boolean environment variables](#boolean-environment-variables)
       - [Environment variables](#environment-variables)
         - [Secret Key Generation](#secret-key-generation)
       - [Social Account Login](#social-account-login)
         - [Google](#google)
         - [Twitter](#twitter)
+      - [Stripe](#stripe)
+        - [App setup](#app-setup)
+        - [Webhook setup](#webhook-setup)
+      - [Exchange Rates](#exchange-rates)
+      - [Email](#email)
     - [Before first run](#before-first-run)
       - [Initialise the database](#initialise-the-database)
       - [Populate the database](#populate-the-database)
+        - [Measures table](#measures-table)
+        - [Currencies table](#currencies-table)
+        - [Countryinfo table](#countryinfo-table)
+        - [Recipe tables](#recipe-tables)
       - [Create a superuser](#create-a-superuser)
       - [Build Bootstrap](#build-bootstrap)
       - [Configure authentication](#configure-authentication)
@@ -53,6 +69,7 @@
   - [Credits](#credits)
     - [Content](#content)
     - [Code](#code)
+
 
 
 # Recipes 'N' Stuff
@@ -79,74 +96,121 @@ The site is aimed at users seeking a platform seeking a source of inspirational 
 ### User registration and authentication
 Users may register for an account or alternatively use OAuth to sign in via their Google or Twitter accounts.
 
+
 ###### Fig 3: User registration and authentication
-|               User registration                |             User authentication              |
-|:----------------------------------------------:|:--------------------------------------------:|
-| ![User register/login](doc/media/register.png) | ![User register/login](doc/media/signin.png) | 
+|                 User registration                 |                  User authentication                  |
+|:-------------------------------------------------:|:-----------------------------------------------------:|
+|     ![User register](doc/media/register.png)      |          ![User login](doc/media/signin.png)          | 
+|                **Change password**                |              **Manage email addresses**               | 
+| ![Change password](doc/media/change-password.png) | ![Manage email addresses](doc/media/manage-email.png) | 
 
 ### User roles
-There are X user roles:
-- ?
-  
-  ?
+There are two user roles:
+- Registered user
+
+  Registered users may add/edit/delete their own recipes. All registered users may view any recipe on the site, and purchase ingredient boxes for any recipe on the site. 
 
 - Site administrator
 
   The site administrator may perform all functions on the site.
 
 ### User notifications
-Users receive notifications following sign in. These include a new user notification
+Users receive notifications following sign in and other events:
 
 ###### Fig 4: User notifications
-|                       New user notification                       |                   Login notification                    |
-|:-----------------------------------------------------------------:|:-------------------------------------------------------:|
-|   ![New user notification](doc/media/notification-new-user.png)   | ![Login notification](doc/media/notification-login.png) | 
-|                          **New content**                          |                                                         |
-| ![New user notification](doc/media/notification-new-content.png)  |                                                         | 
+|                            New user notification                            |                   Login notification                    |
+|:---------------------------------------------------------------------------:|:-------------------------------------------------------:|
+|        ![New user notification](doc/media/notification-new-user.png)        | ![Login notification](doc/media/notification-login.png) | 
+|                             **Added to basket**                             |                                                         |
+| ![Added to basket notification](doc/media/notification-added-to-basket.png) |                                                         | 
 
 ### Content CRUD
 #### Content creation
-Users may create comments on recipes.
+Users may create recipes and addresses.
+Site administrators may in addition, create subscription plans.  
 #### Content view
-All users may view recipe comments.
+All users may view all recipes. Individual users may view their addresses.
 #### Content edit
-Users may edit their comments.
+Users may edit their recipes. Individual users may edit their addresses.
 #### Content delete
-Users may delete their comments.
+Users may delete their recipes. Individual users may edit their addresses.
 
 ###### Fig 5: Content CRUD
+|                      Create address                       |                                                                       Create recipe                                                                        |
+|:---------------------------------------------------------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------:|
+|      ![Create address](doc/media/create-address.png)      |                                                       ![Create recipe](doc/media/create-recipe.png)                                                        | 
+|                     **List address**                      |                                                                      **List recipes**                                                                      |
+|        ![Address list](doc/media/address-list.png)        |                                                         ![Recipe list](doc/media/recipe-list.png)                                                          | 
+|                     **Edit address**                      |                                                                      **Edit recipe**                                                                       |
+|        ![Edit address](doc/media/edit-address.png)        | ![Edit address](doc/media/edit-recipe.png)<br>![Edit ingredients](doc/media/edit-ingredients.png)<br>![Edit instructions](doc/media/edit-instructions.png) | 
+|                    **Delete address**                     |                                                                     **Delete recipe**                                                                      |
+|      ![Delete address](doc/media/delete-address.png)      |                                                       ![Delete address](doc/media/delete-recipe.png)                                                       | 
+|           **Administrator-only functionality**            |                                                                                                                                                            |
+|                  **Create subscription**                  |                                                                   **Edit subscription**                                                                    |
+| ![Create subscription](doc/media/create-subscription.png) |                                                   ![Edit subscription](doc/media/edit-subscription.png)                                                    | 
+|                   **List subscription**                   |                                                                  **Delete subscription**                                                                   |
+|   ![Subscription list](doc/media/subscription-list.png)   |                                                 ![Delete subscription](doc/media/delete-subscription.png)                                                  | 
 
-### Content interaction
-Users may interact with content via the reactions bar, allowing them to:
-- mark recipes as favourites
-- mark comments as agree/disagree
-- follow recipe authors to receive notifications of new recipes they create
-- share content via short urls
-- report content to be reviewed by a moderator
-- edit their own comments
-
-###### Fig 6: Content interaction
+> **Note:** Subscription creation is incomplete as it is necessary to create and assign subscription features in the Administration page. [User Story: Subscription features](https://github.com/ibuttimer/recipes-n-stuff/issues/63). 
 
 ### Content search
 Users may search for recipes via search box in the navbar at the top of the screen.
+The search box allows user's to either perform a free word search or select from a predetermined keyword list, or they may search via category name.
+
+> **Note:** There is currently a limited number of recipes available,so many categories return no results.
 
 ###### Fig 6: Content search
-
-### Recipe feeds
-There are two recipe feeds available to the user on the home page:
-- Following
-
-  A feed of recipes from authors which the user is following.
-
-- Category
-
-  A feed of recipes from cooking categories which the user has selected to follow in their profile.
+|                    Search box                     |                 Search result                 |
+|:-------------------------------------------------:|:---------------------------------------------:|
+|        ![Search box](doc/media/search.png)        | ![Search result](doc/media/search-result.png) | 
+|                  Category search                  |                                               |
+| ![Category search](doc/media/category-search.png) |                                               | 
 
 
-###### Fig 7: Recipe feeds
-|                 Following feed                  |                 Category feed                 |              All feed               |
-|:-----------------------------------------------:|:---------------------------------------------:|:-----------------------------------:|
-| ![Following feed](doc/media/following-feed.png) | ![Category feed](doc/media/category-feed.png) | ![All feed](doc/media/all-feed.png) | 
+### E-commerce features
+#### Subscriptions
+A user (except administrator) require a valid subscription to access the site content. Without a valid subscription they are restricted to:
+- choosing a subscription
+- managing their addresses (as an address is required to complete a purchase)
+- checking out
+- logging out
+
+###### Fig 7: Subscriptions
+|                    Choose subscription                    |                      Subscription add address                       |
+|:---------------------------------------------------------:|:-------------------------------------------------------------------:|
+| ![Choose subscription](doc/media/subscription-choice.png) | ![Subscription add address](doc/media/subscription-add-address.png) | 
+
+#### Order products
+The current list of possible order products is:  
+- Recipe ingredient boxes
+- Subscriptions
+Order products may be configured in the system in the administrator's currency of choice.
+
+#### Basket
+- Basket total may be calculated in the user's currency of choice, using exchange rates from [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api).
+- User can choose delivery address from those saved in their profile.
+- User can choose delivery method.
+- User can pay via Stripe.
+- User receives a order confirmation email.
+
+###### Fig 8: Basket
+|                   Choose currency                    |                 Choose address                  |
+|:----------------------------------------------------:|:-----------------------------------------------:|
+|  ![Choose currency](doc/media/basket-currency.png)   | ![Choose address](doc/media/basket-address.png) | 
+|                 **Choose delivery**                  |                     **Pay**                     | 
+|  ![Choose delivery](doc/media/basket-delivery.png)   |   ![Choose address](doc/media/basket-pay.png)   | 
+|                **Confirmation email**                |                                                 | 
+| ![Choose delivery](doc/media/confirmation-email.png) |                                                 | 
+
+#### Previous orders
+- Users may view previous orders
+- Users may view details of previous orders
+- Users may reorder items from previous orders
+
+###### Fig 9: Previous orders
+|                    View previous orders                    |                     View previous order detail                     |
+|:----------------------------------------------------------:|:------------------------------------------------------------------:|
+| ![View previous orders](doc/media/previous-order-list.png) | ![View previous order detail](doc/media/previous-order-detail.png) | 
 
 
 ### Search Engine Optimisation
@@ -156,11 +220,15 @@ The SEO features include:
 - sitemap.xml
     The [sitemap.xml](https://recipesnstuff.herokuapp.com/sitemap.xml) file is generated by the application. A [copy](sitemap.xml) is included for reference.
 
+### Marketing
+The marketing features include:
+- Facebook business page
+    A [Facebook business page](https://www.facebook.com/profile.php?id=100090978770562) was created, and a snapshot is available [here](doc/media/facebook_business_page.png)
 
 ### Future enhancements
 Future enhancements are logged in [GitHub Issues](https://github.com/ibuttimer/recipes-n-stuff/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement).
 
-
+Future features are logged in [GitHub Issues](https://github.com/ibuttimer/recipes-n-stuff/issues?q=is%3Aissue+is%3Aopen+label%3Afeature)
 
 ## Design
 The design specification is available in [design.md](doc/design/design.md).
@@ -221,6 +289,7 @@ There are two requirements files:
 | DATABASE_URL             | [Database url](https://docs.djangoproject.com/en/4.1/ref/settings/#databases)                                                                                                                                                                                                                                                                                                                                                                                                           |
 | CLOUDINARY_URL           | [Cloudinary url](https://pypi.org/project/dj3-cloudinary-storage/)                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | AVATAR_BLANK_URL         | Url of [blank avatar](static/img/avatar_blank.svg)                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| RECIPE_BLANK_URL         | Url of [placeholder recipe image](static/img/bowl-rice.png)                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | SITE_ID                  | Id (primary key) of site in the `django_site` table of the database. See [Configure authentication](#configure-authentication).                                                                                                                                                                                                                                                                                                                                                         |
 | HEROKU_HOSTNAME          | [Hostname](https://docs.djangoproject.com/en/4.1/ref/settings/#allowed-hosts) of application on Heroku.<br>__Note:__ To specify multiple hosts, use a comma-separated list with no spaces.<br>__Note:__ Set to `localhost,127.0.0.1` in local development mode                                                                                                                                                                                                                          |
 | REMOTE_DATABASE_URL      | Url of remote PostgreSQL database resource.<br>For a Heroku app with a [Heroku Postgres](https://elements.heroku.com/addons/heroku-postgresql) addon this is available from `DATABASE_URL` in the app `Settings -> Config Vars`.<br>For an [ElephantSQL](https://www.elephantsql.com/) database this is available from `URL` in the instance details.<br>__Note:__ Only required for admin purposes, see database configuration under [Cloud-based Deployment](#cloud-based-deployment) |
@@ -235,6 +304,7 @@ There are two requirements files:
 | EMAIL_PORT               | SMTP server port. Only valid when production mode is enabled.                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | EMAIL_HOST_USER          | Email user account to send email. Only valid when production mode is enabled.                                                                                                                                                                                                                                                                                                                                                                                                           |
 | EMAIL_HOST_PASSWORD      | Email user account password. Only valid when production mode is enabled.                                                                                                                                                                                                                                                                                                                                                                                                                |
+| FACEBOOK_PAGE            | Facebook business page link.                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 
 #### Boolean environment variables
 Set environment variables evaluating a boolean value, should be set to any of `true`, `on`, `ok`, `y`, `yes` or `1` to set true, otherwise the variable is evaluated as false.
@@ -341,12 +411,17 @@ the following steps must be performed, from a terminal window, in the `recipes-n
 ````shell
 $ python manage.py migrate
 ````
+
 #### Populate the database
 Download the recipe data from [Food.com - Recipes and Reviews](https://www.kaggle.com/datasets/irkaal/foodcom-recipes-and-reviews)
 and save the `recipes.parquet` file to [data](data) folder. 
 
 Populate the database with predefined data via the [populate.py](data/populate.py) script.
 When run using [run_populate.py](run_populate.py) it will load the data from [subdivisions.txt](data/subdivisions.txt).
+
+> **Note:** When loading the database ensure to specify the correct database:
+>           `--database default` when loading a local development database 
+>           `--database remote` when loading a Database as a service (DBaaS) database 
 
 From the project root folder run the following
 
@@ -535,6 +610,8 @@ The following steps were followed to deploy the website:
     | PORT                     | 8000                                                                                                                                                                                                                                                                                                                              |
     | SECRET_KEY               | [Secret key](https://docs.djangoproject.com/en/4.1/ref/settings/#std-setting-SECRET_KEY) for a particular Django installation                                                                                                                                                                                                     |
     | HEROKU_HOSTNAME          | [Hostname](https://docs.djangoproject.com/en/4.1/ref/settings/#allowed-hosts) of application on Heroku                                                                                                                                                                                                                            |
+    | AVATAR_BLANK_URL         | Url of blank avatar                                                                                                                                                                                                                                                                                                               |
+    | RECIPE_BLANK_URL         | Url of placeholder recipe image                                                                                                                                                                                                                                                                                                   |
     | SITE_ID                  | Id (primary key) of site in the `django_site` table of the database. See [Configure authentication](#configure-authentication).                                                                                                                                                                                                   |
     | GOOGLE_SITE_VERIFICATION | [Google Search Console](https://search.google.com/search-console) meta tag verification value for [site ownership verification](https://support.google.com/webmasters/answer/9008080?hl=en)                                                                                                                                       |
     | STRIPE_PUBLISHABLE_KEY   | [Stripe Developer API keys](https://dashboard.stripe.com/test/apikeys) publishable key value for payments processing.                                                                                                                                                                                                             |
@@ -546,6 +623,7 @@ The following steps were followed to deploy the website:
     | EMAIL_PORT               | SMTP server port.                                                                                                                                                                                                                                                                                                                 |
     | EMAIL_HOST_USER          | Email user account to send email.                                                                                                                                                                                                                                                                                                 |
     | EMAIL_HOST_PASSWORD      | Email user account password.                                                                                                                                                                                                                                                                                                      |
+    | FACEBOOK_PAGE            | Facebook business page link.                                                                                                                                                                                                                                                                                                      |
     |                          | _The following keys are automatically added when `Resources` are provisioned:_                                                                                                                                                                                                                                                    |
     | CLOUDINARY_URL           | [Cloudinary url](https://pypi.org/project/dj3-cloudinary-storage/)                                                                                                                                                                                                                                                                |
 
@@ -664,7 +742,9 @@ The following resources were used to build the website.
 - [Confusion icon](static/img/confusion.png) created by [Freepik - Flaticon](https://www.flaticon.com/free-icons/confusion)
 - [Internet icon](static/img/internet.png) created by [Freepik - Flaticon](https://www.flaticon.com/free-icons/internet)
 - [Empty serving dish icon](static/img/serving-dish.png) created by [Freepik - Flaticon](https://www.flaticon.com/free-icons/empty)
-- Privacy policy courtesy of [Privacy Policy Generator](https://www.privacypolicygenerator.info/). [Privacy Policy Generator hosted](https://www.privacypolicygenerator.info/live.php?token=xSZn3GRjS2md31oUpTTjIsOCGo8rY8K9) version. 
+- Privacy policy courtesy of [Privacy Policy Generator](https://www.privacypolicygenerator.info/). [Privacy Policy Generator hosted](https://www.privacypolicygenerator.info/live.php?token=xSZn3GRjS2md31oUpTTjIsOCGo8rY8K9) version.
+- [HTML entity data](base/entities.json) courtesy of [HTML Living Standard - Named character references](https://html.spec.whatwg.org/multipage/named-characters.html)
+- The [Responsive Mockup](#fig-1-responsive-mockup) image was generated courtesy of [Website Mockup Generator](https://websitemockupgenerator.com/)
 
 ### Code
 

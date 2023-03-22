@@ -1,0 +1,60 @@
+<!-- delivery_options.html start -->
+{# --- delivery_options.html template variable defines for includes --- #}
+{# delivery options template expects: 'delivery_list' as list of DeliveryDto #}
+
+{% load i18n  del_radio_id %}
+
+<div class="row mb-3">
+    <div class="col-sm-6">
+        {% for delivery_dto in delivery_list %}
+        <div class="form-check">
+            {% del_radio_id 'delivery' forloop.counter as radio_id %}
+            <input class="form-check-input" type="radio" name="delivery_option" id="{{ radio_id }}" value="{{ delivery_dto.id }}"
+                   {% if delivery_dto.feature_type %} data-rns-type="{{ delivery_dto.feature_type }}" {% endif %}
+                   {% if delivery_dto.is_selected %} checked {% endif %}>
+            <label class="form-check-label" for="{{ radio_id }}">
+                {{ delivery_dto.description }}
+            </label>
+            <p class="text-muted">{{ delivery_dto.detail }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="col-sm-6">
+        {% include 'checkout/snippet/total_summary.html' %}
+    </div>
+</div>
+
+<script>
+    /** Set delivery option handlers */
+    function setDeliveryOptionHandlers() {
+        $("input[name='delivery_option']").on('click', function (event) {
+            const featureType = $(event.currentTarget).attr('data-rns-type');
+            const featureTypeParam = featureType !== undefined ? `-${featureType}`: '';
+            const url = `{% url 'checkout:update_basket' %}?delivery=${event.currentTarget.attributes['value'].textContent}${featureTypeParam}`;
+
+            console.log(url);
+
+            /* 'patch' needs to be uppercase; https://fetch.spec.whatwg.org/#methods */
+            fetch(url, {
+                method: 'PATCH',
+                headers: csrfHeader()
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    redirectRewriteInfoResponseHandler(data);
+                    setDeliveryOptionHandlers();
+                })
+                .catch((error) => {
+                    showErrorToast(error);
+                });
+            event.preventDefault();
+            event.stopPropagation();
+        });
+    }
+
+
+    $(document).ready(function() {
+        setDeliveryOptionHandlers();
+    });
+</script>
+<!-- delivery_options.html end -->

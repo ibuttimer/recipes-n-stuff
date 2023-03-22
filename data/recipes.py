@@ -26,6 +26,8 @@
 import argparse
 import os
 import pickle
+import re
+import sys
 from enum import IntEnum, auto
 from pathlib import Path
 from typing import Optional, Callable, Union, Any
@@ -39,12 +41,15 @@ import pyarrow.compute as pc
 import pyarrow.parquet as pq
 import numpy as np
 from argon2 import PasswordHasher
-from pyarrow import StringScalar
+from pyarrow import StringScalar, DoubleScalar
 from isoduration import parse_duration
 
 from data.data_utils import (
     insert_content, get_content_id, Progress, insert_batch, DEFAULT_PAGE_SIZE
 )
+
+# arguments
+DEFAULT_LOAD_COUNT = -1   # default number of entries to load, i.e. all
 
 # recipe parquet
 RECIPES_PARQUET = 'recipes.parquet'
@@ -115,6 +120,21 @@ class Cols(IntEnum):
         """ Field using float """
         return [Cols.RecipeId, Cols.RecipeServings]
 
+
+# patches to apply to fix invalid recipe data;
+# key is food id, value is dict of corrected fields
+RECIPE_PATCHES = {
+    235258: {
+        COL_NAMES[Cols.PrepTime]: 'PT15M',
+        COL_NAMES[Cols.CookTime]: 'PT45M'
+    }
+}
+EXTRA_INGREDIENTS = [
+    # TODO add extra ingredients
+    # name, measure_id
+    ('fresh baby spinach leaves', 4),   # cup
+    ('oat bran', 4),                    # cup
+]
 
 # password generation
 PASSWORD_CHARS = string.ascii_letters + string.digits + "!£$&*@#?%^=+-/~.,:;"
@@ -228,14 +248,18 @@ RECIPE_INGREDIENT_TABLE = 'recipes_recipeingredient'
 RECIPE_INGREDIENT_RECIPE_ID = 'recipe_id'
 RECIPE_INGREDIENT_INGREDIENT_ID = 'ingredient_id'
 RECIPE_INGREDIENT_QUANTITY = 'quantity'
+RECIPE_INGREDIENT_INDEX = 'index'
+RECIPE_INGREDIENT_MEASURE = 'measure_id'
 RECIPE_INGREDIENT_FIELDS = [
     RECIPE_INGREDIENT_RECIPE_ID, RECIPE_INGREDIENT_INGREDIENT_ID,
-    RECIPE_INGREDIENT_QUANTITY
+    RECIPE_INGREDIENT_QUANTITY, RECIPE_INGREDIENT_INDEX,
+    RECIPE_INGREDIENT_MEASURE
 ]
 # recipe instructions
 INSTRUCTION_TABLE = 'recipes_instruction'
 INSTRUCTION_TEXT = 'text'
-INSTRUCTION_FIELDS = [INSTRUCTION_TEXT]
+INSTRUCTION_INDEX = 'index'
+INSTRUCTION_FIELDS = [INSTRUCTION_TEXT, INSTRUCTION_INDEX]
 # recipe instructions list
 RECIPE_INSTRUCTIONS_TABLE = 'recipes_recipe_instructions'
 RECIPE_INSTRUCTIONS_RECIPE_ID = 'recipe_id'
@@ -255,6 +279,23 @@ ingredients = {}    # key: name, val: id
 authors = {}        # key: username, val: namedtuple Author
 recipes = {}        # key: food.com id, val: id
 instructions = {}   # key: food.com id, val: list of instruction ids
+
+HTML_ASCII_ENTITIES = {
+    "&excl;": "\u0021", "&quot;": "\u0022", "&num;": "\u0023",
+    "&dollar;": "\u0024", "&percnt;": "\u0025", "&amp;": "\u0026",
+    "&apos;": "\u0027", "&lpar;": "\u0028", "&rpar;": "\u0029",
+    "&ast;": "\u002A", "&midast;": "\u002A", "&plus;": "\u002B",
+    "&comma;": "\u002C", "&period;": "\u002E", "&sol;": "\u002F",
+    "&colon;": "\u003A", "&semi;": "\u003B", "&lt;": "\u003C",
+    "&equals;": "\u003D", "&gt;": "\u003E", "&quest;": "\u003F",
+    "&commat;": "\u0040", "&lbrack;": "\u005B", "&lsqb;":  "\u005B",
+    "&bsol;": "\u005C", "&rbrack;": "\u005D", "&rsqb;": "\u005D",
+    "&Hat;": "\u005E", "&lowbar;": "\u005F", "&UnderBar;": "\u005F",
+    "&DiacriticalGrave;": "\u0060", "&grave;": "\u0060", "&lbrace;": "\u007B",
+    "&lcub;": "\u007B", "&VerticalLine;": "\u007C", "&verbar;": "\u007C",
+    "&vert;": "\u007C", "&rbrace;": "\u007D", "&rcub;": "\u007D"
+}
+ENTITY_REGEX = re.compile(r'(&[a-zA-Z]+;)')
 
 
 def load_recipe(args: argparse.Namespace, curs):
@@ -304,23 +345,38 @@ def load_recipe(args: argparse.Namespace, curs):
         progress.end(f'pickled data to {pickle_file}')
 
     # process ingredients
+    # ~~~~~~~~~~~~~~~
     curs.execute(
         f'SELECT id FROM {MEASURE_TABLE} WHERE "{MEASURE_NAME}" = %s',
         ('unit',))
-    unit_id = curs.fetchone()[0]
+    measure_unit_id = curs.fetchone()[0]    # id of the 'unit' entity
+
+    # TODO replace ascii html entities with ascii code
+    def ingredient_values(
+            ingredient_name: Union[str, StringScalar], row: int) -> tuple:
+        """ Generate ingredient values """
+        def _entity_to_chr(val):
+            return HTML_ASCII_ENTITIES[val] if val in HTML_ASCII_ENTITIES \
+                else val
+
+        return one_val_tuple(
+            re.sub(
+                ENTITY_REGEX, lambda match: _entity_to_chr(match.group(0)),
+                ingredient_name))
 
     table_fields = ', '.join(INGREDIENT_FIELDS)
     process_data(
         args, curs, progress, 'Ingredient', INGREDIENT_TABLE, table_fields,
         raw_table[COL_NAMES[Cols.RecipeIngredientParts]], args.skip_ingredient,
-        folder, values_func=lambda val, row, idx: (val, unit_id),
+        folder, values_func=lambda val, row, idx: (val, measure_unit_id),
         cache=ingredients)
 
     # process authors
     # ~~~~~~~~~~~~~~~
 
     def user_values(
-            author_name: Union[str, StringScalar], row: int) -> tuple:
+            author_name: Union[str, StringScalar], row: int,
+            idx: int) -> tuple:
         """ Generate user values """
         # Note: password is a random hashed value as the user will never login
         splits = str(author_name).split()
@@ -371,7 +427,8 @@ def load_recipe(args: argparse.Namespace, curs):
         # e.g. "1/2 cup butter or 1/2 cup margarine", only the butter will be
         # in the quantities list, or
         # if they don't have a link to an 'about' for the ingredient it won't
-        # appear in the ingredients list
+        # appear in the ingredients list (but this is not a guarantee as
+        # 'a or b' could both have links and 'c' doesn't)
         # skip those as no way to generate a full list easily
         ingredient_list = raw_table[
             COL_NAMES[Cols.RecipeIngredientParts]][row].as_py()
@@ -380,12 +437,21 @@ def load_recipe(args: argparse.Namespace, curs):
         return len(ingredient_list) == len(quantities)
 
     def recipe_values(
-            recipe_id: Union[str, StringScalar], row: int, idx: int) -> tuple:
+            recipe_id: Union[str, StringScalar, DoubleScalar], row: int,
+            idx: int) -> tuple:
         """ Generate recipe values """
         # same order as RECIPE_FIELDS
         values = []
+        # RecipeId column so its a DoubleScalar
+        patch = RECIPE_PATCHES.get(int(recipe_id.as_py()), None)
         for _, col in RECIPE_COLS.items():
             value = raw_table[COL_NAMES[col]][row].as_py()
+
+            # TODO test patching
+            if patch and col in patch:
+                # get patch value to use
+                value = patch[col]
+
             if col in [Cols.PrepTime, Cols.CookTime]:
                 # pass
                 if value:
@@ -410,7 +476,8 @@ def load_recipe(args: argparse.Namespace, curs):
     process_data(
         args, curs, progress, 'Recipe', RECIPE_TABLE, table_fields,
         raw_table[COL_NAMES[Cols.RecipeId]], args.skip_recipe, folder,
-        are_lists=False, values_func=recipe_values, cache=recipes,
+        are_lists=False, max_count=args.recipe_count,
+        values_func=recipe_values, cache=recipes,
         proceed_test=recipe_check)
 
     # save memory, clear no longer required caches
@@ -517,7 +584,7 @@ def load_recipe(args: argparse.Namespace, curs):
             COL_NAMES[Cols.RecipeIngredientQuantities]][row].as_py()
         # TODO keys for ingredients name/id cache
         # reprocess ingredients (takes long time) to verify fix for keys
-        # starting with '2%' having a value of in the pickled dict, and remove
+        # starting with '2%' having a value in the pickled dict, and remove
         # db this lookup
         ingredient_id = ingredients.get(str(ingredient))
         if ingredient_id is None:
@@ -528,7 +595,9 @@ def load_recipe(args: argparse.Namespace, curs):
         return tuple([
             recipes.get(str(food_id)),
             ingredients.get(str(ingredient)),
-            quantities[idx] or '' if quantities else ''
+            quantities[idx] or '' if quantities else '',
+            idx + 1,     # ingredient index is 1-based
+            measure_unit_id
         ])
 
     # TODO remove after 'keys for ingredients name/id cache' ok
@@ -539,13 +608,24 @@ def load_recipe(args: argparse.Namespace, curs):
     process_data(
         args, curs, progress, 'Ingredient lists', RECIPE_INGREDIENT_TABLE,
         table_fields, get_ingredients_table, args.skip_ingredient_list,
-        folder, are_lists=True, values_func=ingredients_list_values)
+        folder, are_lists=True, batch_mode=True, unique=False,
+        values_func=ingredients_list_values)
 
     # save memory, clear no longer required caches
     ingredients.clear()
 
     # process recipe instructions
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    def instruction_values(
+            instruction: Union[str, StringScalar], row: int,
+            idx: int) -> tuple:
+        """ Generate instruction values """
+        # same order as INSTRUCTION_FIELDS
+        return tuple([
+            str(instruction),
+            idx + 1     # instruction index is 1-based
+        ])
 
     def cache_instruction(
             id_cache: dict, text: Any, db_id: int, row: int,
@@ -566,6 +646,7 @@ def load_recipe(args: argparse.Namespace, curs):
         table_fields,
         lambda: get_recipes_table()[COL_NAMES[Cols.RecipeInstructions]],
         args.skip_instruction_list, folder, unique=False, are_lists=True,
+        values_func=instruction_values,
         cache=instructions, cache_func=cache_instruction)
 
     if not args.skip_instruction_list:
@@ -597,6 +678,7 @@ def process_data(args: argparse.Namespace, curs, progress: Progress,
                  parquet_data: Union[Callable[[], Any], pa.Table, pa.Array],
                  skip: bool, folder: Union[str, Path], are_lists: bool = True,
                  batch_mode: bool = False, unique: bool = True,
+                 max_count: int = DEFAULT_LOAD_COUNT,
                  values_func: Optional[
                      Callable[[Any, int, int], tuple]
                  ] = None, cache: dict = None,
@@ -619,6 +701,7 @@ def process_data(args: argparse.Namespace, curs, progress: Progress,
     :param are_lists: values are lists flag; default True
     :param batch_mode: batch mode insert data to database: default = False
     :param unique: database is unique: default = True
+    :param max_count: max load count; default all
     :param values_func: function to generate values to store in database
     :param cache: cache dict to store info; default None
     :param cache_func: function to cache new entries;
@@ -652,6 +735,9 @@ def process_data(args: argparse.Namespace, curs, progress: Progress,
         cache_func = cache_key_id
 
     progress.reset(title, args.progress, table_name)
+    if batch_mode and cache is not None:
+        progress.warning('Caching is not support in batch mode; ignoring.')
+
     if skip:
         if cache is not None:
             data, pickle_file = unpickle_data(table_name, folder)
@@ -673,6 +759,9 @@ def process_data(args: argparse.Namespace, curs, progress: Progress,
             parquet_data = parquet_data()
 
         batch = []
+        load_count = 0
+        if max_count < 0:
+            max_count = sys.maxsize
 
         # kwargs for insert_content()
         insert_seek = {
@@ -690,10 +779,18 @@ def process_data(args: argparse.Namespace, curs, progress: Progress,
                 if not proceed_test(words, row):
                     continue
 
+            inc_count = load_count < max_count
+            if not inc_count:
+                break
+
             entries = words.as_py() if are_lists else [words]
             for idx, word in enumerate(entries):
                 if not word:
                     continue
+
+                if inc_count:
+                    load_count += 1
+                    inc_count = False
 
                 if batch_mode:
                     # batch mode, so insert batch

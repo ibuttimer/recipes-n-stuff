@@ -39,11 +39,12 @@ from pathlib import Path
 import environ
 from django.contrib.messages import constants as messages
 
+from recipes.constants import RECIPE_HOME_ROUTE_NAME
 from .constants import (
     BASE_APP_NAME, MIN_PASSWORD_LEN, USER_APP_NAME, PROFILES_APP_NAME,
     RECIPES_APP_NAME, SUBSCRIPTION_APP_NAME, CHECKOUT_APP_NAME,
     LOGIN_URL as USER_LOGIN_URL, LOGIN_ROUTE_NAME, HOME_ROUTE_NAME,
-    LANDING_ROUTE_NAME, ORDER_APP_NAME
+    ORDER_APP_NAME
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -231,6 +232,7 @@ TEMPLATES = [
                 f'{SUBSCRIPTION_APP_NAME}.context_processors'
                 f'.subscription_context',
                 f'{RECIPES_APP_NAME}.context_processors.recipe_context',
+                f'{ORDER_APP_NAME}.context_processors.orderprod_context',
             ],
         },
     },
@@ -335,9 +337,9 @@ AUTH_PASSWORD_VALIDATORS = [{
 # https://docs.djangoproject.com/en/4.1/ref/settings/#login-url
 LOGIN_URL = USER_LOGIN_URL
 # https://docs.djangoproject.com/en/4.1/ref/settings/#login-redirect-url
-LOGIN_REDIRECT_URL = HOME_ROUTE_NAME
+LOGIN_REDIRECT_URL = f'{RECIPES_APP_NAME}:{RECIPE_HOME_ROUTE_NAME}'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#logout-redirect-url
-LOGOUT_REDIRECT_URL = LANDING_ROUTE_NAME
+LOGOUT_REDIRECT_URL = HOME_ROUTE_NAME
 
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
@@ -436,8 +438,9 @@ FIXTURE_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# url for blank avatar image
+# url for placeholder images
 AVATAR_BLANK_URL = env.get_value('AVATAR_BLANK_URL', default='')
+RECIPE_BLANK_URL = env.get_value('RECIPE_BLANK_URL', default='')
 
 DJANGO_LOG_LEVEL = os.getenv('DJANGO_LOG_LEVEL', 'INFO').upper()
 LOGGING = {
@@ -506,3 +509,4 @@ DEFAULT_RATES_REQUEST_INTERVAL = timedelta(days=1)
 
 # Miscellaneous settings
 FOOD_DOT_COM = env('FOOD_DOT_COM', default=False)
+FACEBOOK_PAGE = env('FACEBOOK_PAGE', default="https://facebook.com")
