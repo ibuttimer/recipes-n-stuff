@@ -23,14 +23,10 @@ The project artifacts are:
 
 ### User Stories
 Epics are logged in [GitHub Issues](https://github.com/ibuttimer/recipes-n-stuff/issues?q=label%3Aepic)
-User Stories are logged in [GitHub Issues](https://github.com/ibuttimer/recipes-n-stuff/issues?q=is%3Aissue+is%3Aopen+label%3A%22user+story%22)
-
-| Title                                                                                                                | Labels                               | Description                                                                                                                                                              |
-|----------------------------------------------------------------------------------------------------------------------|--------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [Epic: Authorisation, authentication and permission features](https://github.com/ibuttimer/recipes-n-stuff/issues/5) | `kanban`, `epic`                     | Apply authorisation, authentication and permission features to application.                                                                                              |
+User Stories are logged in [GitHub Issues](https://github.com/ibuttimer/recipes-n-stuff/issues?page=1&q=is%3Aissue+label%3A%22user+story%22)
 
 ## Objectives Implementation
-TODO
+Please see [Features](README.md#features)
 
 # Structure
 As the functionality required for users with different roles will be different, the website will utilise a tree navigation structure.
@@ -176,12 +172,6 @@ Data will be stored in a [PostgreSQL](https://www.postgresql.org/) database.
 
 ### Database schema
 The database schema will consist of several tables:
-
-| Name               | Description                                |
-|--------------------|--------------------------------------------|
-| user               | site users                                 |
-| address            | user addresses                             |
-| country            | countries to ship to                       |
 
 [![](img/recipes-n-stuff-database-schema.png)]
 
