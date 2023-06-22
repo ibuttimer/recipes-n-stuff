@@ -25,7 +25,6 @@
 
 import os
 import sys
-from enum import IntEnum, auto
 from pathlib import Path
 import re
 import csv
@@ -36,8 +35,6 @@ import environ
 import psycopg2
 from django.conf import settings
 from django_countries import countries
-import pyarrow.parquet as pq
-import pyarrow.compute as pc
 
 from recipesnstuff import settings as app_settings
 from data.recipes import load_recipe, DEFAULT_LOAD_COUNT
@@ -167,8 +164,7 @@ def parse_args():
                              f'default {DEFAULT_PROGRESS}',
                         default=DEFAULT_PROGRESS)
     parser.add_argument('-rc', '--recipe_count', type=int,
-                        help=f'Max number of recipes to load; '
-                             f'default all',
+                        help='Max number of recipes to load; default all',
                         default=DEFAULT_LOAD_COUNT)
     args = parser.parse_args()
     return args

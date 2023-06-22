@@ -278,6 +278,7 @@ keywords = {}       # key: food.com id, val: list of instruction ids
 ingredients = {}    # key: name, val: id
 authors = {}        # key: username, val: namedtuple Author
 recipes = {}        # key: food.com id, val: id
+row_indices = set() #
 instructions = {}   # key: food.com id, val: list of instruction ids
 
 HTML_ASCII_ENTITIES = {
@@ -344,6 +345,61 @@ def load_recipe(args: argparse.Namespace, curs):
 
         progress.end(f'pickled data to {pickle_file}')
 
+    # function to check if recipe (1/line) should be processed
+    # ~~~~~~~~~~~~~~~
+    # TODO optimise table usage
+    def recipe_check(recipe_id: Any, row: int) -> bool:
+        """ Check ok to add recipe """
+        # length of recipe ingredients and quantities sometimes don't match,
+        # e.g. "1/2 cup butter or 1/2 cup margarine", only the butter will be
+        # in the quantities list, or
+        # if they don't have a link to an 'about' for the ingredient it won't
+        # appear in the ingredients list (but this is not a guarantee as
+        # 'a or b' could both have links and 'c' doesn't)
+        # skip those as no way to generate a full list easily
+        ingredient_list = raw_table[
+            COL_NAMES[Cols.RecipeIngredientParts]][row].as_py()
+        quantities = raw_table[
+            COL_NAMES[Cols.RecipeIngredientQuantities]][row].as_py()
+        return len(ingredient_list) == len(quantities)
+
+    if args.recipe_count > 0:
+        load_count = 0
+        max_count = sys.maxsize if args.recipe_count < 0 else args.recipe_count
+
+        for row in range(len(raw_table)):
+            words = raw_table[COL_NAMES[Cols.RecipeId]][row]
+            if not words:
+                continue
+
+            # check if ok to add entry
+            if not recipe_check(words, row):
+                continue
+
+            row_indices.add(row)
+            load_count += 1
+            if load_count >= max_count:
+                break
+
+    raw_table_slice: Optional[pa.Table] = None
+
+    def get_raw_table_slice() -> pa.Table:
+        """ Get the slice of the raw table to use to load data """
+        nonlocal raw_table_slice
+
+        if raw_table_slice is None:
+            if args.recipe_count < 0:
+                raw_table_slice = raw_table
+            else:
+                req_indices = list(row_indices)
+                mask = np.full((len(raw_table)), False)
+                mask[req_indices] = True
+                raw_table_slice = raw_table.filter(mask=mask)
+
+        return raw_table_slice
+
+    # From here on only use 'raw_table_slice' NOT 'raw_table'
+
     # process ingredients
     # ~~~~~~~~~~~~~~~
     curs.execute(
@@ -367,8 +423,9 @@ def load_recipe(args: argparse.Namespace, curs):
     table_fields = ', '.join(INGREDIENT_FIELDS)
     process_data(
         args, curs, progress, 'Ingredient', INGREDIENT_TABLE, table_fields,
-        raw_table[COL_NAMES[Cols.RecipeIngredientParts]], args.skip_ingredient,
-        folder, values_func=lambda val, row, idx: (val, measure_unit_id),
+        get_raw_table_slice()[COL_NAMES[Cols.RecipeIngredientParts]],
+        args.skip_ingredient, folder,
+        values_func=lambda val, row, idx: (val, measure_unit_id),
         cache=ingredients)
 
     # process authors
@@ -387,16 +444,20 @@ def load_recipe(args: argparse.Namespace, curs):
 
     user_table: Optional[pa.Table] = None
 
-    def get_user_table():
+    def get_user_table() -> pa.Table:
         """ Get the user data """
         nonlocal user_table
         # only generate unique user table if required, it takes a while
-        user_table = drop_duplicates(pa.table([
-            raw_table[COL_NAMES[Cols.AuthorName]],
-            raw_table[COL_NAMES[Cols.AuthorId]]
-        ], names=[COL_NAMES[Cols.AuthorName], COL_NAMES[Cols.AuthorId]]),
-            COL_NAMES[Cols.AuthorName])
-        return user_table[COL_NAMES[Cols.AuthorName]]
+
+        if user_table is None:
+            table_slice = get_raw_table_slice()
+            user_table = drop_duplicates(pa.table([
+                table_slice[COL_NAMES[Cols.AuthorName]],
+                table_slice[COL_NAMES[Cols.AuthorId]]
+            ], names=[COL_NAMES[Cols.AuthorName], COL_NAMES[Cols.AuthorId]]),
+                COL_NAMES[Cols.AuthorName])
+
+        return user_table
 
     def cache_user(
             id_cache: dict, key: Any, db_id: int, row: int, *args) -> None:
@@ -409,32 +470,30 @@ def load_recipe(args: argparse.Namespace, curs):
         """
         if id_cache is not None:
             id_cache[str(key)] = Author(
-                food_id=user_table[COL_NAMES[Cols.AuthorId]][row].as_py(),
+                food_id=get_user_table()[COL_NAMES[Cols.AuthorId]][row].as_py(),
                 new_id=db_id)
 
     table_fields = ', '.join(AUTHOR_FIELDS)
     process_data(
         args, curs, progress, 'Author', AUTHOR_TABLE, table_fields,
-        get_user_table, args.skip_author, folder, are_lists=False,
+        get_user_table()[COL_NAMES[Cols.AuthorName]], args.skip_author,
+        folder, are_lists=False,
         values_func=user_values, cache=authors, cache_func=cache_user)
 
     # process recipes
     # ~~~~~~~~~~~~~~~
+    recipes_table: Optional[pa.Table] = None
 
-    def recipe_check(recipe_id: Any, row: int) -> bool:
-        """ Check ok to add recipe """
-        # length of recipe ingredients and quantities sometimes don't match,
-        # e.g. "1/2 cup butter or 1/2 cup margarine", only the butter will be
-        # in the quantities list, or
-        # if they don't have a link to an 'about' for the ingredient it won't
-        # appear in the ingredients list (but this is not a guarantee as
-        # 'a or b' could both have links and 'c' doesn't)
-        # skip those as no way to generate a full list easily
-        ingredient_list = raw_table[
-            COL_NAMES[Cols.RecipeIngredientParts]][row].as_py()
-        quantities = raw_table[
-            COL_NAMES[Cols.RecipeIngredientQuantities]][row].as_py()
-        return len(ingredient_list) == len(quantities)
+    def get_recipes_table() -> pa.Table:
+        """ Get the recipes to load data """
+        nonlocal recipes_table
+
+        if recipes_table is None:
+            recipes_table = get_raw_table_slice()
+
+        return recipes_table
+
+    # From here on only use 'get_recipes_table()'
 
     def recipe_values(
             recipe_id: Union[str, StringScalar, DoubleScalar], row: int,
@@ -445,7 +504,7 @@ def load_recipe(args: argparse.Namespace, curs):
         # RecipeId column so its a DoubleScalar
         patch = RECIPE_PATCHES.get(int(recipe_id.as_py()), None)
         for _, col in RECIPE_COLS.items():
-            value = raw_table[COL_NAMES[col]][row].as_py()
+            value = get_recipes_table()[COL_NAMES[col]][row].as_py()
 
             # TODO test patching
             if patch and col in patch:
@@ -475,38 +534,15 @@ def load_recipe(args: argparse.Namespace, curs):
     table_fields = ', '.join(RECIPE_FIELDS)
     process_data(
         args, curs, progress, 'Recipe', RECIPE_TABLE, table_fields,
-        raw_table[COL_NAMES[Cols.RecipeId]], args.skip_recipe, folder,
-        are_lists=False, max_count=args.recipe_count,
-        values_func=recipe_values, cache=recipes,
-        proceed_test=recipe_check)
+        get_recipes_table()[COL_NAMES[Cols.RecipeId]], args.skip_recipe,
+        folder, are_lists=False, values_func=recipe_values, cache=recipes)
 
     # save memory, clear no longer required caches
     categories.clear()
     authors.clear()
 
-    # From here on only use 'recipes_table' NOT 'raw_table'
-
     # process keywords
     # ~~~~~~~~~~~~~~~~
-    recipes_table: Optional[pa.Table] = None
-
-    def get_recipes_table() -> pa.Table:
-        """ Get the recipes to load data """
-        nonlocal recipes_table
-
-        if recipes_table is None:
-            req_indices = [
-                pc.index(
-                    raw_table[COL_NAMES[Cols.RecipeId]],
-                    float(food_id)).as_py()
-                for food_id in recipes
-            ]
-            mask = np.full((len(raw_table)), False)
-            mask[req_indices] = True
-            recipes_table = raw_table.filter(mask=mask)
-
-        return recipes_table
-
     def cache_link_id(
             id_cache: dict, text: Any, db_id: int, row: int,
             idx: int, data_table: pa.Table) -> None:
@@ -537,7 +573,7 @@ def load_recipe(args: argparse.Namespace, curs):
         :param row: data row number
         :param idx: index within recipe instructions list
         """
-        cache_link_id(id_cache, text, db_id, row, idx, recipes_table)
+        cache_link_id(id_cache, text, db_id, row, idx, get_recipes_table())
 
     table_fields = ', '.join(KEYWORD_FIELDS)
     process_data(
@@ -585,7 +621,7 @@ def load_recipe(args: argparse.Namespace, curs):
         # TODO keys for ingredients name/id cache
         # reprocess ingredients (takes long time) to verify fix for keys
         # starting with '2%' having a value in the pickled dict, and remove
-        # db this lookup
+        # this db lookup
         ingredient_id = ingredients.get(str(ingredient))
         if ingredient_id is None:
             ingredient_id = get_content_id(
@@ -638,7 +674,7 @@ def load_recipe(args: argparse.Namespace, curs):
         :param row: data row number
         :param idx: index within recipe instructions list
         """
-        cache_link_id(id_cache, text, db_id, row, idx, recipes_table)
+        cache_link_id(id_cache, text, db_id, row, idx, get_recipes_table())
 
     table_fields = ', '.join(INSTRUCTION_FIELDS)
     process_data(
@@ -662,7 +698,7 @@ def load_recipe(args: argparse.Namespace, curs):
                       idx: int) -> tuple:
         """ Generate images values """
         # same order as IMAGE_FIELDS
-        food_id = recipes_table[
+        food_id = get_recipes_table()[
             COL_NAMES[Cols.RecipeId]][row].as_py()
         return url, recipes.get(str(food_id))
 

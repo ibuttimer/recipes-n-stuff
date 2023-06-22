@@ -2,13 +2,14 @@
 
 from decimal import Decimal
 from django.conf import settings
-from django.db import migrations, models, connection
+from django.db import migrations, models
 import django.db.models.deletion
 import utils.models
 from order.misc import generate_sku
 from order.models import ProductType
 from recipesnstuff import SUBSCRIPTION_APP_NAME
 from subscription.models import Subscription
+from utils.database import table_exists
 
 
 class Migration(migrations.Migration):
@@ -99,9 +100,7 @@ class Migration(migrations.Migration):
         ),
     ]
 
-    all_tables = connection.introspection.table_names()
-    if f'{SUBSCRIPTION_APP_NAME}_{Subscription.model_name()}'.lower() \
-            in all_tables:
+    if table_exists(f'{SUBSCRIPTION_APP_NAME}_{Subscription.model_name()}'):
         # check subscription table exists (it won't in a migration on a
         # pristine database), before generating subscription skus
         todo_operations.extend([

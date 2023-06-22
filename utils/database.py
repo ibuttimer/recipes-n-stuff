@@ -30,3 +30,37 @@ def table_exists(name: str) -> bool:
     """
     all_tables = connection.introspection.table_names()
     return name.lower() in all_tables
+
+
+class AppRouter:
+    """
+    A router to control all database operations.
+    """
+
+    db_name: str = None     # migration db name
+
+    def db_for_read(self, model, **hints):
+        """
+        Always read from migration db if set
+        """
+        return self.db_name if self.db_name is not None else model.objects.db
+
+    def db_for_write(self, model, **hints):
+        """
+        Write to models db.
+        """
+        return model.objects.db
+
+    def allow_relation(self, obj1, obj2, **hints):
+        """
+        Always allow relations.
+        """
+        return True
+
+    def allow_migrate(self, db, app_label, model_name=None, **hints):
+        """
+        Always allow migrations.
+        """
+        if self.db_name is None:
+            self.db_name = db
+        return True
