@@ -97,7 +97,7 @@
                                         <li><a class="dropdown-item" href="{% url 'subscription:subscription_new' %}">New</a></li>
                                     </ul>
                                 </li>
-                                {% if is_development %}
+                                {% if is_development or is_low_level_admin %}
                                 <li class="nav-item dropdown">
                                     <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
                                        {% with has_permission=maintenance_menu.has_permission active=maintenance_menu.active disabled=maintenance_menu.disabled %}{% include "snippet/menu_dropdown_class.html" %}{% endwith %}>

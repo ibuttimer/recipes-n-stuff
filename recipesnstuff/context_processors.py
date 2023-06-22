@@ -26,10 +26,12 @@ from collections import namedtuple
 from django.http import HttpRequest
 
 from .constants import (
-    COPYRIGHT_YEAR, COPYRIGHT, IS_DEVELOPMENT_CTX, IS_TEST_CTX
+    COPYRIGHT_YEAR, COPYRIGHT, IS_DEVELOPMENT_CTX, IS_LOW_LEVEL_ADMIN_CTX,
+    IS_TEST_CTX
 )
 from .settings import (
-    DEVELOPMENT, TEST, GOOGLE_SITE_VERIFICATION, FOOD_DOT_COM, FACEBOOK_PAGE
+    DEVELOPMENT, LOW_LEVEL_ADMIN, TEST, GOOGLE_SITE_VERIFICATION,
+    FOOD_DOT_COM, FACEBOOK_PAGE
 )
 
 Social = namedtuple("Social", ["name", "icon", "url"])
@@ -53,6 +55,7 @@ def footer_context(request: HttpRequest) -> dict:
                    "https://instagram.com"),
         ],
         IS_DEVELOPMENT_CTX: DEVELOPMENT,
+        IS_LOW_LEVEL_ADMIN_CTX: LOW_LEVEL_ADMIN,
         IS_TEST_CTX: TEST,
         "google_site_verification": GOOGLE_SITE_VERIFICATION,
         "food_dot_com": FOOD_DOT_COM

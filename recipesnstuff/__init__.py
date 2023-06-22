@@ -27,7 +27,7 @@ from .constants import (
     IMAGE_FILE_TYPES, DEV_IMAGE_FILE_TYPES, MIN_PASSWORD_LEN,
     AVATAR_FOLDER, IMAGES_FOLDER, HOME_ROUTE_NAME
 )
-from .settings import DEVELOPMENT, TEST
+from .settings import DEVELOPMENT, TEST, LOW_LEVEL_ADMIN
 from .utils import val_test_route_name, val_test_url, VAL_TEST_PATH_PREFIX
 
 __all__ = [
@@ -49,6 +49,7 @@ __all__ = [
     'HOME_ROUTE_NAME',
     'DEVELOPMENT',
     'TEST',
+    'LOW_LEVEL_ADMIN',
 
     'val_test_route_name',
     'val_test_url',

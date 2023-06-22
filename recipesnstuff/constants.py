@@ -107,6 +107,7 @@ CATEGORIES_MENU_CTX = "categories_menu"
 
 IS_SUPER_CTX = "is_super"
 IS_DEVELOPMENT_CTX = "is_development"
+IS_LOW_LEVEL_ADMIN_CTX = "is_low_level_admin"
 IS_TEST_CTX = "is_test"
 AVATAR_URL_CTX = "avatar_url"
 NO_ROBOTS_CTX = "no_robots"

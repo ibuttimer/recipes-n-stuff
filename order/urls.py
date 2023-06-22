@@ -23,7 +23,7 @@
 
 from django.urls import path
 
-from recipesnstuff import DEVELOPMENT
+from recipesnstuff import DEVELOPMENT, LOW_LEVEL_ADMIN
 from .constants import (
     THIS_APP, ORDERS_URL, ORDERS_ROUTE_NAME,
     ORDER_SEARCH_URL, ORDER_SEARCH_ROUTE_NAME,
@@ -44,7 +44,7 @@ urlpatterns = [
     path(ORDER_ID_URL, OrderDetail.as_view(), name=ORDER_ID_ROUTE_NAME),
 ]
 
-if DEVELOPMENT:
+if DEVELOPMENT or LOW_LEVEL_ADMIN:
     # add generate order product endpoint
     urlpatterns.extend([
         path(GENERATE_ORDER_PROD_URL, generate_order_product,

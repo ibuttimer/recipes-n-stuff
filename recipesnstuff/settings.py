@@ -58,6 +58,7 @@ scheme = {
     'DEBUG': (bool, False),
     'DEVELOPMENT': (bool, False),
     'TEST': (bool, False),
+    'LOW_LEVEL_ADMIN': (bool, False),
     'DEFAULT_SEND_EMAIL': (str, ''),
     'EMAIL_HOST': (str, ''),
     'EMAIL_USE_TLS': (bool, True),
@@ -84,6 +85,7 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
 DEVELOPMENT = env('DEVELOPMENT')
 TEST = env('TEST')
+LOW_LEVEL_ADMIN = env('LOW_LEVEL_ADMIN')
 DBG_TOOLBAR = env('DBG_TOOLBAR', default=False) and DEBUG
 
 # https://docs.djangoproject.com/en/4.1/ref/clickjacking/
